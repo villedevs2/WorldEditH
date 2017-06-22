@@ -30,3 +30,6 @@
 *.exe
 *.out
 *.app
+
+/GeneratedFiles
+/x64
