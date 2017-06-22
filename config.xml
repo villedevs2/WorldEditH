@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<config>
+<triggers>
+	<trigger name="Player start point"/>
+	<trigger name="Level end point"/>
+	<trigger name="Coin"/>
+	<trigger name="Particle generator"/>
+</triggers>
+</config>
