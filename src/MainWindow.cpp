@@ -1088,7 +1088,7 @@ void MainWindow::setCurrentFile(QString& filename)
 
 	m_open_file = filename;
 
-	setWindowFilePath(tr("%1 - WorldEdit").arg(filetitle));
+	setWindowFilePath(tr("%1 - WorldEditH").arg(filetitle));
 }
 
 void MainWindow::reset()

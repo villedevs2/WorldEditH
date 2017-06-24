@@ -60,6 +60,9 @@ GLWidget::GLWidget(QWidget *parent, Level* level)
 	m_tilemap_ystart = 0;
 	m_tilemap_yend = 50;
 
+	m_tile_selx = -1;
+	m_tile_sely = -1;
+
 	m_filter = 0;
 	m_display_filter = 0;
 
@@ -471,21 +474,99 @@ void GLWidget::tilemapDraw(glm::vec2 mouse_lp)
 	if (mouse_lp.x >= tx1 && mouse_lp.x < tx2 &&
 		mouse_lp.y >= ty1 && mouse_lp.y < ty2)
 	{
-		float fx = mouse_lp.x / m_tilemap_width;
-		float fy = mouse_lp.y / m_tilemap_height;
 
-		int tile_x, tile_y;
-		if (fx >= 0.0f)
-			tile_x = (int)(fx);
+		int block_x = (int)(mouse_lp.x / m_tilemap_width);
+		int block_y = (int)(mouse_lp.y / (m_tilemap_height / 2));
+
+		float selx = tx1 + (block_x * m_tilemap_width);
+		float sely = ty1 + (block_y * (m_tilemap_height / 2));
+
+
+		float fy2 = mouse_lp.y / (m_tilemap_height / 2);
+
+		float lx = selx;
+		float mx = selx + (m_tilemap_width / 2);
+		float rx = selx + m_tilemap_width;
+		float vy1 = sely;
+		float vy2 = sely + (m_tilemap_height * (15.0 / 70.0));
+		float vy3 = sely + (m_tilemap_height * (50.0 / 70.0));
+
+		m_tile_sely = (int)(fy2);
+		if (m_tile_sely & 1)
+		{
+			/*
+			e1\-   -/e2
+			  +\   /+
+			    \ /
+			     |
+			    +|-
+				 e3
+			*/
+
+			glm::vec2 e1 = glm::vec2(mx, vy2) - glm::vec2(lx, vy1);
+			glm::vec2 e2 = glm::vec2(rx, vy1) - glm::vec2(mx, vy2);
+			glm::vec2 e3 = glm::vec2(mx, vy3) - glm::vec2(mx, vy2);
+
+			glm::vec2 n1 = glm::vec2(-e1.y, e1.x);
+			glm::vec2 n2 = glm::vec2(-e2.y, e2.x);
+			glm::vec2 n3 = glm::vec2(-e3.y, e3.x);
+
+			glm::vec2 b = mouse_lp - glm::vec2(mx, vy2);
+
+			float dot1 = glm::dot(n1, b);
+			float dot2 = glm::dot(n2, b);
+			float dot3 = glm::dot(n3, b);
+
+			if (dot1 < 0 && dot2 < 0)
+			{
+				// up
+				m_tile_selx = block_x;
+				m_tile_sely = block_y - 1;
+			}
+			else if (dot1 >= 0 && dot3 >= 0)
+			{
+				// left
+				m_tile_selx = block_x - 1;
+			}
+			///else if (dot2 >= 0 && dot3 < 0)
+			else
+			{
+				// right
+				m_tile_selx = block_x;
+			}
+
+
+			//m_tile_selx = (mouse_lp.x - (m_tilemap_width / 2)) / m_tilemap_width;
+		}
 		else
-			tile_x = (int)(fx - 1.0f);
+		{
+			glm::vec2 e1 = glm::vec2(mx, vy1) - glm::vec2(lx, vy2);
+			glm::vec2 e2 = glm::vec2(rx, vy2) - glm::vec2(mx, vy1);
 
-		if (fy >= 0.0f)
-			tile_y = (int)(fy);
-		else
-			tile_y = (int)(fy - 1.0f);
+			glm::vec2 n1 = glm::vec2(-e1.y, e1.x);
+			glm::vec2 n2 = glm::vec2(-e2.y, e2.x);
 
-		m_level->editTilemap(tile_x, tile_y, m_tile_brush);
+			glm::vec2 b1 = mouse_lp - glm::vec2(lx, vy2);
+			glm::vec2 b2 = mouse_lp - glm::vec2(rx, vy2);
+
+			float dot1 = glm::dot(n1, b1);
+			float dot2 = glm::dot(n2, b2);
+
+			if (dot1 < 0)
+			{
+				m_tile_selx = block_x - 1;
+				m_tile_sely--;
+			}
+			else if (dot2 < 0)
+			{
+				m_tile_selx = block_x;
+				m_tile_sely--;
+			}
+			else
+			{
+				m_tile_selx = block_x;
+			}
+		}
 	}
 }
 
@@ -1861,45 +1942,48 @@ void GLWidget::renderTilemapExtras(QPainter& painter)
 	painter.setPen(QColor(224, 224, 0));
 	painter.setBrush(QBrush(QColor(160, 160, 0, 128)));
 
-	int highlight_x = 1;
-	int highlight_y = 0;
-
-	int i = highlight_x;
-	int j = highlight_y;
-
-	int jj = j / 2;
-
-	float xxs = (float)(m_tilemap_xstart + i) * m_tilemap_width;
-	float xxe = (float)(m_tilemap_xstart + i + 1) * m_tilemap_width;
-	float yys = (float)(m_tilemap_ystart + jj) * m_tilemap_height;
-	float yye = (float)(m_tilemap_ystart + jj + 1) * m_tilemap_height;
-
-	if (j & 1)
+	if (m_tile_selx >= 0 && m_tile_sely >= 0)
 	{
-		xxs += m_tilemap_width / 2;
-		xxe += m_tilemap_width / 2;
-		yys += m_tilemap_height / 2;
-		yye += m_tilemap_height / 2;
+		int highlight_x = m_tile_selx;
+		int highlight_y = m_tile_sely;
+
+		int i = highlight_x;
+		int j = highlight_y;
+
+		int jj = j / 2;
+
+		float xxs = (float)(m_tilemap_xstart + i) * m_tilemap_width;
+		float xxe = (float)(m_tilemap_xstart + i + 1) * m_tilemap_width;
+		float yys = (float)(m_tilemap_ystart + jj) * m_tilemap_height;
+		float yye = (float)(m_tilemap_ystart + jj + 1) * m_tilemap_height;
+
+		if (j & 1)
+		{
+			xxs += m_tilemap_width / 2;
+			xxe += m_tilemap_width / 2;
+			yys += m_tilemap_height / 2;
+			yye += m_tilemap_height / 2;
+		}
+
+		QPoint pts[6];
+		glm::vec2 tltl = toScreenCoords(glm::vec2(xxs, yys));
+		glm::vec2 brbr = toScreenCoords(glm::vec2(xxe, yye));
+
+		pts[0] = QPoint(tltl.x,
+			tltl.y + (brbr.y - tltl.y) * (15.0 / 70.0));
+		pts[1] = QPoint(tltl.x,
+			tltl.y + (brbr.y - tltl.y) * (35.0 / 70.0));
+		pts[2] = QPoint(tltl.x + (brbr.x - tltl.x) * 0.5,
+			tltl.y + (brbr.y - tltl.y) * (50.0 / 70.0));
+		pts[3] = QPoint(brbr.x,
+			tltl.y + (brbr.y - tltl.y) * (35.0 / 70.0));
+		pts[4] = QPoint(brbr.x,
+			tltl.y + (brbr.y - tltl.y) * (15.0 / 70.0));
+		pts[5] = QPoint(tltl.x + (brbr.x - tltl.x) * 0.5,
+			tltl.y);
+
+		painter.drawPolygon(pts, 6);
 	}
-
-	QPoint pts[6];
-	glm::vec2 tltl = toScreenCoords(glm::vec2(xxs, yys));
-	glm::vec2 brbr = toScreenCoords(glm::vec2(xxe, yye));
-
-	pts[0] = QPoint(tltl.x,
-					tltl.y + (brbr.y - tltl.y) * (15.0 / 70.0));
-	pts[1] = QPoint(tltl.x,
-					tltl.y + (brbr.y - tltl.y) * (35.0 / 70.0));
-	pts[2] = QPoint(tltl.x + (brbr.x - tltl.x) * 0.5,
-					tltl.y + (brbr.y - tltl.y) * (50.0 / 70.0));
-	pts[3] = QPoint(brbr.x,
-					tltl.y + (brbr.y - tltl.y) * (35.0 / 70.0));
-	pts[4] = QPoint(brbr.x,
-					tltl.y + (brbr.y - tltl.y) * (15.0 / 70.0));
-	pts[5] = QPoint(tltl.x + (brbr.x - tltl.x) * 0.5,
-					tltl.y);
-
-	painter.drawPolygon(pts, 6);
 }
 
 
@@ -2139,7 +2223,7 @@ void GLWidget::paintGL()
 		}
 		case MODE_TILEMAP:
 		{
-			modetext = tr("Tilemap: X: %1, Y: %2").arg(mlp.x).arg(mlp.y);
+			modetext = tr("Tilemap: X: %1, Y: %2, TX: %3, TY: %4").arg(mlp.x).arg(mlp.y).arg(m_tile_selx).arg(m_tile_sely);
 			break;
 		}
 	}	

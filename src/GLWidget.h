@@ -197,4 +197,7 @@ private:
 
 	bool m_tilemap_painting;
 	int m_tile_brush;		// currently selected "brush"
+
+	int m_tile_selx;
+	int m_tile_sely;
 };
