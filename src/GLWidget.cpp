@@ -467,9 +467,9 @@ bool GLWidget::filterObject(Level::Object* obj)
 void GLWidget::tilemapDraw(glm::vec2 mouse_lp)
 {
 	float tx1 = (float)(m_tilemap_xstart) * m_tilemap_width;
-	float ty1 = (float)(m_tilemap_ystart) * m_tilemap_width;
-	float tx2 = (float)(m_tilemap_xend) * m_tilemap_height;
-	float ty2 = (float)(m_tilemap_yend) * m_tilemap_height;
+	float ty1 = (float)(m_tilemap_ystart) * (m_tilemap_height / 2);
+	float tx2 = (float)(m_tilemap_xend) * m_tilemap_width;
+	float ty2 = (float)(m_tilemap_yend) * (m_tilemap_height / 2);
 
 	if (mouse_lp.x >= tx1 && mouse_lp.x < tx2 &&
 		mouse_lp.y >= ty1 && mouse_lp.y < ty2)
@@ -478,11 +478,8 @@ void GLWidget::tilemapDraw(glm::vec2 mouse_lp)
 		int block_x = (int)(mouse_lp.x / m_tilemap_width);
 		int block_y = (int)(mouse_lp.y / (m_tilemap_height / 2));
 
-		float selx = tx1 + (block_x * m_tilemap_width);
-		float sely = ty1 + (block_y * (m_tilemap_height / 2));
-
-
-		float fy2 = mouse_lp.y / (m_tilemap_height / 2);
+		float selx = (block_x * m_tilemap_width);
+		float sely = (block_y * (m_tilemap_height / 2));
 
 		float lx = selx;
 		float mx = selx + (m_tilemap_width / 2);
@@ -491,7 +488,7 @@ void GLWidget::tilemapDraw(glm::vec2 mouse_lp)
 		float vy2 = sely + (m_tilemap_height * (15.0 / 70.0));
 		float vy3 = sely + (m_tilemap_height * (50.0 / 70.0));
 
-		m_tile_sely = (int)(fy2);
+		m_tile_sely = block_y;
 		if (m_tile_sely & 1)
 		{
 			/*
@@ -534,9 +531,6 @@ void GLWidget::tilemapDraw(glm::vec2 mouse_lp)
 				// right
 				m_tile_selx = block_x;
 			}
-
-
-			//m_tile_selx = (mouse_lp.x - (m_tilemap_width / 2)) / m_tilemap_width;
 		}
 		else
 		{
@@ -566,6 +560,14 @@ void GLWidget::tilemapDraw(glm::vec2 mouse_lp)
 			{
 				m_tile_selx = block_x;
 			}
+		}
+
+		if (m_tile_selx >= m_tilemap_xstart &&
+			m_tile_sely >= m_tilemap_ystart &&
+			m_tile_selx < m_tilemap_xend &&
+			m_tile_sely < m_tilemap_yend)
+		{
+			m_level->editTilemap(m_tile_selx, m_tile_sely, m_tile_brush);
 		}
 	}
 }
@@ -1863,9 +1865,9 @@ void GLWidget::renderOtherObjects(QPainter& painter)
 void GLWidget::renderTilemapBorders(QPainter& painter)
 {
 	float xs = (float)m_tilemap_xstart * m_tilemap_width;
-	float xe = (float)m_tilemap_xend * m_tilemap_width;
-	float ys = (float)m_tilemap_ystart * m_tilemap_height;
-	float ye = (float)m_tilemap_yend * m_tilemap_height;
+	float xe = (float)(m_tilemap_xend * m_tilemap_width) + (m_tilemap_width / 2);
+	float ys = (float)m_tilemap_ystart * (m_tilemap_height / 2);
+	float ye = (float)(m_tilemap_yend * (m_tilemap_height / 2)) + (m_tilemap_height * (15.0/70.0));
 
 	int screen_width = width();
 	int screen_height = height();
@@ -1942,10 +1944,13 @@ void GLWidget::renderTilemapExtras(QPainter& painter)
 	painter.setPen(QColor(224, 224, 0));
 	painter.setBrush(QBrush(QColor(160, 160, 0, 128)));
 
-	if (m_tile_selx >= 0 && m_tile_sely >= 0)
+	if (m_tile_selx >= m_tilemap_xstart &&
+		m_tile_sely >= m_tilemap_ystart &&
+		m_tile_selx < m_tilemap_xend &&
+		m_tile_sely < m_tilemap_yend)
 	{
-		int highlight_x = m_tile_selx;
-		int highlight_y = m_tile_sely;
+		int highlight_x = m_tile_selx - m_tilemap_xstart;
+		int highlight_y = m_tile_sely - m_tilemap_ystart;
 
 		int i = highlight_x;
 		int j = highlight_y;

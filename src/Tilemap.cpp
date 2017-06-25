@@ -128,7 +128,7 @@ bool Tilemap::resize(int x1, int y1, int x2, int y2, float tile_width, float til
 		m_vb = NULL;
 	}
 
-	m_vb = new VBO[new_width * new_height * 6];
+	m_vb = new VBO[new_width * new_height * 12];
 
 	tesselateAll();
 
@@ -155,40 +155,94 @@ void Tilemap::tesselateAll()
 
 void Tilemap::tesselateTile(int x, int y)
 {
+	const int num_verts = 3 * 4;
+
 	assert(x >= 0 && x < m_width);
 	assert(y >= 0 && y < m_height);
 
 	int tile = m_map[(y * m_width) + x];
 
-	int vb_index = ((y * m_width) + x) * 6;
+	int vb_index = ((y * m_width) + x) * num_verts;
 
 	float tx1 = (float)(x + m_x) * m_tile_width;
 	float tx2 = tx1 + m_tile_width;
-	float ty1 = (float)(y + m_y) * m_tile_height;
-	float ty2 = ty1 + m_tile_height;
+	float ty1 = (float)(y + m_y) * (m_tile_height / 2);
+	float ty2 = ty1 + (m_tile_height / 2);
+
+	if (y & 1)
+	{
+		tx1 += m_tile_width / 2;
+		tx2 += m_tile_width / 2;
+	}
 
 	float z = 100.0f;
 	
 	if (tile == -1)
 	{
 		// make degen geo
-		m_vb[vb_index + 0].pos = glm::vec3(0, 0, 0);		m_vb[vb_index + 0].uv = glm::vec2(0, 0);		m_vb[vb_index + 0].color = 0;
-		m_vb[vb_index + 1].pos = glm::vec3(0, 0, 0);		m_vb[vb_index + 1].uv = glm::vec2(0, 0);		m_vb[vb_index + 1].color = 0;
-		m_vb[vb_index + 2].pos = glm::vec3(0, 0, 0);		m_vb[vb_index + 2].uv = glm::vec2(0, 0);		m_vb[vb_index + 2].color = 0;
-		m_vb[vb_index + 3].pos = glm::vec3(0, 0, 0);		m_vb[vb_index + 3].uv = glm::vec2(0, 0);		m_vb[vb_index + 3].color = 0;
-		m_vb[vb_index + 4].pos = glm::vec3(0, 0, 0);		m_vb[vb_index + 4].uv = glm::vec2(0, 0);		m_vb[vb_index + 4].color = 0;
-		m_vb[vb_index + 5].pos = glm::vec3(0, 0, 0);		m_vb[vb_index + 5].uv = glm::vec2(0, 0);		m_vb[vb_index + 5].color = 0;
+		for (int i = 0; i < num_verts; i++)
+		{
+			m_vb[vb_index + i].pos = glm::vec3(0, 0, 0);
+			m_vb[vb_index + i].uv = glm::vec2(0, 0);
+			m_vb[vb_index + i].color = 0;
+		}
 	}
 	else
 	{
 		Tile& tiledata = m_tiles.at(tile);
 
-		m_vb[vb_index + 0].pos = glm::vec3(tx1, ty1, z);	m_vb[vb_index + 0].uv = tiledata.points[0];		m_vb[vb_index + 0].color = tiledata.color;
-		m_vb[vb_index + 1].pos = glm::vec3(tx1, ty2, z);	m_vb[vb_index + 1].uv = tiledata.points[1];		m_vb[vb_index + 1].color = tiledata.color;
-		m_vb[vb_index + 2].pos = glm::vec3(tx2, ty2, z);	m_vb[vb_index + 2].uv = tiledata.points[2];		m_vb[vb_index + 2].color = tiledata.color;
-		m_vb[vb_index + 3].pos = glm::vec3(tx1, ty1, z);	m_vb[vb_index + 3].uv = tiledata.points[0];		m_vb[vb_index + 3].color = tiledata.color;
-		m_vb[vb_index + 4].pos = glm::vec3(tx2, ty2, z);	m_vb[vb_index + 4].uv = tiledata.points[2];		m_vb[vb_index + 4].color = tiledata.color;
-		m_vb[vb_index + 5].pos = glm::vec3(tx2, ty1, z);	m_vb[vb_index + 5].uv = tiledata.points[3];		m_vb[vb_index + 5].color = tiledata.color;
+		glm::vec2 vl = tiledata.points[1] - tiledata.points[0];
+		glm::vec2 vr = tiledata.points[2] - tiledata.points[3];
+		glm::vec2 vt = tiledata.points[3] - tiledata.points[0];
+		glm::vec2 vb = tiledata.points[2] - tiledata.points[1];
+
+		/*
+		glm::vec2 tex_my1 = tiledata.points[0] + (vt * 0.5f);
+		glm::vec2 tex_my2 = tiledata.points[1] + (vb * 0.5f);
+		glm::vec2 tex_ly1 = tiledata.points[0] + (vl * (float)(15.0 / 50.0));
+		glm::vec2 tex_ly2 = tiledata.points[0] + (vl * (float)(35.0 / 50.0));
+		glm::vec2 tex_ry1 = tiledata.points[3] + (vr * (float)(15.0 / 50.0));
+		glm::vec2 tex_ry2 = tiledata.points[3] + (vr * (float)(35.0 / 50.0));
+		*/
+
+		
+		
+		glm::vec2 uv1 = tiledata.points[0] + (vl * (float)(15.0 / 50.0));
+		glm::vec2 uv2 = tiledata.points[0] + (vl * (float)(35.0 / 50.0));
+		glm::vec2 uv3 = tiledata.points[1] + (vb * 0.5f);
+		glm::vec2 uv4 = tiledata.points[3] + (vr * (float)(35.0 / 50.0));
+		glm::vec2 uv5 = tiledata.points[3] + (vr * (float)(15.0 / 50.0));
+		glm::vec2 uv6 = tiledata.points[0] + (vt * 0.5f);
+
+		/*
+		     p6
+		p1         p5
+		p2         p4
+		     p3
+		*/
+
+		glm::vec3 p1 = glm::vec3(tx1, ty1 + (m_tile_height * (15.0 / 70.0)), z);
+		glm::vec3 p2 = glm::vec3(tx1, ty1 + (m_tile_height * (35.0 / 70.0)), z);
+		glm::vec3 p3 = glm::vec3(tx1 + (m_tile_width * 0.5), ty1 + (m_tile_height * (50.0 / 70.0)), z);
+		glm::vec3 p4 = glm::vec3(tx2, ty1 + (m_tile_height * (35.0 / 70.0)), z);
+		glm::vec3 p5 = glm::vec3(tx2, ty1 + (m_tile_height * (15.0 / 70.0)), z);
+		glm::vec3 p6 = glm::vec3(tx1 + (m_tile_width * 0.5), ty1, z);
+
+		m_vb[vb_index + 0].pos = p1;	m_vb[vb_index + 0].uv = uv1;		m_vb[vb_index + 0].color = tiledata.color;
+		m_vb[vb_index + 1].pos = p6;	m_vb[vb_index + 1].uv = uv6;		m_vb[vb_index + 1].color = tiledata.color;
+		m_vb[vb_index + 2].pos = p5;	m_vb[vb_index + 2].uv = uv5;		m_vb[vb_index + 2].color = tiledata.color;
+
+		m_vb[vb_index + 3].pos = p1;	m_vb[vb_index + 3].uv = uv1;		m_vb[vb_index + 3].color = tiledata.color;
+		m_vb[vb_index + 4].pos = p5;	m_vb[vb_index + 4].uv = uv5;		m_vb[vb_index + 4].color = tiledata.color;
+		m_vb[vb_index + 5].pos = p4;	m_vb[vb_index + 5].uv = uv4;		m_vb[vb_index + 5].color = tiledata.color;
+
+		m_vb[vb_index + 6].pos = p1;	m_vb[vb_index + 3].uv = uv1;		m_vb[vb_index + 3].color = tiledata.color;
+		m_vb[vb_index + 7].pos = p4;	m_vb[vb_index + 4].uv = uv4;		m_vb[vb_index + 4].color = tiledata.color;
+		m_vb[vb_index + 8].pos = p3;	m_vb[vb_index + 5].uv = uv3;		m_vb[vb_index + 5].color = tiledata.color;
+
+		m_vb[vb_index + 9].pos = p1;	m_vb[vb_index + 3].uv = uv1;		m_vb[vb_index + 3].color = tiledata.color;
+		m_vb[vb_index + 10].pos = p3;	m_vb[vb_index + 4].uv = uv3;		m_vb[vb_index + 4].color = tiledata.color;
+		m_vb[vb_index + 11].pos = p2;	m_vb[vb_index + 5].uv = uv2;		m_vb[vb_index + 5].color = tiledata.color;
 	}
 }
 
@@ -199,7 +253,7 @@ float* Tilemap::getVBO()
 
 int Tilemap::numTris()
 {
-	return m_width * m_height * 2;
+	return m_width * m_height * 4;
 }
 
 int Tilemap::get(int x, int y)
