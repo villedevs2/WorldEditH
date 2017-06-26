@@ -31,6 +31,7 @@ public:
 		std::string name;
 		unsigned int color;
 		int id;
+		int type;
 	};
 
 	Tilemap();

@@ -57,6 +57,8 @@ bool Tilemap::resize(int x1, int y1, int x2, int y2, float tile_width, float til
 	{
 		int* new_map = new int[new_width * new_height];
 
+		
+
 		memset(new_map, -1, sizeof(int) * new_width * new_height);
 
 		// copy old data
@@ -236,13 +238,13 @@ void Tilemap::tesselateTile(int x, int y)
 		m_vb[vb_index + 4].pos = p5;	m_vb[vb_index + 4].uv = uv5;		m_vb[vb_index + 4].color = tiledata.color;
 		m_vb[vb_index + 5].pos = p4;	m_vb[vb_index + 5].uv = uv4;		m_vb[vb_index + 5].color = tiledata.color;
 
-		m_vb[vb_index + 6].pos = p1;	m_vb[vb_index + 3].uv = uv1;		m_vb[vb_index + 3].color = tiledata.color;
-		m_vb[vb_index + 7].pos = p4;	m_vb[vb_index + 4].uv = uv4;		m_vb[vb_index + 4].color = tiledata.color;
-		m_vb[vb_index + 8].pos = p3;	m_vb[vb_index + 5].uv = uv3;		m_vb[vb_index + 5].color = tiledata.color;
+		m_vb[vb_index + 6].pos = p1;	m_vb[vb_index + 6].uv = uv1;		m_vb[vb_index + 6].color = tiledata.color;
+		m_vb[vb_index + 7].pos = p4;	m_vb[vb_index + 7].uv = uv4;		m_vb[vb_index + 7].color = tiledata.color;
+		m_vb[vb_index + 8].pos = p3;	m_vb[vb_index + 8].uv = uv3;		m_vb[vb_index + 8].color = tiledata.color;
 
-		m_vb[vb_index + 9].pos = p1;	m_vb[vb_index + 3].uv = uv1;		m_vb[vb_index + 3].color = tiledata.color;
-		m_vb[vb_index + 10].pos = p3;	m_vb[vb_index + 4].uv = uv3;		m_vb[vb_index + 4].color = tiledata.color;
-		m_vb[vb_index + 11].pos = p2;	m_vb[vb_index + 5].uv = uv2;		m_vb[vb_index + 5].color = tiledata.color;
+		m_vb[vb_index + 9].pos = p1;	m_vb[vb_index + 9].uv = uv1;		m_vb[vb_index + 9].color = tiledata.color;
+		m_vb[vb_index + 10].pos = p3;	m_vb[vb_index + 10].uv = uv3;		m_vb[vb_index + 10].color = tiledata.color;
+		m_vb[vb_index + 11].pos = p2;	m_vb[vb_index + 11].uv = uv2;		m_vb[vb_index + 11].color = tiledata.color;
 	}
 }
 
