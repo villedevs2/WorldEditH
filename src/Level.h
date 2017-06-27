@@ -126,7 +126,7 @@ public:
 	float* getTilemapVBO();
 	int numTilemapTris();
 	const Tilemap::Config& getTilemapConfig();
-	int insertTile(std::string name, glm::vec2* points, unsigned int color);
+	int insertTile(std::string name, glm::vec2* points, unsigned int color, Tilemap::TileType type);
 	void removeTile(int id);
 	void removeTiles();
 	int getNumTiles();

@@ -230,21 +230,176 @@ void Tilemap::tesselateTile(int x, int y)
 		glm::vec3 p5 = glm::vec3(tx2, ty1 + (m_tile_height * (15.0 / 70.0)), z);
 		glm::vec3 p6 = glm::vec3(tx1 + (m_tile_width * 0.5), ty1, z);
 
-		m_vb[vb_index + 0].pos = p1;	m_vb[vb_index + 0].uv = uv1;		m_vb[vb_index + 0].color = tiledata.color;
-		m_vb[vb_index + 1].pos = p6;	m_vb[vb_index + 1].uv = uv6;		m_vb[vb_index + 1].color = tiledata.color;
-		m_vb[vb_index + 2].pos = p5;	m_vb[vb_index + 2].uv = uv5;		m_vb[vb_index + 2].color = tiledata.color;
+		switch (tiledata.type)
+		{
+			case Tilemap::TILE_FULL:
+			{
+				/*     
+					   /\
+					  /  \
+					 |    |
+					 |    |
+					  \  /
+					   \/
+				*/
 
-		m_vb[vb_index + 3].pos = p1;	m_vb[vb_index + 3].uv = uv1;		m_vb[vb_index + 3].color = tiledata.color;
-		m_vb[vb_index + 4].pos = p5;	m_vb[vb_index + 4].uv = uv5;		m_vb[vb_index + 4].color = tiledata.color;
-		m_vb[vb_index + 5].pos = p4;	m_vb[vb_index + 5].uv = uv4;		m_vb[vb_index + 5].color = tiledata.color;
+				m_vb[vb_index + 0].pos = p1;	m_vb[vb_index + 0].uv = uv1;		m_vb[vb_index + 0].color = tiledata.color;
+				m_vb[vb_index + 1].pos = p6;	m_vb[vb_index + 1].uv = uv6;		m_vb[vb_index + 1].color = tiledata.color;
+				m_vb[vb_index + 2].pos = p5;	m_vb[vb_index + 2].uv = uv5;		m_vb[vb_index + 2].color = tiledata.color;
 
-		m_vb[vb_index + 6].pos = p1;	m_vb[vb_index + 6].uv = uv1;		m_vb[vb_index + 6].color = tiledata.color;
-		m_vb[vb_index + 7].pos = p4;	m_vb[vb_index + 7].uv = uv4;		m_vb[vb_index + 7].color = tiledata.color;
-		m_vb[vb_index + 8].pos = p3;	m_vb[vb_index + 8].uv = uv3;		m_vb[vb_index + 8].color = tiledata.color;
+				m_vb[vb_index + 3].pos = p1;	m_vb[vb_index + 3].uv = uv1;		m_vb[vb_index + 3].color = tiledata.color;
+				m_vb[vb_index + 4].pos = p5;	m_vb[vb_index + 4].uv = uv5;		m_vb[vb_index + 4].color = tiledata.color;
+				m_vb[vb_index + 5].pos = p4;	m_vb[vb_index + 5].uv = uv4;		m_vb[vb_index + 5].color = tiledata.color;
 
-		m_vb[vb_index + 9].pos = p1;	m_vb[vb_index + 9].uv = uv1;		m_vb[vb_index + 9].color = tiledata.color;
-		m_vb[vb_index + 10].pos = p3;	m_vb[vb_index + 10].uv = uv3;		m_vb[vb_index + 10].color = tiledata.color;
-		m_vb[vb_index + 11].pos = p2;	m_vb[vb_index + 11].uv = uv2;		m_vb[vb_index + 11].color = tiledata.color;
+				m_vb[vb_index + 6].pos = p1;	m_vb[vb_index + 6].uv = uv1;		m_vb[vb_index + 6].color = tiledata.color;
+				m_vb[vb_index + 7].pos = p4;	m_vb[vb_index + 7].uv = uv4;		m_vb[vb_index + 7].color = tiledata.color;
+				m_vb[vb_index + 8].pos = p3;	m_vb[vb_index + 8].uv = uv3;		m_vb[vb_index + 8].color = tiledata.color;
+
+				m_vb[vb_index + 9].pos = p1;	m_vb[vb_index + 9].uv = uv1;		m_vb[vb_index + 9].color = tiledata.color;
+				m_vb[vb_index + 10].pos = p3;	m_vb[vb_index + 10].uv = uv3;		m_vb[vb_index + 10].color = tiledata.color;
+				m_vb[vb_index + 11].pos = p2;	m_vb[vb_index + 11].uv = uv2;		m_vb[vb_index + 11].color = tiledata.color;
+				break;
+			}
+			case Tilemap::TILE_LEFT:
+			{
+				/*
+				     /|
+				    / |
+			       |  |
+			       |  |
+			        \ |
+			         \|
+				*/
+
+				m_vb[vb_index + 0].pos = p1;	m_vb[vb_index + 0].uv = uv1;		m_vb[vb_index + 0].color = tiledata.color;
+				m_vb[vb_index + 1].pos = p6;	m_vb[vb_index + 1].uv = uv6;		m_vb[vb_index + 1].color = tiledata.color;
+				m_vb[vb_index + 2].pos = p3;	m_vb[vb_index + 2].uv = uv3;		m_vb[vb_index + 2].color = tiledata.color;
+
+				m_vb[vb_index + 3].pos = p1;	m_vb[vb_index + 3].uv = uv1;		m_vb[vb_index + 3].color = tiledata.color;
+				m_vb[vb_index + 4].pos = p3;	m_vb[vb_index + 4].uv = uv3;		m_vb[vb_index + 4].color = tiledata.color;
+				m_vb[vb_index + 5].pos = p2;	m_vb[vb_index + 5].uv = uv2;		m_vb[vb_index + 5].color = tiledata.color;
+
+				// degen
+				m_vb[vb_index + 6].pos = p2;	m_vb[vb_index + 6].uv = uv2;		m_vb[vb_index + 6].color = tiledata.color;
+				m_vb[vb_index + 7].pos = p2;	m_vb[vb_index + 7].uv = uv2;		m_vb[vb_index + 7].color = tiledata.color;
+				m_vb[vb_index + 8].pos = p2;	m_vb[vb_index + 8].uv = uv2;		m_vb[vb_index + 8].color = tiledata.color;
+				m_vb[vb_index + 9].pos = p2;	m_vb[vb_index + 9].uv = uv2;		m_vb[vb_index + 9].color = tiledata.color;
+				m_vb[vb_index + 10].pos = p2;	m_vb[vb_index + 10].uv = uv2;		m_vb[vb_index + 10].color = tiledata.color;
+				m_vb[vb_index + 11].pos = p2;	m_vb[vb_index + 11].uv = uv2;		m_vb[vb_index + 11].color = tiledata.color;
+
+				break;
+			}
+			case Tilemap::TILE_RIGHT:
+			{
+				/*
+				    |\
+				    | \
+			        |  |
+			        |  |
+			        | /
+			        |/
+				*/
+
+				m_vb[vb_index + 0].pos = p6;	m_vb[vb_index + 0].uv = uv6;		m_vb[vb_index + 0].color = tiledata.color;
+				m_vb[vb_index + 1].pos = p5;	m_vb[vb_index + 1].uv = uv5;		m_vb[vb_index + 1].color = tiledata.color;
+				m_vb[vb_index + 2].pos = p4;	m_vb[vb_index + 2].uv = uv4;		m_vb[vb_index + 2].color = tiledata.color;
+
+				m_vb[vb_index + 3].pos = p6;	m_vb[vb_index + 3].uv = uv6;		m_vb[vb_index + 3].color = tiledata.color;
+				m_vb[vb_index + 4].pos = p4;	m_vb[vb_index + 4].uv = uv4;		m_vb[vb_index + 4].color = tiledata.color;
+				m_vb[vb_index + 5].pos = p3;	m_vb[vb_index + 5].uv = uv3;		m_vb[vb_index + 5].color = tiledata.color;
+
+				// degen
+				m_vb[vb_index + 6].pos = p3;	m_vb[vb_index + 6].uv = uv3;		m_vb[vb_index + 6].color = tiledata.color;
+				m_vb[vb_index + 7].pos = p3;	m_vb[vb_index + 7].uv = uv3;		m_vb[vb_index + 7].color = tiledata.color;
+				m_vb[vb_index + 8].pos = p3;	m_vb[vb_index + 8].uv = uv3;		m_vb[vb_index + 8].color = tiledata.color;
+				m_vb[vb_index + 9].pos = p3;	m_vb[vb_index + 9].uv = uv3;		m_vb[vb_index + 9].color = tiledata.color;
+				m_vb[vb_index + 10].pos = p3;	m_vb[vb_index + 10].uv = uv3;		m_vb[vb_index + 10].color = tiledata.color;
+				m_vb[vb_index + 11].pos = p3;	m_vb[vb_index + 11].uv = uv3;		m_vb[vb_index + 11].color = tiledata.color;
+				break;
+			}
+			case Tilemap::TILE_TOP:
+			{
+				/* 
+			        /\
+			       /__\
+				*/
+
+				m_vb[vb_index + 0].pos = p1;	m_vb[vb_index + 0].uv = uv1;		m_vb[vb_index + 0].color = tiledata.color;
+				m_vb[vb_index + 1].pos = p6;	m_vb[vb_index + 1].uv = uv6;		m_vb[vb_index + 1].color = tiledata.color;
+				m_vb[vb_index + 2].pos = p5;	m_vb[vb_index + 2].uv = uv5;		m_vb[vb_index + 2].color = tiledata.color;
+
+				// degen
+				m_vb[vb_index + 3].pos = p5;	m_vb[vb_index + 3].uv = uv5;		m_vb[vb_index + 3].color = tiledata.color;
+				m_vb[vb_index + 4].pos = p5;	m_vb[vb_index + 4].uv = uv5;		m_vb[vb_index + 4].color = tiledata.color;
+				m_vb[vb_index + 5].pos = p5;	m_vb[vb_index + 5].uv = uv5;		m_vb[vb_index + 5].color = tiledata.color;
+				m_vb[vb_index + 6].pos = p5;	m_vb[vb_index + 6].uv = uv5;		m_vb[vb_index + 6].color = tiledata.color;
+				m_vb[vb_index + 7].pos = p5;	m_vb[vb_index + 7].uv = uv5;		m_vb[vb_index + 7].color = tiledata.color;
+				m_vb[vb_index + 8].pos = p5;	m_vb[vb_index + 8].uv = uv5;		m_vb[vb_index + 8].color = tiledata.color;
+				m_vb[vb_index + 9].pos = p5;	m_vb[vb_index + 9].uv = uv5;		m_vb[vb_index + 9].color = tiledata.color;
+				m_vb[vb_index + 10].pos = p5;	m_vb[vb_index + 10].uv = uv5;		m_vb[vb_index + 10].color = tiledata.color;
+				m_vb[vb_index + 11].pos = p5;	m_vb[vb_index + 11].uv = uv5;		m_vb[vb_index + 11].color = tiledata.color;
+				break;
+			}
+			case Tilemap::TILE_BOTTOM:
+			{
+				/* ____
+				   \  /
+			        \/
+				*/
+
+				m_vb[vb_index + 0].pos = p2;	m_vb[vb_index + 0].uv = uv2;		m_vb[vb_index + 0].color = tiledata.color;
+				m_vb[vb_index + 1].pos = p4;	m_vb[vb_index + 1].uv = uv4;		m_vb[vb_index + 1].color = tiledata.color;
+				m_vb[vb_index + 2].pos = p3;	m_vb[vb_index + 2].uv = uv3;		m_vb[vb_index + 2].color = tiledata.color;
+
+				// degen
+				m_vb[vb_index + 3].pos = p3;	m_vb[vb_index + 3].uv = uv3;		m_vb[vb_index + 3].color = tiledata.color;
+				m_vb[vb_index + 4].pos = p3;	m_vb[vb_index + 4].uv = uv3;		m_vb[vb_index + 4].color = tiledata.color;
+				m_vb[vb_index + 5].pos = p3;	m_vb[vb_index + 5].uv = uv3;		m_vb[vb_index + 5].color = tiledata.color;
+				m_vb[vb_index + 6].pos = p3;	m_vb[vb_index + 6].uv = uv3;		m_vb[vb_index + 6].color = tiledata.color;
+				m_vb[vb_index + 7].pos = p3;	m_vb[vb_index + 7].uv = uv3;		m_vb[vb_index + 7].color = tiledata.color;
+				m_vb[vb_index + 8].pos = p3;	m_vb[vb_index + 8].uv = uv3;		m_vb[vb_index + 8].color = tiledata.color;
+				m_vb[vb_index + 9].pos = p3;	m_vb[vb_index + 9].uv = uv3;		m_vb[vb_index + 9].color = tiledata.color;
+				m_vb[vb_index + 10].pos = p3;	m_vb[vb_index + 10].uv = uv3;		m_vb[vb_index + 10].color = tiledata.color;
+				m_vb[vb_index + 11].pos = p3;	m_vb[vb_index + 11].uv = uv3;		m_vb[vb_index + 11].color = tiledata.color;
+				break;
+			}
+			case Tilemap::TILE_MID:
+			{
+				/*______
+			      |    |
+			      |____|
+				*/
+
+				m_vb[vb_index + 0].pos = p1;	m_vb[vb_index + 0].uv = uv1;		m_vb[vb_index + 0].color = tiledata.color;
+				m_vb[vb_index + 1].pos = p5;	m_vb[vb_index + 1].uv = uv5;		m_vb[vb_index + 1].color = tiledata.color;
+				m_vb[vb_index + 2].pos = p4;	m_vb[vb_index + 2].uv = uv4;		m_vb[vb_index + 2].color = tiledata.color;
+				
+				m_vb[vb_index + 3].pos = p1;	m_vb[vb_index + 3].uv = uv1;		m_vb[vb_index + 3].color = tiledata.color;
+				m_vb[vb_index + 4].pos = p4;	m_vb[vb_index + 4].uv = uv4;		m_vb[vb_index + 4].color = tiledata.color;
+				m_vb[vb_index + 5].pos = p2;	m_vb[vb_index + 5].uv = uv2;		m_vb[vb_index + 5].color = tiledata.color;
+				
+				// degen
+				m_vb[vb_index + 6].pos = p2;	m_vb[vb_index + 6].uv = uv2;		m_vb[vb_index + 6].color = tiledata.color;
+				m_vb[vb_index + 7].pos = p2;	m_vb[vb_index + 7].uv = uv2;		m_vb[vb_index + 7].color = tiledata.color;
+				m_vb[vb_index + 8].pos = p2;	m_vb[vb_index + 8].uv = uv2;		m_vb[vb_index + 8].color = tiledata.color;
+				m_vb[vb_index + 9].pos = p2;	m_vb[vb_index + 9].uv = uv2;		m_vb[vb_index + 9].color = tiledata.color;
+				m_vb[vb_index + 10].pos = p2;	m_vb[vb_index + 10].uv = uv2;		m_vb[vb_index + 10].color = tiledata.color;
+				m_vb[vb_index + 11].pos = p2;	m_vb[vb_index + 11].uv = uv2;		m_vb[vb_index + 11].color = tiledata.color;
+				break;
+			}
+
+			default:
+			{
+				// make degen geo
+				for (int i = 0; i < num_verts; i++)
+				{
+					m_vb[vb_index + i].pos = glm::vec3(0, 0, 0);
+					m_vb[vb_index + i].uv = glm::vec2(0, 0);
+					m_vb[vb_index + i].color = 0;
+				}
+				break;
+			}
+		}
 	}
 }
 
@@ -288,7 +443,7 @@ const Tilemap::Config& Tilemap::getConfig()
 }
 
 
-int Tilemap::insertTile(std::string name, glm::vec2* points, unsigned int color)
+int Tilemap::insertTile(std::string name, glm::vec2* points, unsigned int color, Tilemap::TileType type)
 {
 	Tile tile;
 	for (int i=0; i < 4; i++)
@@ -300,6 +455,7 @@ int Tilemap::insertTile(std::string name, glm::vec2* points, unsigned int color)
 	m_cumulative_tile_id++;
 
 	tile.color = color;
+	tile.type = type;
 
 	m_tiles.push_back(tile);
 	return tile.id;

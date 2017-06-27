@@ -25,14 +25,27 @@ public:
 		float tile_height;
 	};
 
+	enum TileType
+	{
+		TILE_FULL = 0,
+		TILE_LEFT = 1,
+		TILE_RIGHT = 2,
+		TILE_TOP = 3,
+		TILE_BOTTOM = 4,
+		TILE_MID = 5,
+		TILE_TOPBOT = 6,
+	};
+
 	struct Tile
 	{
 		glm::vec2 points[4];
 		std::string name;
 		unsigned int color;
 		int id;
-		int type;
+		Tilemap::TileType type;
 	};
+
+
 
 	Tilemap();
 	~Tilemap();
@@ -46,7 +59,7 @@ public:
 	void edit(int x, int y, int tile);
 	void tesselateAll();
 	const Tilemap::Config& getConfig();
-	int insertTile(std::string name, glm::vec2* points, unsigned int color);
+	int insertTile(std::string name, glm::vec2* points, unsigned int color, Tilemap::TileType type);
 	bool removeTile(int id);
 	void removeTiles();
 	int getNumTiles();

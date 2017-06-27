@@ -684,10 +684,10 @@ const Tilemap::Config& Level::getTilemapConfig()
 }
 
 
-int Level::insertTile(std::string name, glm::vec2* points, unsigned int color)
+int Level::insertTile(std::string name, glm::vec2* points, unsigned int color, Tilemap::TileType type)
 {
 	setModified();
-	return m_tilemap->insertTile(name, points, color);
+	return m_tilemap->insertTile(name, points, color, type);
 }
 
 void Level::removeTile(int id)

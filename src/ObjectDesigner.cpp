@@ -414,7 +414,7 @@ void ObjectDesignerWidget::insertTile(QString& name)
 			npoints[i] = p;
 		}
 
-		int id = m_level->insertTile(name.toStdString(), npoints, m_color);
+		int id = m_level->insertTile(name.toStdString(), npoints, m_color, Tilemap::TILE_MID);
 		emit onInsertTile(id);
 
 		m_polydef->reset();

@@ -1369,7 +1369,9 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 
 			unsigned int tile_color = input.read_dword();
 
-			int id = m_level->insertTile(tile_name.toStdString(), pps, tile_color);
+			unsigned int tile_type = input.read_dword();
+
+			int id = m_level->insertTile(tile_name.toStdString(), pps, tile_color, (Tilemap::TileType)tile_type);
 			emit m_tileset_window->add(id);
 		}
 
