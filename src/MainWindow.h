@@ -113,7 +113,8 @@ private:
 	QAction* m_toggle_visbox;
 	QAction* m_visbox_conf_action;
 
-	QAction* m_tilemap_widget_action;
+	QAction* m_tilemap_enlarge_action;
+	QAction* m_tilemap_shrink_action;
 
 	QAction* m_edgify_action;
 
@@ -160,7 +161,7 @@ private:
 	QColor m_object_color;
 
 	bool m_enable_tilemap_widget;
-	TilemapWidget* m_tilemap_widget;
+	TilemapEnlarge* m_tilemap_enlarge;
 
 	TilesetWindow* m_tileset_window;
 
@@ -204,7 +205,7 @@ private slots:
 	void toggleVisbox();
 	void visboxConfig();
 
-	void tilemapConfig();
+	void tilemapEnlarge();
 
 	void setZoomLevel(int zoom);
 	void zoomIn();
@@ -217,7 +218,7 @@ private slots:
 
 	void setBGColor();
 
-	void tilemapConfigChange();
+	void tilemapEnlarged();
 
 	void levelConfig();
 

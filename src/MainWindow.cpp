@@ -28,10 +28,8 @@ MainWindow::MainWindow()
 
 	m_visbox_conf = new VisboxConf(this);
 
-	m_tilemap_widget = new TilemapWidget(this, m_level);
-	m_tilemap_widget->setValues(0, 50, 0, 50);
-	m_tilemap_widget->setTileWidth(1.0f);
-	m_tilemap_widget->setTileHeight(1.0f);
+	m_tilemap_enlarge = new TilemapEnlarge(this, m_level);
+	m_tilemap_enlarge->setValues(0, 0, 0, 0);
 
 	m_tileset_window = new TilesetWindow(this, m_level, m_texture);
 
@@ -108,7 +106,7 @@ MainWindow::MainWindow()
 	connect(m_objfilter, SIGNAL(onDisplayEnable(int)), m_glwidget, SLOT(enableDisplays(int)));
 	connect(m_objfilter, SIGNAL(onDisplayDisable(int)), m_glwidget, SLOT(disableDisplays(int)));
 
-	connect(m_tilemap_widget, SIGNAL(onConfigChanged()), this, SLOT(tilemapConfigChange()));
+	connect(m_tilemap_enlarge, SIGNAL(onEnlarge()), this, SLOT(tilemapEnlarged()));
 
 	connect(m_objdesigner, SIGNAL(onInsertTile(int)), m_tileset_window, SLOT(add(int)));
 
@@ -216,11 +214,8 @@ MainWindow::MainWindow()
 	float tw = 1.0f;
 	float th = 1.2f;
 
-	m_tilemap_widget->setValues(xs, xe, ys, ye);
-	m_tilemap_widget->setTileWidth(tw);
-	m_tilemap_widget->setTileHeight(th);
-	emit m_glwidget->setTilemapConfig(xs, xe, ys, ye, tw, th);
-	m_level->resizeTilemap(xs, xe, ys, ye, tw, th);
+	m_tilemap_enlarge->setValues(0, 0, 0, 0);
+	emit m_glwidget->setTilemapConfig(m_level->getTilemapWidth(), m_level->getTilemapHeight());
 }
 
 MainWindow::~MainWindow(void)
@@ -635,14 +630,15 @@ void MainWindow::visboxConfig()
 	}
 }
 
-void MainWindow::tilemapConfig()
+void MainWindow::tilemapEnlarge()
 {
-	if (m_tilemap_widget->exec() == QDialog::Accepted)
+	m_tilemap_enlarge->setValues(0, 0, 0, 0);
+	if (m_tilemap_enlarge->exec() == QDialog::Accepted)
 	{
-		int xstart = m_tilemap_widget->getXStart();
-		int xend = m_tilemap_widget->getXEnd();
-		int ystart = m_tilemap_widget->getYStart();
-		int yend = m_tilemap_widget->getYEnd();
+		int xleft = m_tilemap_enlarge->getXLeft();
+		int xright = m_tilemap_enlarge->getXRight();
+		int ytop = m_tilemap_enlarge->getYTop();
+		int ybottom = m_tilemap_enlarge->getYBottom();
 	}
 }
 
@@ -715,18 +711,18 @@ void MainWindow::setBGColor()
 }
 
 
-void MainWindow::tilemapConfigChange()
+void MainWindow::tilemapEnlarged()
 {
-	int xstart = m_tilemap_widget->getXStart();
-	int xend = m_tilemap_widget->getXEnd();
-	int ystart = m_tilemap_widget->getYStart();
-	int yend = m_tilemap_widget->getYEnd();
+	int xleft = m_tilemap_enlarge->getXLeft();
+	int xright = m_tilemap_enlarge->getXRight();
+	int ytop = m_tilemap_enlarge->getYTop();
+	int ybottom = m_tilemap_enlarge->getYBottom();
 
-	float tile_width = m_tilemap_widget->getTileWidth();
-	float tile_height = m_tilemap_widget->getTileHeight();
+	int w = m_level->getTilemapWidth() + xleft + xright;
+	int h = m_level->getTilemapHeight() + ytop + ybottom;
 
-	emit m_glwidget->setTilemapConfig(xstart, xend, ystart, yend, tile_width, tile_height);
-	m_level->resizeTilemap(xstart, xend, ystart, yend, tile_width, tile_height);
+	emit m_glwidget->setTilemapConfig(w, h);
+	m_level->enlargeTilemap(xleft, xright, ytop, ybottom);
 }
 
 
@@ -747,6 +743,17 @@ void MainWindow::setColor()
 void MainWindow::edgify()
 {
 	FILE *fout = fopen("edgifylog.txt", "wt");
+
+	const Tilemap::Config config = m_level->getTilemapConfig();
+
+	for (int y = config.ystart; y < config.yend; y++)
+	{
+		for (int x = config.xstart; x < config.xend; x++)
+		{
+
+
+		}
+	}
 
 	fclose(fout);
 }
@@ -924,8 +931,11 @@ void MainWindow::createActions()
 
 
 	// tilemap settings
-	m_tilemap_widget_action = new QAction(QIcon("texture.png"), tr("Tilemap Settings"), this);
-	connect(m_tilemap_widget_action, SIGNAL(triggered()), this, SLOT(tilemapConfig()));
+	m_tilemap_enlarge_action = new QAction(QIcon("polyplus.png"), tr("Tilemap Enlarge"), this);
+	connect(m_tilemap_enlarge_action, SIGNAL(triggered()), this, SLOT(tilemapEnlarge()));
+
+	m_tilemap_shrink_action = new QAction(QIcon("polyminus.png"), tr("Tilemap Shrink"), this);
+	connect(m_tilemap_shrink_action, SIGNAL(triggered()), this, SLOT(tilemapShrink()));
 
 
 	// edgify
@@ -1054,7 +1064,8 @@ void MainWindow::createToolbars()
 	m_editor_toolbar->addAction(m_toggle_objfilter);
 	m_editor_toolbar->addAction(m_toggle_objdesigner);
 	m_editor_toolbar->addAction(m_toggle_tileset_window);
-	m_editor_toolbar->addAction(m_tilemap_widget_action);
+	m_editor_toolbar->addAction(m_tilemap_enlarge_action);
+	m_editor_toolbar->addAction(m_tilemap_shrink_action);
 
 	m_visbox_toolbar = addToolBar("Visualization Box");
 	m_visbox_toolbar->addAction(m_toggle_visbox);
@@ -1377,19 +1388,15 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 
 		// ----------------
 
-		int tilemap_xstart = input.read_dword();
-		int tilemap_xend = input.read_dword();
-		int tilemap_ystart = input.read_dword();
-		int tilemap_yend = input.read_dword();
-		int tilemap_tile_width = input.read_float();
-		int tilemap_tile_height = input.read_float();
+		int tilemap_width = input.read_dword();
+		int tilemap_height = input.read_dword();
 
-		emit m_glwidget->setTilemapConfig(tilemap_xstart, tilemap_xend, tilemap_ystart, tilemap_yend, tilemap_tile_width, tilemap_tile_height);
-		m_level->resizeTilemap(tilemap_xstart, tilemap_xend, tilemap_ystart, tilemap_yend, tilemap_tile_width, tilemap_tile_height);
+		emit m_glwidget->setTilemapConfig(tilemap_width, tilemap_height);
+		m_level->setTilemapSize(tilemap_width, tilemap_height);
 
-		for (int y=tilemap_ystart; y < tilemap_yend; y++)
+		for (int y=0; y < tilemap_height; y++)
 		{
-			for (int x=tilemap_xstart; x < tilemap_xend; x++)
+			for (int x=0; x < tilemap_width; x++)
 			{
 				int data = input.read_dword();
 				m_level->editTilemap(x, y, data);

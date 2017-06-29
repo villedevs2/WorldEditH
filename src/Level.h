@@ -120,9 +120,12 @@ public:
 	int getNumTriggers();
 
 
-	void resizeTilemap(int xstart, int xend, int ystart, int yend, float tile_width, float tile_height);
+	void setTilemapSize(int width, int height);
+	void enlargeTilemap(int xleft, int xright, int ytop, int ybottom);
 	int readTilemap(int x, int y);
-	void editTilemap(int x, int y, int tile);	
+	void editTilemap(int x, int y, int tile);
+	int getTilemapWidth();
+	int getTilemapHeight();
 	float* getTilemapVBO();
 	int numTilemapTris();
 	const Tilemap::Config& getTilemapConfig();

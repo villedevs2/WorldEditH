@@ -7,26 +7,22 @@
 
 #include "Level.h"
 
-class TilemapWidget : public QDialog
+class TilemapEnlarge : public QDialog
 {
 	Q_OBJECT
 
 public:
-	TilemapWidget(QWidget* parent, Level*  level);
-	~TilemapWidget();
+	TilemapEnlarge(QWidget* parent, Level*  level);
+	~TilemapEnlarge();
 
-	int getXStart();
-	int getXEnd();
-	int getYStart();
-	int getYEnd();
+	int getXLeft();
+	int getXRight();
+	int getYTop();
+	int getYBottom();
 	void setValues(int xstart, int xend, int ystart, int yend);
-	float getTileWidth();
-	void setTileWidth(float width);
-	float getTileHeight();
-	void setTileHeight(float height);
 
 signals:
-	void onConfigChanged();
+	void onEnlarge();
 
 private slots:
 	void configAccept();
@@ -36,12 +32,10 @@ private:
 
 	QFormLayout* m_layout;
 
-	QSpinBox* m_xstart;
-	QSpinBox* m_xend;
-	QSpinBox* m_ystart;
-	QSpinBox* m_yend;
-	QDoubleSpinBox* m_tile_width;
-	QDoubleSpinBox* m_tile_height;
+	QSpinBox* m_xleft;
+	QSpinBox* m_xright;
+	QSpinBox* m_ytop;
+	QSpinBox* m_ybottom;
 
 	QDialogButtonBox* m_button_box;
 };

@@ -3,11 +3,7 @@
 Tilemap::Tilemap()
 {
 	m_vb = NULL;
-
-	m_x = 0;
-	m_y = 0;
-	m_width = 50;
-	m_height = 50;
+	m_map = NULL;
 
 	m_config.xstart = 0;
 	m_config.xend = 50;
@@ -16,10 +12,7 @@ Tilemap::Tilemap()
 	m_config.tile_width = 1.0f;
 	m_config.tile_height = 1.2f;
 
-	m_map = new int[50 * 50];
-	memset(m_map, -1, sizeof(int) * 50 * 50);
-
-	resize(m_config);
+	resize(50, 50);
 
 	m_cumulative_tile_id = 1;
 }
@@ -40,89 +33,67 @@ void Tilemap::reset()
 	tesselateAll();
 }
 
-bool Tilemap::resize(const Tilemap::Config& config)
+int Tilemap::getWidth()
 {
-	return resize(config.xstart, config.ystart, config.xend, config.yend, config.tile_width, config.tile_height);
+	return m_width;
 }
 
-bool Tilemap::resize(int x1, int y1, int x2, int y2, float tile_width, float tile_height)
+int Tilemap::getHeight()
 {
-	int new_width = x2 - x1;
-	int new_height = y2 - y1;
-	int new_x = x1;
-	int new_y = y1;
+	return m_height;
+}
 
+void Tilemap::resize(int width, int height)
+{
+	if (m_map != NULL)
+		delete[] m_map;
 
-	if (m_x != x1 || m_y != y1 || m_width != new_width || m_height != new_height)
+	m_map = new int[width * height];
+
+	memset(m_map, -1, sizeof(int) * width * height);
+
+	m_width = width;
+	m_height = height;
+
+	if (m_vb != NULL)
 	{
-		int* new_map = new int[new_width * new_height];
-
-		
-
-		memset(new_map, -1, sizeof(int) * new_width * new_height);
-
-		// copy old data
-		int sx_offset, sy_offset;
-		int sx, sy, dx, dy;
-		int copy_width, copy_height;
-
-		if (x1 <= m_x)
-		{
-			sx = 0;
-			dx = m_x - x1;
-		}
-		else
-		{
-			sx = -(m_x - x1);
-			dx = 0;
-		}
-
-		if (y1 <= m_y)
-		{
-			sy = 0;
-			dy = m_y - y1;
-		}
-		else
-		{
-			sy = -(m_y - y1);
-			dy = 0;
-		}
-
-		if (new_width > m_width)
-			copy_width = m_width - sx;		
-		else
-			copy_width = new_width - sx;
-		
-		if (new_height > m_height)
-			copy_height = m_height - sy;
-		else
-			copy_height = new_height - sy;
-
-		for (int j=0; j < copy_height; j++)
-		{
-			for (int i=0; i < copy_width; i++)
-			{
-				int si = i + sx;
-				int sj = j + sy;
-				int di = i + dx;
-				int dj = j + dy;
-
-				new_map[(dj * new_width) + di] = m_map[(sj * m_width) + si];
-			}
-		}
-
-		delete [] m_map;
-
-		m_map = new_map;
+		delete[] m_vb;
+		m_vb = NULL;
 	}
 
-	m_x = new_x;
-	m_y = new_y;
+	m_vb = new VBO[width * height * 12];
+}
+
+bool Tilemap::enlarge(int xleft, int xright, int ytop, int ybottom)
+{
+	int new_width = m_width + xleft + xright;
+	int new_height = m_height + ytop + ybottom;
+
+	if (xleft == 0 && xright == 0 && ytop == 0 && ybottom == 0)
+		return false;
+
+	int* new_map = new int[new_width * new_height];
+
+	memset(new_map, -1, sizeof(int) * new_width * new_height);
+
+	// copy old data
+	for (int j=0; j < m_height; j++)
+	{
+		for (int i=0; i < m_width; i++)
+		{
+			int di = i + xleft;
+			int dj = j + ytop;
+
+			new_map[(dj * new_width) + di] = m_map[(j * m_width) + i];
+		}
+	}
+
+	delete [] m_map;
+
+	m_map = new_map;
+
 	m_width = new_width;
 	m_height = new_height;
-
-	m_tile_width = tile_width;
-	m_tile_height = tile_height;
 
 	if (m_vb != NULL)
 	{
@@ -134,13 +105,6 @@ bool Tilemap::resize(int x1, int y1, int x2, int y2, float tile_width, float til
 
 	tesselateAll();
 
-	m_config.xstart = x1;
-	m_config.xend = x2;
-	m_config.ystart = y1;
-	m_config.yend = y2;
-	m_config.tile_width = tile_width;
-	m_config.tile_height = tile_height;
-
 	return true;
 }
 
@@ -150,12 +114,13 @@ void Tilemap::tesselateAll()
 	{
 		for (int i=0; i < m_width; i++)
 		{
-			tesselateTile(i, j);
+			bool odd = j & 1;
+			tesselateTile(i, j, odd);
 		}
 	}
 }
 
-void Tilemap::tesselateTile(int x, int y)
+void Tilemap::tesselateTile(int x, int y, bool odd)
 {
 	const int num_verts = 3 * 4;
 
@@ -166,12 +131,12 @@ void Tilemap::tesselateTile(int x, int y)
 
 	int vb_index = ((y * m_width) + x) * num_verts;
 
-	float tx1 = (float)(x + m_x) * m_tile_width;
+	float tx1 = (float)(x) * m_tile_width;
 	float tx2 = tx1 + m_tile_width;
-	float ty1 = (float)(y + m_y) * (m_tile_height / 2);
+	float ty1 = (float)(y) * (m_tile_height / 2);
 	float ty2 = ty1 + (m_tile_height / 2);
 
-	if (y & 1)
+	if (odd)
 	{
 		tx1 += m_tile_width / 2;
 		tx2 += m_tile_width / 2;
@@ -415,26 +380,21 @@ int Tilemap::numTris()
 
 int Tilemap::get(int x, int y)
 {
-	int tx = x - m_x;
-	int ty = y - m_y;
+	assert(x >= 0 && x < m_width);
+	assert(y >= 0 && y < m_height);
 
-	assert(tx >= 0 && tx < m_width);
-	assert(ty >= 0 && ty < m_height);
-
-	return m_map[(ty * m_width) + tx];
+	return m_map[(y * m_width) + x];
 }
 
 void Tilemap::edit(int x, int y, int tile)
 {
-	int tx = x - m_x;
-	int ty = y - m_y;
+	assert(x >= 0 && x < m_width);
+	assert(y >= 0 && y < m_height);
 
-	assert(tx >= 0 && tx < m_width);
-	assert(ty >= 0 && ty < m_height);
+	m_map[(y * m_width) + x] = tile;
 
-	m_map[(ty * m_width) + tx] = tile;
-
-	tesselateTile(tx, ty);
+	bool odd = y & 1;
+	tesselateTile(x, y, odd);
 }
 
 const Tilemap::Config& Tilemap::getConfig()

@@ -50,8 +50,8 @@ public:
 	Tilemap();
 	~Tilemap();
 
-	bool resize(int x1, int y1, int x2, int y2, float tile_width, float tile_height);
-	bool resize(const Tilemap::Config& config);
+	bool enlarge(int xleft, int xright, int ytop, int ybottom);
+	void resize(int width, int height);
 	void reset();
 	float* getVBO();
 	int numTris();
@@ -66,12 +66,12 @@ public:
 	const Tilemap::Tile& getTile(int index);
 	const Tilemap::Tile* getTileById(int id);
 	int getTileIndexById(int id);
+	int getWidth();
+	int getHeight();
 
 private:
-	void tesselateTile(int x, int y);
+	void tesselateTile(int x, int y, bool odd);
 
-	int m_x;
-	int m_y;
 	int m_width;
 	int m_height;
 

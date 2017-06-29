@@ -80,7 +80,7 @@ public slots:
 	void enableDisplays(int filter);
 	void disableDisplays(int filter);
 	void setBGColor(QColor color);
-	void setTilemapConfig(int xstart, int xend, int ystart, int yend, float tile_width, float tile_height);
+	void setTilemapConfig(int width, int height);
 	void setTileBrush(int tile);
 	void setObjectColor(QColor color);
 
@@ -188,12 +188,8 @@ private:
 	int m_display_filter;
 
 	// tilemap stuff
-	float m_tilemap_width;
-	float m_tilemap_height;
-	int m_tilemap_xstart;
-	int m_tilemap_xend;
-	int m_tilemap_ystart;
-	int m_tilemap_yend;
+	float m_tile_width;
+	float m_tile_height;
 
 	bool m_tilemap_painting;
 	int m_tile_brush;		// currently selected "brush"

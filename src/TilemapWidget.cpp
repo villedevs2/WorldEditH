@@ -1,52 +1,38 @@
 #include "TilemapWidget.h"
 
-TilemapWidget::TilemapWidget(QWidget* parent, Level* level) : QDialog(parent, 0)
+TilemapEnlarge::TilemapEnlarge(QWidget* parent, Level* level) : QDialog(parent, 0)
 {
 	m_level = level;
 
 	setMinimumWidth(300);
 	setMinimumHeight(88);	
 
-	m_xstart = new QSpinBox(this);
-	m_xstart->setRange(-10000,10000);
-	m_xstart->setSingleStep(1);
-	//m_xstart->setMaximumWidth(80);
+	m_xleft = new QSpinBox(this);
+	m_xleft->setRange(0,10000);
+	m_xleft->setSingleStep(1);
 
-	m_xend = new QSpinBox(this);
-	m_xend->setRange(-10000,10000);
-	m_xend->setSingleStep(1);
-	//m_xend->setMaximumWidth(80);
+	m_xright = new QSpinBox(this);
+	m_xright->setRange(0,10000);
+	m_xright->setSingleStep(1);
 
-	m_ystart = new QSpinBox(this);
-	m_ystart->setRange(-10000,10000);
-	m_ystart->setSingleStep(1);
-	//m_ystart->setMaximumWidth(80);
+	m_ytop = new QSpinBox(this);
+	m_ytop->setRange(0,10000);
+	m_ytop->setSingleStep(1);
 
-	m_yend = new QSpinBox(this);
-	m_yend->setRange(-10000,10000);
-	m_yend->setSingleStep(1);
-	//m_yend->setMaximumWidth(80);
-
-	m_tile_width = new QDoubleSpinBox(this);
-	m_tile_width->setRange(0.1, 100.0);
-	m_tile_width->setSingleStep(0.1);
-
-	m_tile_height = new QDoubleSpinBox(this);
-	m_tile_height->setRange(0.1, 100.0);
-	m_tile_height->setSingleStep(0.1);
+	m_ybottom = new QSpinBox(this);
+	m_ybottom->setRange(0,10000);
+	m_ybottom->setSingleStep(1);
 
 	m_button_box = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, this);
 
 	m_layout = new QFormLayout(this);
-	m_layout->addRow(QString("X Start:"), m_xstart);
-	m_layout->addRow(QString("X End:"), m_xend);
-	m_layout->addRow(QString("Y Start:"), m_ystart);
-	m_layout->addRow(QString("Y End:"), m_yend);
-	m_layout->addRow(QString("Tile width:"), m_tile_width);
-	m_layout->addRow(QString("Tile heighy:"), m_tile_height);
+	m_layout->addRow(QString("X Left:"), m_xleft);
+	m_layout->addRow(QString("X Right:"), m_xright);
+	m_layout->addRow(QString("Y Left:"), m_ytop);
+	m_layout->addRow(QString("Y Right:"), m_ybottom);
 	m_layout->addRow(m_button_box);
 
-	setWindowTitle(QString("Tilemap Settings"));
+	setWindowTitle(QString("Enlarge Tilemap"));
 
 	connect(m_button_box, SIGNAL(accepted()), this, SLOT(accept()));
 	connect(m_button_box, SIGNAL(accepted()), this, SLOT(configAccept()));
@@ -60,61 +46,41 @@ TilemapWidget::TilemapWidget(QWidget* parent, Level* level) : QDialog(parent, 0)
 	*/
 }
 
-TilemapWidget::~TilemapWidget()
+TilemapEnlarge::~TilemapEnlarge()
 {
 }
 
 
-void TilemapWidget::configAccept()
+void TilemapEnlarge::configAccept()
 {
-	emit onConfigChanged();
+	emit onEnlarge();
 }
 
 
-int TilemapWidget::getXStart()
+int TilemapEnlarge::getXLeft()
 {
-	return m_xstart->value();
+	return m_xleft->value();
 }
 
-int TilemapWidget::getXEnd()
+int TilemapEnlarge::getXRight()
 {
-	return m_xend->value();
+	return m_xright->value();
 }
 
-int TilemapWidget::getYStart()
+int TilemapEnlarge::getYTop()
 {
-	return m_ystart->value();
+	return m_ytop->value();
 }
 
-int TilemapWidget::getYEnd()
+int TilemapEnlarge::getYBottom()
 {
-	return m_yend->value();
+	return m_ybottom->value();
 }
 
-void TilemapWidget::setValues(int xstart, int xend, int ystart, int yend)
+void TilemapEnlarge::setValues(int xleft, int xright, int ytop, int ybottom)
 {
-	m_xstart->setValue(xstart);
-	m_xend->setValue(xend);
-	m_ystart->setValue(ystart);
-	m_yend->setValue(yend);
-}
-
-float TilemapWidget::getTileWidth()
-{
-	return m_tile_width->value();
-}
-
-void TilemapWidget::setTileWidth(float width)
-{
-	m_tile_width->setValue(width);
-}
-
-float TilemapWidget::getTileHeight()
-{
-	return m_tile_height->value();
-}
-
-void TilemapWidget::setTileHeight(float height)
-{
-	m_tile_height->setValue(height);
+	m_xleft->setValue(xleft);
+	m_xright->setValue(xright);
+	m_ytop->setValue(ytop);
+	m_ybottom->setValue(ybottom);
 }

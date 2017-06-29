@@ -650,10 +650,25 @@ int Level::getNumTriggers()
 	return (int)m_trigger_list.size();
 }
 
-
-void Level::resizeTilemap(int xstart, int xend, int ystart, int yend, float tile_width, float tile_height)
+int Level::getTilemapWidth()
 {
-	m_tilemap->resize(xstart, ystart, xend, yend, tile_width, tile_height);
+	return m_tilemap->getWidth();
+}
+
+int Level::getTilemapHeight()
+
+{
+	return m_tilemap->getHeight();
+}
+
+void Level::setTilemapSize(int width, int height)
+{
+	m_tilemap->resize(width, height);
+}
+
+void Level::enlargeTilemap(int xleft, int xright, int ytop, int ybottom)
+{
+	m_tilemap->enlarge(xleft, xright, ytop, ybottom);
 	setModified();
 }
 
