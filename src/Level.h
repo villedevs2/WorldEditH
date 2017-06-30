@@ -127,6 +127,8 @@ public:
 	void editTilemap(int x, int y, int tile);
 	int getTilemapWidth();
 	int getTilemapHeight();
+	float getTileWidth();
+	float getTileHeight();
 	float* getTilemapVBO();
 	int numTilemapTris();
 	const Tilemap::Config& getTilemapConfig();
@@ -134,7 +136,7 @@ public:
 	void removeTile(int id);
 	void removeTiles();
 	int getNumTiles();
-	const Tilemap::Tile& getTile(int index);
+	const Tilemap::Tile* getTile(int index);
 	const Tilemap::Tile* getTileById(int id);
 	int getTileIndexById(int id);
 

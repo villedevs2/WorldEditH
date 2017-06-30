@@ -187,10 +187,6 @@ private:
 	int m_filter;
 	int m_display_filter;
 
-	// tilemap stuff
-	float m_tile_width;
-	float m_tile_height;
-
 	bool m_tilemap_painting;
 	int m_tile_brush;		// currently selected "brush"
 

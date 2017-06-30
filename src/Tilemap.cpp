@@ -13,7 +13,7 @@ Tilemap::Tilemap()
 	m_config.tile_height = 1.2f;
 
 	m_tile_width = 1.0f;
-	m_tile_height = 1.2f;
+	m_tile_height = 1.4f;
 
 	resize(50, 50);
 
@@ -44,6 +44,16 @@ int Tilemap::getWidth()
 int Tilemap::getHeight()
 {
 	return m_height;
+}
+
+float Tilemap::getTileWidth()
+{
+	return m_tile_width;
+}
+
+float Tilemap::getTileHeight()
+{
+	return m_tile_height;
 }
 
 void Tilemap::resize(int width, int height)
@@ -495,11 +505,11 @@ int Tilemap::getNumTiles()
 	return m_tiles.size();
 }
 
-const Tilemap::Tile& Tilemap::getTile(int index)
+const Tilemap::Tile* Tilemap::getTile(int index)
 {
 	assert(index >= 0 && index < m_tiles.size());
 
-	return m_tiles.at(index);
+	return &m_tiles.at(index);
 }
 
 const Tilemap::Tile* Tilemap::getTileById(int id)

@@ -661,6 +661,16 @@ int Level::getTilemapHeight()
 	return m_tilemap->getHeight();
 }
 
+float Level::getTileWidth()
+{
+	return m_tilemap->getTileWidth();
+}
+
+float Level::getTileHeight()
+{
+	return m_tilemap->getTileHeight();
+}
+
 void Level::setTilemapSize(int width, int height)
 {
 	m_tilemap->resize(width, height);
@@ -729,7 +739,7 @@ int Level::getNumTiles()
 	return m_tilemap->getNumTiles();
 }
 
-const Tilemap::Tile& Level::getTile(int index)
+const Tilemap::Tile* Level::getTile(int index)
 {
 	return m_tilemap->getTile(index);
 }

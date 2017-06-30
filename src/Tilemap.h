@@ -64,11 +64,13 @@ public:
 	bool removeTile(int id);
 	void removeTiles();
 	int getNumTiles();
-	const Tilemap::Tile& getTile(int index);
+	const Tilemap::Tile* getTile(int index);
 	const Tilemap::Tile* getTileById(int id);
 	int getTileIndexById(int id);
 	int getWidth();
 	int getHeight();
+	float getTileWidth();
+	float getTileHeight();
 
 private:
 	void tesselateTile(int x, int y, bool odd);

@@ -53,9 +53,6 @@ GLWidget::GLWidget(QWidget *parent, Level* level)
 	m_visbox_width = 32.0f;
 	m_visbox_height = 20.0f;
 
-	m_tile_width = 1.0f;
-	m_tile_height = 1.2f;
-
 	m_tile_selx = -1;
 	m_tile_sely = -1;
 
@@ -455,27 +452,30 @@ bool GLWidget::filterObject(Level::Object* obj)
 
 void GLWidget::tilemapDraw(glm::vec2 mouse_lp)
 {
-	float tx1 = (float)(0) * m_tile_width;
-	float ty1 = (float)(0) * (m_tile_height / 2);
-	float tx2 = (float)(m_level->getTilemapWidth()) * m_tile_width;
-	float ty2 = (float)(m_level->getTilemapHeight()) * (m_tile_height / 2);
+	float tile_width = m_level->getTileWidth();
+	float tile_height = m_level->getTileHeight();
+
+	float tx1 = (float)(0) * tile_width;
+	float ty1 = (float)(0) * (tile_height / 2);
+	float tx2 = (float)(m_level->getTilemapWidth()) * tile_width;
+	float ty2 = (float)(m_level->getTilemapHeight()) * (tile_height / 2);
 
 	if (mouse_lp.x >= tx1 && mouse_lp.x < tx2 &&
 		mouse_lp.y >= ty1 && mouse_lp.y < ty2)
 	{
 
-		int block_x = (int)(mouse_lp.x / m_tile_width);
-		int block_y = (int)(mouse_lp.y / (m_tile_height / 2));
+		int block_x = (int)(mouse_lp.x / tile_width);
+		int block_y = (int)(mouse_lp.y / (tile_height / 2));
 
-		float selx = (block_x * m_tile_width);
-		float sely = (block_y * (m_tile_height / 2));
+		float selx = (block_x * tile_width);
+		float sely = (block_y * (tile_height / 2));
 
 		float lx = selx;
-		float mx = selx + (m_tile_width / 2);
-		float rx = selx + m_tile_width;
+		float mx = selx + (tile_width / 2);
+		float rx = selx + tile_width;
 		float vy1 = sely;
-		float vy2 = sely + (m_tile_height * (15.0 / 70.0));
-		float vy3 = sely + (m_tile_height * (50.0 / 70.0));
+		float vy2 = sely + (tile_height * (15.0 / 70.0));
+		float vy3 = sely + (tile_height * (50.0 / 70.0));
 
 		m_tile_sely = block_y;
 		if (m_tile_sely & 1)
@@ -1853,10 +1853,13 @@ void GLWidget::renderOtherObjects(QPainter& painter)
 
 void GLWidget::renderTilemapBorders(QPainter& painter)
 {
-	float xs = (float)0 * m_tile_width;
-	float xe = (float)(m_level->getTilemapWidth() * m_tile_width) + (m_tile_width / 2);
-	float ys = (float)0 * (m_tile_height / 2);
-	float ye = (float)(m_level->getTilemapHeight() * (m_tile_height / 2)) + (m_tile_height * (15.0/70.0));
+	float tile_width = m_level->getTileWidth();
+	float tile_height = m_level->getTileHeight();
+
+	float xs = (float)0 * tile_width;
+	float xe = (float)(m_level->getTilemapWidth() * tile_width) + (tile_width / 2);
+	float ys = (float)0 * (tile_height / 2);
+	float ye = (float)(m_level->getTilemapHeight() * (tile_height / 2)) + (tile_height * (15.0/70.0));
 
 	int screen_width = width();
 	int screen_height = height();
@@ -1933,6 +1936,9 @@ void GLWidget::renderTilemapExtras(QPainter& painter)
 	painter.setPen(QColor(224, 224, 0));
 	painter.setBrush(QBrush(QColor(160, 160, 0, 128)));
 
+	float tile_width = m_level->getTileWidth();
+	float tile_height = m_level->getTileHeight();
+
 	if (m_tile_selx >= 0 &&
 		m_tile_sely >= 0 &&
 		m_tile_selx < m_level->getTilemapWidth() &&
@@ -1944,15 +1950,15 @@ void GLWidget::renderTilemapExtras(QPainter& painter)
 		int i = highlight_x;
 		int j = highlight_y;
 		
-		float xxs = (float)(i) * m_tile_width;
-		float xxe = (float)(i + 1) * m_tile_width;
-		float yys = (float)(j) * (m_tile_height / 2);
-		float yye = (float)(j + 1) * (m_tile_height / 2);
+		float xxs = (float)(i) * tile_width;
+		float xxe = xxs + tile_width;
+		float yys = (float)(j) * (tile_height/2);
+		float yye = yys + tile_height;
 
 		if (j & 1)
 		{
-			xxs += m_tile_width / 2;
-			xxe += m_tile_width / 2;
+			xxs += tile_width / 2;
+			xxe += tile_width / 2;
 	//		yys += m_tilemap_height / 2;
 	//		yye += m_tilemap_height / 2;
 		}
@@ -1962,15 +1968,15 @@ void GLWidget::renderTilemapExtras(QPainter& painter)
 		glm::vec2 brbr = toScreenCoords(glm::vec2(xxe, yye));
 
 		pts[0] = QPoint(tltl.x,
-			tltl.y + (brbr.y - tltl.y) * (15.0 / 50.0));
+			tltl.y + (brbr.y - tltl.y) * (15.0 / 70.0));
 		pts[1] = QPoint(tltl.x,
-			tltl.y + (brbr.y - tltl.y) * (35.0 / 50.0));
+			tltl.y + (brbr.y - tltl.y) * (35.0 / 70.0));
 		pts[2] = QPoint(tltl.x + (brbr.x - tltl.x) * 0.5,
-			tltl.y + (brbr.y - tltl.y) * (50.0 / 50.0));
+			tltl.y + (brbr.y - tltl.y) * (50.0 / 70.0));
 		pts[3] = QPoint(brbr.x,
-			tltl.y + (brbr.y - tltl.y) * (35.0 / 50.0));
+			tltl.y + (brbr.y - tltl.y) * (35.0 / 70.0));
 		pts[4] = QPoint(brbr.x,
-			tltl.y + (brbr.y - tltl.y) * (15.0 / 50.0));
+			tltl.y + (brbr.y - tltl.y) * (15.0 / 70.0));
 		pts[5] = QPoint(tltl.x + (brbr.x - tltl.x) * 0.5,
 			tltl.y);
 

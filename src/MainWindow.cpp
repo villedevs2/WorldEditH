@@ -760,15 +760,117 @@ void MainWindow::setColor()
 
 void MainWindow::edgify()
 {
+	struct coord_pair
+	{
+		int x;
+		int y;
+	};
+
 	FILE *fout = fopen("edgifylog.txt", "wt");
 
-	const Tilemap::Config config = m_level->getTilemapConfig();
+	int tm_width = m_level->getTilemapWidth();
+	int tm_height = m_level->getTilemapHeight();
 
-	for (int y = config.ystart; y < config.yend; y++)
+	for (int y = 0; y < tm_height; y++)
 	{
-		for (int x = config.xstart; x < config.xend; x++)
+		for (int x = 0; x < tm_width; x++)
 		{
+			int ti = m_level->readTilemap(x, y);
+			const Tilemap::Tile* tile = nullptr;
+			if (ti >= 0)
+			{
+				tile = m_level->getTile(ti);
 
+				bool odd = (y & 1) != 0;
+
+				/*
+				coord_pair topleft;
+				coord_pair topright;
+				coord_pair left;
+				coord_pair right;
+				coord_pair botleft;
+				coord_pair botright;
+
+				left.x = x - 1;
+				left.y = y;
+				right.x = x + 1;
+				right.y = y;
+
+				if (odd)
+				{
+					topleft.x = x;
+					topleft.y = y - 1;
+					topright.x = x + 1;
+					topright.y = y - 1;
+					botleft.x = x;
+					botleft.y = y + 1;
+					botright.x = x + 1;
+					botright.y = y + 1;
+				}
+				else
+				{
+					topleft.x = x - 1;
+					topleft.y = y - 1;
+					topright.x = x;
+					topright.y = y - 1;
+					botleft.x = x - 1;
+					botleft.y = y + 1;
+					botright.x = x;
+					botright.y = y + 1;
+				}
+				*/
+
+				coord_pair connection[6];
+
+				connection[0].x = x - 1;
+				connection[0].y = y;
+				connection[3].x = x + 1;
+				connection[3].y = y;
+
+				if (odd)
+				{
+					connection[1].x = x;		// top left
+					connection[1].y = y - 1;
+					connection[2].x = x + 1;	// top right
+					connection[2].y = y - 1;
+					connection[5].x = x;		// bottom left
+					connection[5].y = y + 1;
+					connection[4].x = x + 1;	// bottom right
+					connection[4].y = y + 1;
+				}
+				else
+				{
+					connection[1].x = x - 1;	// top left
+					connection[1].y = y - 1;
+					connection[2].x = x;		// top right
+					connection[2].y = y - 1;
+					connection[5].x = x - 1;	// bottom left
+					connection[5].y = y + 1;
+					connection[4].x = x;		// bottom right
+					connection[4].y = y + 1;
+				}
+
+				int tilecon[6] = { 0, 0, 0, 0, 0, 0 };
+
+				for (int i = 0; i < 6; i++)
+				{
+					int tx = connection[i].x;
+					int ty = connection[i].y;
+
+					tilecon[i] = 0;
+
+					if (tx >= 0 && ty >= 0 && tx < m_level->getTilemapWidth() && m_level->getTilemapHeight())
+					{
+						int ctile = m_level->readTilemap(tx, ty);
+						if (ctile >= 0)
+							tilecon[i] = 1;
+					}
+				}
+
+				fprintf(fout, "Tile %d, %d: L %d, TL %d, TR %d, R: %d, BR: %d, BL: %d\n", x, y, tilecon[0], tilecon[1], tilecon[2], tilecon[3], tilecon[4], tilecon[5]);
+
+				//fprintf(fout, "Tile %d, %d: tl %d, %d, tr %d, %d, bl %d, %d, br %d, %d\n", x, y, topleft.x, topleft.y, topright.x, topright.y, botleft.x, botleft.y, botright.x, botright.y);
+			}
 
 		}
 	}
@@ -1627,22 +1729,22 @@ bool MainWindow::writeBinaryProjectFile(QString& filename)
 
 		for (int i=0; i < num_tiles; i++)
 		{
-			const Tilemap::Tile& tile  = m_level->getTile(i);
+			const Tilemap::Tile* tile  = m_level->getTile(i);
 
 			// tile name
-			std::string name = tile.name;
+			std::string name = tile->name;
 			for (int j=0; j < name.length(); j++)
 			{
 				output.write_byte(name.at(j));
 			}
 			output.write_byte(0);	// null terminator
 
-			output.write_dword(tile.id);
+			output.write_dword(tile->id);
 
 			for (int j=0; j < 4; j++)
 			{
-				output.write_float(tile.points[j].x);
-				output.write_float(tile.points[j].y);
+				output.write_float(tile->points[j].x);
+				output.write_float(tile->points[j].y);
 			}
 		}
 
@@ -1939,16 +2041,16 @@ void MainWindow::writeBLBFile(QString& filename)
 
 		for (int i=0; i < num_tiles; i++)
 		{
-			const Tilemap::Tile tile = m_level->getTile(i);	
+			const Tilemap::Tile* tile = m_level->getTile(i);	
 
 			// tile color
-			output.write_dword(tile.color);
+			output.write_dword(tile->color);
 
 			// UVs
 			for (int j=0; j < 4; j++)
 			{
-				output.write_float(tile.points[j].x);
-				output.write_float(tile.points[j].y);
+				output.write_float(tile->points[j].x);
+				output.write_float(tile->points[j].y);
 			}
 		}
 
