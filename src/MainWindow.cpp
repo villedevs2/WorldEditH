@@ -758,6 +758,41 @@ void MainWindow::setColor()
 }
 
 
+void MainWindow::edgify_fill_point(FILE* fout, coord_point* points, int p1, int p2)
+{
+	if (points[p1].con1 >= 0)
+	{
+		if (points[p1].con2 >= 0)
+		{
+			fprintf(fout, "Point %d has too many connections!", p1);
+		}
+		else
+		{
+			points[p1].con2 = p2;
+		}
+	}
+	else
+	{
+		points[p1].con1 = p2;
+	}
+
+	if (points[p2].con1 >= 0)
+	{
+		if (points[p2].con2 >= 0)
+		{
+			fprintf(fout, "Point %d has too many connections!", p2);
+		}
+		else
+		{
+			points[p2].con2 = p1;
+		}
+	}
+	else
+	{
+		points[p2].con1 = p1;
+	}
+}
+
 void MainWindow::edgify()
 {
 	struct coord_pair
@@ -770,6 +805,16 @@ void MainWindow::edgify()
 
 	int tm_width = m_level->getTilemapWidth();
 	int tm_height = m_level->getTilemapHeight();
+
+	int xpoints = (tm_width * 2) + 2;
+	int ypoints = tm_height + 2;
+
+	coord_point* points = new coord_point[xpoints * ypoints];
+	for (int i = 0; i < xpoints*ypoints; i++)
+	{
+		points[i].con1 = -1;
+		points[i].con2 = -1;
+	}
 
 	for (int y = 0; y < tm_height; y++)
 	{
@@ -820,6 +865,8 @@ void MainWindow::edgify()
 				}
 				*/
 
+				int p[6];
+
 				coord_pair connection[6];
 
 				connection[0].x = x - 1;
@@ -837,6 +884,13 @@ void MainWindow::edgify()
 					connection[5].y = y + 1;
 					connection[4].x = x + 1;	// bottom right
 					connection[4].y = y + 1;
+
+					p[0] = (y * tm_width) + (x * 2) + 1;
+					p[1] = (y * tm_width) + (x * 2) + 2;
+					p[2] = (y * tm_width) + (x * 2) + 3;
+					p[3] = ((y+1) * tm_width) + (x * 2) + 3;
+					p[4] = ((y+1) * tm_width) + (x * 2) + 2;
+					p[5] = ((y+1) * tm_width) + (x * 2) + 1;
 				}
 				else
 				{
@@ -848,6 +902,13 @@ void MainWindow::edgify()
 					connection[5].y = y + 1;
 					connection[4].x = x;		// bottom right
 					connection[4].y = y + 1;
+
+					p[0] = (y * tm_width) + (x * 2) + 0;
+					p[1] = (y * tm_width) + (x * 2) + 1;
+					p[2] = (y * tm_width) + (x * 2) + 2;
+					p[3] = ((y + 1) * tm_width) + (x * 2) + 2;
+					p[4] = ((y + 1) * tm_width) + (x * 2) + 1;
+					p[5] = ((y + 1) * tm_width) + (x * 2) + 0;
 				}
 
 				int tilecon[6] = { 0, 0, 0, 0, 0, 0 };
@@ -869,13 +930,58 @@ void MainWindow::edgify()
 
 				fprintf(fout, "Tile %d, %d: L %d, TL %d, TR %d, R: %d, BR: %d, BL: %d\n", x, y, tilecon[0], tilecon[1], tilecon[2], tilecon[3], tilecon[4], tilecon[5]);
 
+				// LEFT
+				if (tilecon[0] == 0)
+				{
+					edgify_fill_point(fout, points, p[0], p[5]);
+				}
+				// TOPLEFT
+				if (tilecon[1] == 0)
+				{
+					edgify_fill_point(fout, points, p[0], p[1]);
+				}
+				// TOPRIGHT
+				if (tilecon[2] == 0)
+				{
+					edgify_fill_point(fout, points, p[1], p[2]);
+				}
+				// RIGHT
+				if (tilecon[3] == 0)
+				{
+					edgify_fill_point(fout, points, p[2], p[3]);
+				}
+				// BOTTOM RIGHT
+				if (tilecon[4] == 0)
+				{
+					edgify_fill_point(fout, points, p[3], p[4]);
+				}
+				// BOTTOM LEFT
+				if (tilecon[5] == 0)
+				{
+					edgify_fill_point(fout, points, p[4], p[5]);
+				}
+
 				//fprintf(fout, "Tile %d, %d: tl %d, %d, tr %d, %d, bl %d, %d, br %d, %d\n", x, y, topleft.x, topleft.y, topright.x, topright.y, botleft.x, botleft.y, botright.x, botright.y);
 			}
 
 		}
 	}
 
+	for (int j = 0; j < tm_height; j++)
+	{
+		for (int i = 0; i < tm_width; i++)
+		{
+			int index = (j * tm_width) + i;
+			if (points[index].con1 >= 0 || points[index].con2 >= 0)
+			{
+				fprintf(fout, "Point %d,%d [%d] connects to %d, %d\n", i, j, index, points[index].con1, points[index].con2);
+			}
+		}
+	}
+
 	fclose(fout);
+
+	delete[] points;
 }
 
 

@@ -168,6 +168,14 @@ private:
 
 	LevelConf* m_level_conf;
 
+	struct coord_point
+	{
+		int con1;
+		int con2;
+	};
+
+	void edgify_fill_point(FILE* fout, coord_point* points, int p1, int p2);
+
 public slots:
 	void texEditClosed();
 	void objEditClosed();
