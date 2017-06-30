@@ -1986,6 +1986,61 @@ void GLWidget::renderTilemapExtras(QPainter& painter)
 
 
 
+void GLWidget::renderEdgeData(QPainter& painter)
+{
+	int tm_width = m_level->getTilemapWidth();
+	int tm_height = m_level->getTilemapHeight();
+
+	float tile_width = m_level->getTileWidth();
+	float tile_height = m_level->getTileHeight();
+
+	painter.setPen(QColor(255, 0, 0));
+	painter.setBrush(QBrush(QColor(0, 0, 0, 0)));
+
+	QPoint pp[1024];
+
+	for (int loop = 0; loop < m_edgedata.size(); loop++)
+	{
+		std::vector<int> points = m_edgedata.at(loop);
+		int num_points = points.size();
+		if (num_points > 255)
+			num_points = 255;
+
+		for (int p = 0; p < num_points; p++)
+		{
+			int index = points[p];
+			int x = index % tm_width;
+			int y = index / tm_width;
+
+			glm::vec2 point;
+
+			point.x = (x * tile_width) / 2.0f;
+			point.y = (y/2) * tile_height;
+			
+			if ((y & 1) == 0)
+			{								
+				if ((x & 1) == 0)
+					point.y += tile_height * (15.0 / 70.0);
+			}
+			else
+			{
+				point.y += tile_height * (35.0 / 70.0);
+				if ((x & 1) != 0)
+					point.y += tile_height * (15.0 / 70.0);
+			}
+
+			glm::vec2 sp = toScreenCoords(point);
+
+			pp[p] = QPoint(sp.x, sp.y);
+		}
+
+		painter.drawPolygon(pp, num_points);
+	}
+}
+
+
+
+
 // render 
 void GLWidget::paintGL()
 {
@@ -2125,6 +2180,7 @@ void GLWidget::paintGL()
 	renderOtherObjects(painter);
 
 	renderTilemapExtras(painter);
+	renderEdgeData(painter);
 
 
 	// draw visbox
@@ -2280,6 +2336,13 @@ void GLWidget::configVisbox(float width, float height)
 {
 	m_visbox_width = width;
 	m_visbox_height = height;
+
+	update();
+}
+
+void GLWidget::setEdgeData(std::vector<std::vector<int>> data)
+{
+	m_edgedata = data;
 
 	update();
 }

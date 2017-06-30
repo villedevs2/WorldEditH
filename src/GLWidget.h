@@ -57,6 +57,8 @@ public:
 	void enableVisbox(bool enable);
 	void configVisbox(float width, float height);
 
+	void setEdgeData(std::vector<std::vector<int>> data);
+
 signals:
 	void onAddObject(int id);
 	void onRemoveObject(int id);
@@ -107,6 +109,7 @@ private:
 	void renderOtherObjects(QPainter& painter);
 	void renderTilemapBorders(QPainter& painter);
 	void renderTilemapExtras(QPainter& painter);
+	void renderEdgeData(QPainter& painter);
 	void selectObject(int object);
 	void deselectObject();
 	void objectToEditing(int object);
@@ -192,4 +195,6 @@ private:
 
 	int m_tile_selx;
 	int m_tile_sely;
+
+	std::vector<std::vector<int>> m_edgedata;
 };

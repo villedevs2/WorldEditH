@@ -920,7 +920,7 @@ void MainWindow::edgify()
 
 					tilecon[i] = 0;
 
-					if (tx >= 0 && ty >= 0 && tx < m_level->getTilemapWidth() && m_level->getTilemapHeight())
+					if (tx >= 0 && ty >= 0 && tx < m_level->getTilemapWidth() && ty < m_level->getTilemapHeight())
 					{
 						int ctile = m_level->readTilemap(tx, ty);
 						if (ctile >= 0)
@@ -978,6 +978,99 @@ void MainWindow::edgify()
 			}
 		}
 	}
+
+	std::vector<std::vector<int>> ptlist;
+
+	ptlist.clear();
+
+	bool start_found;
+	do
+	{
+		start_found = false;
+		int start_point = -1;
+
+		// find a start point
+		for (int i = 0; i < tm_width*tm_height; i++)
+		{
+			if (points[i].con1 >= 0 && points[i].con2 >= 0)
+			{
+				start_found = true;
+				start_point = i;
+				fprintf(fout, "Found a start point at %d (%d, %d)\n", i, i % tm_width, i / tm_width);
+				break;
+			}
+		}
+
+		if (start_found)
+		{
+			std::vector<int> newlist;
+
+			int current_point = start_point;
+			int prev_point = start_point;
+
+			newlist.push_back(start_point);
+			current_point = points[start_point].con1;
+
+			points[start_point].con1 = -1;
+			points[start_point].con2 = -1;
+
+			bool end = false;
+			bool closed = false;
+			while (!end)
+			{
+				if (current_point == start_point)
+				{
+					closed = true;
+					end = true;
+				}
+				else
+				{
+					newlist.push_back(current_point);
+
+					if (points[current_point].con1 >= 0 && points[current_point].con1 != prev_point)
+					{
+						prev_point = current_point;
+						current_point = points[current_point].con1;
+						points[prev_point].con1 = -1;
+						points[prev_point].con2 = -1;
+					}
+					else if (points[current_point].con2 >= 0 && points[current_point].con2 != prev_point)
+					{
+						prev_point = current_point;
+						current_point = points[current_point].con2;
+						points[prev_point].con1 = -1;
+						points[prev_point].con2 = -1;
+					}
+					else
+					{
+						end = true;
+					}
+				}
+			}
+
+
+
+			if (!closed)
+			{
+				fprintf(fout, "Loop not closed!\n");
+			}
+
+			ptlist.push_back(newlist);
+		}
+	} while (start_found);
+
+	for (int loop = 0; loop < ptlist.size(); loop++)
+	{
+		fprintf(fout, "Loop %d: Points in loop: ", loop);
+		for (int i = 0; i < ptlist[loop].size(); i++)
+		{
+			fprintf(fout, "%d ", ptlist[loop].at(i));
+		}
+		fprintf(fout, "\n");
+	}
+
+	m_glwidget->setEdgeData(ptlist);
+
 
 	fclose(fout);
 
