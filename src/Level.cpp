@@ -672,6 +672,12 @@ void Level::enlargeTilemap(int xleft, int xright, int ytop, int ybottom)
 	setModified();
 }
 
+void Level::shrinkTilemap(int xleft, int xright, int ytop, int ybottom)
+{
+	m_tilemap->shrink(xleft, xright, ytop, ybottom);
+	setModified();
+}
+
 int Level::readTilemap(int x, int y)
 {
 	return m_tilemap->get(x, y);

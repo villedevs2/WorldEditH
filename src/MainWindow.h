@@ -162,6 +162,7 @@ private:
 
 	bool m_enable_tilemap_widget;
 	TilemapEnlarge* m_tilemap_enlarge;
+	TilemapShrink* m_tilemap_shrink;
 
 	TilesetWindow* m_tileset_window;
 
@@ -205,7 +206,8 @@ private slots:
 	void toggleVisbox();
 	void visboxConfig();
 
-	void tilemapEnlarge();
+	void openTilemapEnlarge();
+	void openTilemapShrink();
 
 	void setZoomLevel(int zoom);
 	void zoomIn();
@@ -219,6 +221,7 @@ private slots:
 	void setBGColor();
 
 	void tilemapEnlarged();
+	void tilemapShrank();
 
 	void levelConfig();
 

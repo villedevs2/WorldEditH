@@ -12,6 +12,9 @@ Tilemap::Tilemap()
 	m_config.tile_width = 1.0f;
 	m_config.tile_height = 1.2f;
 
+	m_tile_width = 1.0f;
+	m_tile_height = 1.2f;
+
 	resize(50, 50);
 
 	m_cumulative_tile_id = 1;
@@ -105,6 +108,51 @@ bool Tilemap::enlarge(int xleft, int xright, int ytop, int ybottom)
 
 	tesselateAll();
 
+	return true;
+}
+
+bool Tilemap::shrink(int xleft, int xright, int ytop, int ybottom)
+{
+	int new_width = m_width + xleft + xright;
+	int new_height = m_height + ytop + ybottom;
+
+	if (xleft == 0 && xright == 0 && ytop == 0 && ybottom == 0)
+		return false;
+
+	int* new_map = new int[new_width * new_height];
+
+	memset(new_map, -1, sizeof(int) * new_width * new_height);
+
+	// copy old data
+	for (int j = 0; j < new_height; j++)
+	{
+		for (int i = 0; i < new_width; i++)
+		{
+			int si = i - xleft;
+			int sj = j - ytop;
+
+			new_map[(j * new_width) + i] = m_map[(sj * m_width) + si];
+		}
+	}
+
+	delete[] m_map;
+
+	m_map = new_map;
+
+	m_width = new_width;
+	m_height = new_height;
+
+	if (m_vb != NULL)
+	{
+		delete[] m_vb;
+		m_vb = NULL;
+	}
+
+	m_vb = new VBO[new_width * new_height * 12];
+
+	tesselateAll();
+
+	return true;
 	return true;
 }
 

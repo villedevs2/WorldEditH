@@ -51,6 +51,7 @@ public:
 	~Tilemap();
 
 	bool enlarge(int xleft, int xright, int ytop, int ybottom);
+	bool shrink(int xleft, int xright, int ytop, int ybottom);
 	void resize(int width, int height);
 	void reset();
 	float* getVBO();

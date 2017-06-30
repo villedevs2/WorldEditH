@@ -122,6 +122,7 @@ public:
 
 	void setTilemapSize(int width, int height);
 	void enlargeTilemap(int xleft, int xright, int ytop, int ybottom);
+	void shrinkTilemap(int xleft, int xright, int ytop, int ybottom);
 	int readTilemap(int x, int y);
 	void editTilemap(int x, int y, int tile);
 	int getTilemapWidth();

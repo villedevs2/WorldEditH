@@ -39,3 +39,36 @@ private:
 
 	QDialogButtonBox* m_button_box;
 };
+
+class TilemapShrink : public QDialog
+{
+	Q_OBJECT
+
+public:
+	TilemapShrink(QWidget* parent, Level* level);
+	~TilemapShrink();
+
+	int getXLeft();
+	int getXRight();
+	int getYTop();
+	int getYBottom();
+	void setValues(int xstart, int xend, int ystart, int yend);
+
+signals:
+	void onShrink();
+
+private slots:
+	void configAccept();
+
+private:
+	Level* m_level;
+
+	QFormLayout* m_layout;
+
+	QSpinBox* m_xleft;
+	QSpinBox* m_xright;
+	QSpinBox* m_ytop;
+	QSpinBox* m_ybottom;
+
+	QDialogButtonBox* m_button_box;
+};

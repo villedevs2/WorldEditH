@@ -31,6 +31,9 @@ MainWindow::MainWindow()
 	m_tilemap_enlarge = new TilemapEnlarge(this, m_level);
 	m_tilemap_enlarge->setValues(0, 0, 0, 0);
 
+	m_tilemap_shrink = new TilemapShrink(this, m_level);
+	m_tilemap_shrink->setValues(0, 0, 0, 0);
+
 	m_tileset_window = new TilesetWindow(this, m_level, m_texture);
 
 	m_level_conf = new LevelConf(this);
@@ -107,6 +110,7 @@ MainWindow::MainWindow()
 	connect(m_objfilter, SIGNAL(onDisplayDisable(int)), m_glwidget, SLOT(disableDisplays(int)));
 
 	connect(m_tilemap_enlarge, SIGNAL(onEnlarge()), this, SLOT(tilemapEnlarged()));
+	connect(m_tilemap_shrink, SIGNAL(onShrink()), this, SLOT(tilemapShrank()));
 
 	connect(m_objdesigner, SIGNAL(onInsertTile(int)), m_tileset_window, SLOT(add(int)));
 
@@ -630,16 +634,16 @@ void MainWindow::visboxConfig()
 	}
 }
 
-void MainWindow::tilemapEnlarge()
+void MainWindow::openTilemapEnlarge()
 {
 	m_tilemap_enlarge->setValues(0, 0, 0, 0);
-	if (m_tilemap_enlarge->exec() == QDialog::Accepted)
-	{
-		int xleft = m_tilemap_enlarge->getXLeft();
-		int xright = m_tilemap_enlarge->getXRight();
-		int ytop = m_tilemap_enlarge->getYTop();
-		int ybottom = m_tilemap_enlarge->getYBottom();
-	}
+	m_tilemap_enlarge->exec();
+}
+
+void MainWindow::openTilemapShrink()
+{
+	m_tilemap_shrink->setValues(0, 0, 0, 0);
+	m_tilemap_shrink->exec();
 }
 
 void MainWindow::levelConfig()
@@ -723,6 +727,20 @@ void MainWindow::tilemapEnlarged()
 
 	emit m_glwidget->setTilemapConfig(w, h);
 	m_level->enlargeTilemap(xleft, xright, ytop, ybottom);
+}
+
+void MainWindow::tilemapShrank()
+{
+	int xleft = m_tilemap_shrink->getXLeft();
+	int xright = m_tilemap_shrink->getXRight();
+	int ytop = m_tilemap_shrink->getYTop();
+	int ybottom = m_tilemap_shrink->getYBottom();
+
+	int w = m_level->getTilemapWidth() + xleft + xright;
+	int h = m_level->getTilemapHeight() + ytop + ybottom;
+
+	emit m_glwidget->setTilemapConfig(w, h);
+	m_level->shrinkTilemap(xleft, xright, ytop, ybottom);
 }
 
 
@@ -932,10 +950,10 @@ void MainWindow::createActions()
 
 	// tilemap settings
 	m_tilemap_enlarge_action = new QAction(QIcon("polyplus.png"), tr("Tilemap Enlarge"), this);
-	connect(m_tilemap_enlarge_action, SIGNAL(triggered()), this, SLOT(tilemapEnlarge()));
+	connect(m_tilemap_enlarge_action, SIGNAL(triggered()), this, SLOT(openTilemapEnlarge()));
 
 	m_tilemap_shrink_action = new QAction(QIcon("polyminus.png"), tr("Tilemap Shrink"), this);
-	connect(m_tilemap_shrink_action, SIGNAL(triggered()), this, SLOT(tilemapShrink()));
+	connect(m_tilemap_shrink_action, SIGNAL(triggered()), this, SLOT(openTilemapShrink()));
 
 
 	// edgify
