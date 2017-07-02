@@ -216,10 +216,10 @@ void Tilemap::tesselateTile(int x, int y, bool odd)
 	{
 		Tile& tiledata = m_tiles.at(tile);
 
-		glm::vec2 vl = tiledata.points[1] - tiledata.points[0];
-		glm::vec2 vr = tiledata.points[2] - tiledata.points[3];
-		glm::vec2 vt = tiledata.points[3] - tiledata.points[0];
-		glm::vec2 vb = tiledata.points[2] - tiledata.points[1];
+		glm::vec2 vl = tiledata.top_points[1] - tiledata.top_points[0];
+		glm::vec2 vr = tiledata.top_points[2] - tiledata.top_points[3];
+		glm::vec2 vt = tiledata.top_points[3] - tiledata.top_points[0];
+		glm::vec2 vb = tiledata.top_points[2] - tiledata.top_points[1];
 
 		/*
 		glm::vec2 tex_my1 = tiledata.points[0] + (vt * 0.5f);
@@ -232,12 +232,12 @@ void Tilemap::tesselateTile(int x, int y, bool odd)
 
 		
 		
-		glm::vec2 uv1 = tiledata.points[0] + (vl * (float)(15.0 / 50.0));
-		glm::vec2 uv2 = tiledata.points[0] + (vl * (float)(35.0 / 50.0));
-		glm::vec2 uv3 = tiledata.points[1] + (vb * 0.5f);
-		glm::vec2 uv4 = tiledata.points[3] + (vr * (float)(35.0 / 50.0));
-		glm::vec2 uv5 = tiledata.points[3] + (vr * (float)(15.0 / 50.0));
-		glm::vec2 uv6 = tiledata.points[0] + (vt * 0.5f);
+		glm::vec2 uv1 = tiledata.top_points[0] + (vl * (float)(15.0 / 50.0));
+		glm::vec2 uv2 = tiledata.top_points[0] + (vl * (float)(35.0 / 50.0));
+		glm::vec2 uv3 = tiledata.top_points[1] + (vb * 0.5f);
+		glm::vec2 uv4 = tiledata.top_points[3] + (vr * (float)(35.0 / 50.0));
+		glm::vec2 uv5 = tiledata.top_points[3] + (vr * (float)(15.0 / 50.0));
+		glm::vec2 uv6 = tiledata.top_points[0] + (vt * 0.5f);
 
 		/*
 		     p6
@@ -461,12 +461,16 @@ const Tilemap::Config& Tilemap::getConfig()
 }
 
 
-int Tilemap::insertTile(std::string name, glm::vec2* points, unsigned int color, Tilemap::TileType type)
+int Tilemap::insertTile(std::string name, PolygonDef* top, PolygonDef* side, unsigned int color, Tilemap::TileType type)
 {
 	Tile tile;
-	for (int i=0; i < 4; i++)
+	for (int i=0; i < top->getNumPoints(); i++)
 	{
-		tile.points[i] = points[i];
+		tile.top_points[i] = top->getPoint(i);
+	}
+	for (int i = 0; i < side->getNumPoints(); i++)
+	{
+		tile.side_points[i] = side->getPoint(i);
 	}
 	tile.name = name;
 	tile.id = m_cumulative_tile_id;

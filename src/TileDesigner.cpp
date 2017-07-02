@@ -477,20 +477,23 @@ void TileDesignerWidget::resetObject(int objects)
 
 void TileDesignerWidget::insertTile(QString& name)
 {
-	/*
-	glm::vec2 npoints[4];
-	for (int i=0; i < 4; i++)
+	Tilemap::TileType type;
+
+	switch (m_current_tile_type)
 	{
-		glm::vec2 p = m_polydef->getPoint(i);
-		npoints[i] = p;
+		case 0:	type = Tilemap::TILE_FULL; break;
+		case 1: type = Tilemap::TILE_LEFT; break;
+		case 2: type = Tilemap::TILE_RIGHT; break;
+		case 3: type = Tilemap::TILE_TOP; break;
+		case 4: type = Tilemap::TILE_BOTTOM; break;
+		case 5: type = Tilemap::TILE_MID; break;
+		default: type = Tilemap::TILE_FULL; break;
 	}
 
-	int id = m_level->insertTile(name.toStdString(), npoints, m_color, Tilemap::TILE_FULL);
+	int id = m_level->insertTile(name.toStdString(), m_poly[0], m_poly[1], m_color, type);
 	emit onInsertTile(id);
 
-	m_polydef->reset();
-	m_poly_closed = false;
-	*/
+	resetObject(POLY_TOP | POLY_SIDE);
 	update();
 }
 

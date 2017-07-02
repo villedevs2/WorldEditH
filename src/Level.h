@@ -6,6 +6,7 @@
 #include <string>
 
 #include "Tilemap.h"
+#include "PolygonDef.h"
 
 class Level
 {
@@ -132,7 +133,7 @@ public:
 	float* getTilemapVBO();
 	int numTilemapTris();
 	const Tilemap::Config& getTilemapConfig();
-	int insertTile(std::string name, glm::vec2* points, unsigned int color, Tilemap::TileType type);
+	int insertTile(std::string name, PolygonDef* top, PolygonDef* side, unsigned int color, Tilemap::TileType type);
 	void removeTile(int id);
 	void removeTiles();
 	int getNumTiles();

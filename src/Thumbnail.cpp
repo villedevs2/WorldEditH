@@ -184,3 +184,60 @@ void Thumbnail::fromRect(QImage* image, QImage* texture, const glm::vec2* points
 	fillTriangle(image, texture, p[0], p[1], p[2]);
 	fillTriangle(image, texture, p[0], p[2], p[3]);
 }
+
+void Thumbnail::fromTileType(QImage* image, QImage* texture, const glm::vec2* top, int numtop, const glm::vec2* side, int numside, Tilemap::TileType type)
+{
+	float texwidth = (float)texture->width();
+	float texheight = (float)texture->height();
+
+	float imgwidth = (float)image->width() - 1;
+	float imgheight = (float)image->height() - 1;
+
+	float minx = top[0].x;
+	float maxx = top[0].x;
+	float miny = top[0].y;
+	float maxy = top[0].y;
+
+	for (int i = 0; i < numtop; i++)
+	{
+		if (top[i].x < minx)
+			minx = top[i].x;
+		if (top[i].x > maxx)
+			maxx = top[i].x;
+		if (top[i].y < miny)
+			miny = top[i].y;
+		if (top[i].y > maxy)
+			maxy = top[i].y;
+	}
+
+	float side_length_x = maxx - minx;
+	float side_length_y = maxy - miny;
+	float side_length;
+	float side_offset_x = 0.0f;
+	float side_offset_y = 0.0f;
+	if (side_length_y > side_length_x)
+	{
+		side_length = side_length_y;
+		side_offset_x = (side_length_y - side_length_x) / 2;
+	}
+	else
+	{
+		side_length = side_length_x;
+		side_offset_y = (side_length_x - side_length_y) / 2;
+	}
+
+	glm::vec4 p[6];
+
+	for (int i = 0; i < numtop; i++)
+	{
+		p[i].x = (((top[i].x - minx + side_offset_x) / side_length) ) * imgwidth;
+		p[i].y = (((top[i].y - miny + side_offset_y) / side_length) ) * imgheight;
+		p[i].z = top[i].x * texwidth;
+		p[i].w = top[i].y * texheight;
+	}
+
+	for (int i = 2; i < numtop; i++)
+	{
+		fillTriangle(image, texture, p[0], p[i - 1], p[i]);
+	}
+}

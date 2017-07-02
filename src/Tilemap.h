@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include "PolygonDef.h"
+
 class Tilemap
 {
 public:
@@ -38,7 +40,8 @@ public:
 
 	struct Tile
 	{
-		glm::vec2 points[4];
+		glm::vec2 top_points[6];
+		glm::vec2 side_points[4];
 		std::string name;
 		unsigned int color;
 		int id;
@@ -60,7 +63,7 @@ public:
 	void edit(int x, int y, int tile);
 	void tesselateAll();
 	const Tilemap::Config& getConfig();
-	int insertTile(std::string name, glm::vec2* points, unsigned int color, Tilemap::TileType type);
+	int insertTile(std::string name, PolygonDef* top, PolygonDef* side, unsigned int color, Tilemap::TileType type);
 	bool removeTile(int id);
 	void removeTiles();
 	int getNumTiles();

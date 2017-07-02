@@ -1701,8 +1701,9 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 
 			unsigned int tile_type = input.read_dword();
 
-			int id = m_level->insertTile(tile_name.toStdString(), pps, tile_color, (Tilemap::TileType)tile_type);
-			emit m_tileset_window->add(id);
+			// TODOOOOOOO
+	//		int id = m_level->insertTile(tile_name.toStdString(), pps, tile_color, (Tilemap::TileType)tile_type);
+	//		emit m_tileset_window->add(id);
 		}
 
 		// ----------------
@@ -1940,11 +1941,14 @@ bool MainWindow::writeBinaryProjectFile(QString& filename)
 
 			output.write_dword(tile->id);
 
+			// TODOOOOOOOO
+			/*
 			for (int j=0; j < 4; j++)
 			{
 				output.write_float(tile->points[j].x);
 				output.write_float(tile->points[j].y);
 			}
+			*/
 		}
 
 		// tilemap
@@ -2246,11 +2250,14 @@ void MainWindow::writeBLBFile(QString& filename)
 			output.write_dword(tile->color);
 
 			// UVs
+			// TODOOOOOOOOOOOOOOOOOOOO
+			/*
 			for (int j=0; j < 4; j++)
 			{
 				output.write_float(tile->points[j].x);
 				output.write_float(tile->points[j].y);
 			}
+			*/
 		}
 
 		// Tilemap variables
