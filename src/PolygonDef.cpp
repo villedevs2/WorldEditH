@@ -205,3 +205,13 @@ void PolygonDef::calculateBounds(float*  minx, float* maxx, float* miny, float* 
 			*maxy = p.y;
 	}
 }
+
+void PolygonDef::copy(PolygonDef* src)
+{
+	m_points.clear();
+
+	for (int i = 0; i < src->getNumPoints(); i++)
+	{
+		m_points.push_back(src->getPoint(i));
+	}
+}

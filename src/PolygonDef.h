@@ -29,6 +29,7 @@ public:
 	bool isPointInside(glm::vec2 point);
 	void calculateBounds(float* minx, float* maxx, float* miny, float* maxy);
 	bool isPointOnEdge(glm::vec2 point, int v1, int v2, float threshold);
+	void copy(PolygonDef* src);
 
 private:
 	std::vector<glm::vec2> m_points;

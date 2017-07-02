@@ -23,7 +23,7 @@
 #include "BinaryFile.h"
 #include "VisboxConf.h"
 #include "ObjectFilter.h"
-#include "ObjectDesigner.h"
+#include "TileDesigner.h"
 #include "TilemapWidget.h"
 #include "Tileset.h"
 #include "LevelConf.h"
@@ -107,7 +107,7 @@ private:
 	QAction* m_toggle_texedit;
 	QAction* m_toggle_objedit;
 	QAction* m_toggle_objfilter;
-	QAction* m_toggle_objdesigner;
+	QAction* m_toggle_tiledesigner;
 	QAction* m_toggle_tileset_window;
 
 	QAction* m_toggle_visbox;
@@ -140,7 +140,7 @@ private:
 	bool m_texedit_open;
 	bool m_objedit_open;
 	bool m_objfilter_open;
-	bool m_objdesigner_open;
+	bool m_tiledesigner_open;
 	bool m_tileset_window_open;
 	bool m_tiledprefabs_window_open;
 
@@ -149,7 +149,7 @@ private:
 
 	ObjectEdit* m_objedit;
 	ObjectFilter* m_objfilter;
-	ObjectDesigner* m_objdesigner;
+	TileDesigner* m_tiledesigner;
 
 	bool m_enable_visbox;
 	VisboxConf* m_visbox_conf;
@@ -180,7 +180,7 @@ public slots:
 	void texEditClosed();
 	void objEditClosed();
 	void objFilterClosed();
-	void objDesignerClosed();
+	void tileDesignerClosed();
 	void tilesetWindowClosed();
 	void setColor();
 
@@ -204,7 +204,7 @@ private slots:
 	void toggleTexEdit();
 	void toggleObjEdit();
 	void toggleObjFilter();
-	void toggleObjDesigner();
+	void toggleTileDesigner();
 	void toggleTilesetWindow();
 
 	void toggleGrid();

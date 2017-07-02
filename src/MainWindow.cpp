@@ -23,7 +23,7 @@ MainWindow::MainWindow()
 	m_objedit = new ObjectEdit(this, m_level);
 	m_objfilter = new ObjectFilter(this);
 	
-	m_objdesigner = new ObjectDesigner(this, m_level);
+	m_tiledesigner = new TileDesigner(this, m_level);
 	
 
 	m_visbox_conf = new VisboxConf(this);
@@ -98,7 +98,7 @@ MainWindow::MainWindow()
 	connect(m_texedit, SIGNAL(onClose()), this, SLOT(texEditClosed()));
 	connect(m_objedit, SIGNAL(onClose()), this, SLOT(objEditClosed()));
 	connect(m_objfilter, SIGNAL(onClose()), this, SLOT(objFilterClosed()));
-	connect(m_objdesigner, SIGNAL(onClose()),this, SLOT(objDesignerClosed()));
+	connect(m_tiledesigner, SIGNAL(onClose()),this, SLOT(tileDesignerClosed()));
 	connect(m_tileset_window, SIGNAL(onClose()), this, SLOT(tilesetWindowClosed()));
 
 	connect(m_objedit, SIGNAL(onSetCreateType(Level::ObjectType)), m_glwidget, SLOT(setCreateType(Level::ObjectType)));
@@ -112,7 +112,7 @@ MainWindow::MainWindow()
 	connect(m_tilemap_enlarge, SIGNAL(onEnlarge()), this, SLOT(tilemapEnlarged()));
 	connect(m_tilemap_shrink, SIGNAL(onShrink()), this, SLOT(tilemapShrank()));
 
-	connect(m_objdesigner, SIGNAL(onInsertTile(int)), m_tileset_window, SLOT(add(int)));
+	connect(m_tiledesigner, SIGNAL(onInsertTile(int)), m_tileset_window, SLOT(add(int)));
 
 	connect(m_tileset_window, SIGNAL(onSelectTile(int)), m_glwidget, SLOT(setTileBrush(int)));
 
@@ -144,7 +144,7 @@ MainWindow::MainWindow()
 	m_objfilter->move(QPoint(width() - 300, 100));
 
 	// object designer positioning
-	m_objdesigner->move(QPoint(width() - 600, 230));
+	m_tiledesigner->move(QPoint(width() - 600, 230));
 
 	// tileset window positioning
 	m_tileset_window->move(QPoint(width() + 850, 600));
@@ -165,10 +165,10 @@ MainWindow::MainWindow()
 	m_toggle_objfilter->setChecked(true);
 	m_objfilter->setHidden(false);
 
-	// obj designer hidden by default
-	m_objdesigner_open = false;
-	m_toggle_objdesigner->setChecked(false);
-	m_objdesigner->setHidden(true);
+	// tile designer hidden by default
+	m_tiledesigner_open = false;
+	m_toggle_tiledesigner->setChecked(false);
+	m_tiledesigner->setHidden(true);
 
 	// tileset shown by default
 	m_tileset_window_open = true;
@@ -569,26 +569,26 @@ void MainWindow::objFilterClosed()
 	m_toggle_objfilter->setChecked(false);
 }
 
-void MainWindow::toggleObjDesigner()
+void MainWindow::toggleTileDesigner()
 {
-	if (m_objdesigner_open)
+	if (m_tiledesigner_open)
 	{
-		emit m_objdesigner->setHidden(true);
-		m_objdesigner_open = false;
-		m_toggle_objdesigner->setChecked(false);
+		emit m_tiledesigner->setHidden(true);
+		m_tiledesigner_open = false;
+		m_toggle_tiledesigner->setChecked(false);
 	}
 	else
 	{
-		emit m_objdesigner->setHidden(false);
-		m_objdesigner_open = true;
-		m_toggle_objdesigner->setChecked(true);
+		emit m_tiledesigner->setHidden(false);
+		m_tiledesigner_open = true;
+		m_toggle_tiledesigner->setChecked(true);
 	}
 }
 
-void MainWindow::objDesignerClosed()
+void MainWindow::tileDesignerClosed()
 {
-	m_objdesigner_open = false;
-	m_toggle_objdesigner->setChecked(false);
+	m_tiledesigner_open = false;
+	m_toggle_tiledesigner->setChecked(false);
 }
 
 void MainWindow::toggleTilesetWindow()
@@ -699,7 +699,7 @@ void MainWindow::changeTexture(QString path)
 
 	m_glwidget->loadTexture(m_texture);
 	m_texedit->setTexture(m_texture);
-	m_objdesigner->setTexture(m_texture);
+	m_tiledesigner->setTexture(m_texture);
 	m_tileset_window->setTexture(m_texture);
 }
 
@@ -1230,9 +1230,9 @@ void MainWindow::createActions()
 	m_toggle_objfilter->setCheckable(true);
 	connect(m_toggle_objfilter, SIGNAL(triggered()), this, SLOT(toggleObjFilter()));
 
-	m_toggle_objdesigner = new QAction(QIcon("objfilter.png"), tr("Toggle Object Designer"), this);
-	m_toggle_objdesigner->setCheckable(true);
-	connect(m_toggle_objdesigner, SIGNAL(triggered()), this, SLOT(toggleObjDesigner()));
+	m_toggle_tiledesigner = new QAction(QIcon("objfilter.png"), tr("Toggle Tile Designer"), this);
+	m_toggle_tiledesigner->setCheckable(true);
+	connect(m_toggle_tiledesigner, SIGNAL(triggered()), this, SLOT(toggleTileDesigner()));
 
 	m_toggle_tileset_window = new QAction(QIcon("tilemap.png"), tr("Toggle Tileset"), this);
 	m_toggle_tileset_window->setCheckable(true);
@@ -1381,7 +1381,7 @@ void MainWindow::createToolbars()
 	m_editor_toolbar->addAction(m_toggle_texedit);
 	m_editor_toolbar->addAction(m_toggle_objedit);
 	m_editor_toolbar->addAction(m_toggle_objfilter);
-	m_editor_toolbar->addAction(m_toggle_objdesigner);
+	m_editor_toolbar->addAction(m_toggle_tiledesigner);
 	m_editor_toolbar->addAction(m_toggle_tileset_window);
 	m_editor_toolbar->addAction(m_tilemap_enlarge_action);
 	m_editor_toolbar->addAction(m_tilemap_shrink_action);

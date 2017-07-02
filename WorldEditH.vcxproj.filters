@@ -76,9 +76,6 @@
     <ClCompile Include="src\ObjectBrowser.cpp">
       <Filter>Source Files\src</Filter>
     </ClCompile>
-    <ClCompile Include="src\ObjectDesigner.cpp">
-      <Filter>Source Files\src</Filter>
-    </ClCompile>
     <ClCompile Include="src\ObjectEdit.cpp">
       <Filter>Source Files\src</Filter>
     </ClCompile>
@@ -133,12 +130,6 @@
     <ClCompile Include="GeneratedFiles\Release\moc_ObjectBrowser.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_ObjectDesigner.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_ObjectDesigner.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_ObjectEdit.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
@@ -175,6 +166,15 @@
     <ClCompile Include="GeneratedFiles\Release\moc_VisboxConf.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_TileDesigner.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_TileDesigner.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TileDesigner.cpp">
+      <Filter>Source Files\src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="WorldEditH.h">
@@ -198,9 +198,6 @@
     <CustomBuild Include="src\ObjectBrowser.h">
       <Filter>Header Files\src</Filter>
     </CustomBuild>
-    <CustomBuild Include="src\ObjectDesigner.h">
-      <Filter>Header Files\src</Filter>
-    </CustomBuild>
     <CustomBuild Include="src\ObjectEdit.h">
       <Filter>Header Files\src</Filter>
     </CustomBuild>
@@ -217,6 +214,9 @@
       <Filter>Header Files\src</Filter>
     </CustomBuild>
     <CustomBuild Include="src\VisboxConf.h">
+      <Filter>Header Files\src</Filter>
+    </CustomBuild>
+    <CustomBuild Include="src\TileDesigner.h">
       <Filter>Header Files\src</Filter>
     </CustomBuild>
   </ItemGroup>

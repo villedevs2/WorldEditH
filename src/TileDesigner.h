@@ -21,27 +21,29 @@
 #include "Level.h"
 #include "PolygonDef.h"
 
-class ObjectDesignerWidget : public QGLWidget
+class TileDesignerWidget : public QGLWidget
 {
 	Q_OBJECT
 
 public:
 	enum OperationMode
 	{
-		MODE_DRAW_POLY,
-		MODE_DRAW_RECT,
 		MODE_MOVE,
-		MODE_EDIT_VERTICES,
-		MODE_EDIT_EDGES,
+		MODE_ROTATE,
+		MODE_SCALE,
 	};
 
-	ObjectDesignerWidget(QWidget* parent, Level* level);
-	~ObjectDesignerWidget();
+	enum PolyObject
+	{
+		POLY_TOP = 0x1,
+		POLY_SIDE = 0x2,
+	};
+
+	TileDesignerWidget(QWidget* parent, Level* level);
+	~TileDesignerWidget();
 
 	void setTexture(QImage* texture);
 	void setMode(OperationMode mode);
-
-	int numPoints();
 
 signals:
 	void onInsertTile(int tile_id);
@@ -52,9 +54,10 @@ public slots:
 	void setGrid(int grid);
 	void enableShowGrid(bool enable);
 	void enableSnapGrid(bool enable);
-	void resetObject();
+	void resetObject(int objects);
 	void insertTile(QString& name);
 	void setColor(QColor color);
+	void setTileType(int type);
 
 protected:
 	void paintEvent(QPaintEvent* event);
@@ -93,9 +96,7 @@ private:
 	glm::vec2 toUVCoords(glm::vec2& point);
 	glm::vec2 snapToGrid(glm::vec2& point);
 
-	void renderDrawPolyMode(QPainter& painter);
-	void renderDrawRectMode(QPainter& painter);
-	void renderClosedPoly(QPainter& painter);
+	void renderPoly(QPainter& painter, int polynum);
 	void drawGrid(QPainter& painter);
 
 	static const int POINT_CLICKING_THRESHOLD = 6;
@@ -122,7 +123,14 @@ private:
 	QGLShaderProgram* m_level_program;
 	Shader m_level_shader;
 
-	PolygonDef* m_polydef;
+	int m_current_tile_type;
+	int m_selected_poly;
+
+	PolygonDef* m_poly[2];
+
+	PolygonDef* m_poly_top_default[6];
+	PolygonDef* m_poly_side_default;
+
 	Level* m_level;
 
 	VBO m_vbo[4];
@@ -135,16 +143,6 @@ private:
 	glm::vec2 m_scroll;
 	glm::vec2 m_scroll_saved;
 	glm::vec2 m_pan_point;
-	bool m_poly_closed;
-	
-	bool m_rect_drawing;
-	glm::vec2 m_rect_start_point;
-
-	int m_selected_point;
-
-	bool m_line_dragging;
-	int m_line_point0;
-	int m_line_point1;
 
 	bool m_move_dragging;
 	glm::vec2 m_move_reference;
@@ -158,13 +156,13 @@ private:
 
 
 
-class ObjectDesigner : public QDockWidget
+class TileDesigner : public QDockWidget
 {
 	Q_OBJECT
 
 public:
-	ObjectDesigner(QWidget* parent, Level* level);
-	~ObjectDesigner();
+	TileDesigner(QWidget* parent, Level* level);
+	~TileDesigner();
 
 	void setTexture(QImage* texture);
 
@@ -182,11 +180,7 @@ signals:
 	void onInsertTile(int tile_id);
 
 public slots:
-	void setDrawPolyMode();
-	void setDrawRectMode();
 	void setMoveMode();
-	void setEditVertexMode();
-	void setEditEdgeMode();
 	void reset();
 	void insertTile();
 	void toggleGrid();
@@ -197,20 +191,24 @@ public slots:
 private:
 	QMainWindow* m_window;	
 	QMenu* m_menu;
-	ObjectDesignerWidget* m_widget;
+	TileDesignerWidget* m_widget;
 
 	QToolBar* m_edit_toolbar;
+	QToolBar* m_tile_toolbar;
 	QToolBar* m_zoom_toolbar;
 	QToolBar* m_grid_toolbar;
 	QToolBar* m_control_toolbar;
 	QToolBar* m_color_toolbar;
 
 	QActionGroup* m_toolgroup;
-	QAction* m_draw_poly_action;
-	QAction* m_draw_rect_action;
-	QAction* m_edit_vertex_action;
-	QAction* m_edit_edge_action;
 	QAction* m_move_action;
+	QAction* m_rotate_action;
+	QAction* m_scale_action;
+
+	QActionGroup* m_tilegroup;
+	QWidget* m_tiletype_widget;
+	QLabel* m_tiletype_label;
+	QComboBox* m_tiletype_combo;
 	
 	QActionGroup* m_zoomgroup;
 	QWidget* m_zoomlevel_widget;

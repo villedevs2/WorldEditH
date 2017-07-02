@@ -1,13 +1,69 @@
-#include "ObjectDesigner.h"
+#include "TileDesigner.h"
 
-ObjectDesignerWidget::ObjectDesignerWidget(QWidget* parent, Level* level) : QGLWidget(QGLFormat(QGL::SampleBuffers), parent)
+TileDesignerWidget::TileDesignerWidget(QWidget* parent, Level* level) : QGLWidget(QGLFormat(QGL::SampleBuffers), parent)
 {
 	m_level = level;
 
 	setFocusPolicy(Qt::ClickFocus);
 
-	m_polydef = new PolygonDef(8);
-	m_polydef->reset();
+	m_poly[0] = new PolygonDef(6);
+	m_poly[0]->reset();
+
+	m_poly[1] = new PolygonDef(4);
+	m_poly[1]->reset();
+
+	m_poly_top_default[0] = new PolygonDef(6);
+	m_poly_top_default[1] = new PolygonDef(6);
+	m_poly_top_default[2] = new PolygonDef(6);
+	m_poly_top_default[3] = new PolygonDef(6);
+	m_poly_top_default[4] = new PolygonDef(6);
+	m_poly_top_default[5] = new PolygonDef(6);
+	m_poly_side_default = new PolygonDef(4);
+
+	float tw = 0.125f;
+	float th = 0.125f;
+	float tx1 = 0.0f;
+	float tx2 = 0.5f * tw;
+	float tx3 = 1.0f * tw;
+	float ty1 = 0.0f;
+	float ty2 = (15.0 / 50.0) * th;
+	float ty3 = (35.0 / 50.0) * th;
+	float ty4 = (50.0 / 50.0) * th;
+
+	m_poly_top_default[0]->insertPoint(glm::vec2(tx1, ty2));
+	m_poly_top_default[0]->insertPoint(glm::vec2(tx1, ty3));
+	m_poly_top_default[0]->insertPoint(glm::vec2(tx2, ty4));
+	m_poly_top_default[0]->insertPoint(glm::vec2(tx3, ty3));
+	m_poly_top_default[0]->insertPoint(glm::vec2(tx3, ty2));
+	m_poly_top_default[0]->insertPoint(glm::vec2(tx2, ty1));
+
+	m_poly_top_default[1]->insertPoint(glm::vec2(tx1, ty2));
+	m_poly_top_default[1]->insertPoint(glm::vec2(tx1, ty3));
+	m_poly_top_default[1]->insertPoint(glm::vec2(tx2, ty4));
+	m_poly_top_default[1]->insertPoint(glm::vec2(tx2, ty1));
+
+	m_poly_top_default[2]->insertPoint(glm::vec2(tx3, ty2));
+	m_poly_top_default[2]->insertPoint(glm::vec2(tx2, ty1));
+	m_poly_top_default[2]->insertPoint(glm::vec2(tx2, ty4));
+	m_poly_top_default[2]->insertPoint(glm::vec2(tx3, ty3));
+
+	m_poly_top_default[3]->insertPoint(glm::vec2(tx1, ty2));
+	m_poly_top_default[3]->insertPoint(glm::vec2(tx3, ty2));
+	m_poly_top_default[3]->insertPoint(glm::vec2(tx2, ty1));
+
+	m_poly_top_default[4]->insertPoint(glm::vec2(tx1, ty3));	
+	m_poly_top_default[4]->insertPoint(glm::vec2(tx2, ty4));
+	m_poly_top_default[4]->insertPoint(glm::vec2(tx3, ty3));
+
+	m_poly_top_default[5]->insertPoint(glm::vec2(tx1, ty2));
+	m_poly_top_default[5]->insertPoint(glm::vec2(tx1, ty3));
+	m_poly_top_default[5]->insertPoint(glm::vec2(tx3, ty3));
+	m_poly_top_default[5]->insertPoint(glm::vec2(tx3, ty2));
+
+	m_poly_side_default->insertPoint(glm::vec2(0.5f, 0.0f));
+	m_poly_side_default->insertPoint(glm::vec2(0.5f, 0.25f));
+	m_poly_side_default->insertPoint(glm::vec2(0.625f, 0.25f));
+	m_poly_side_default->insertPoint(glm::vec2(0.625f, 0.0f));
 
 	m_zoom = 1.0f;
 	m_scroll = glm::vec2(0.0f, 0.0f);
@@ -28,30 +84,34 @@ ObjectDesignerWidget::ObjectDesignerWidget(QWidget* parent, Level* level) : QGLW
 
 	m_panning = false;
 
-	m_poly_closed = false;
-	m_rect_drawing = false;
-
-	m_selected_point = -1;
-
-	m_line_dragging = false;
-	m_line_point0 = -1;
-	m_line_point1 = -1;
-
 	m_move_dragging = false;
 
 	m_show_grid = false;
 	m_snap_grid = false;
 
 	m_object_color = QColor(0, 0, 0, 255);
+
+	m_poly[0]->copy(m_poly_top_default[0]);
+	m_poly[1]->copy(m_poly_side_default);
+
+	m_selected_poly = -1;
+	m_current_tile_type = 0;
 }
 
-ObjectDesignerWidget::~ObjectDesignerWidget()
+TileDesignerWidget::~TileDesignerWidget()
 {
-	delete m_polydef;
+	delete m_poly[0];
+	delete m_poly[1];
+
+	for (int i = 0; i < 6; i++)
+	{
+		delete m_poly_top_default[i];		
+	}
+	delete m_poly_side_default;
 }
 
 
-QString ObjectDesignerWidget::loadShader(QString filename)
+QString TileDesignerWidget::loadShader(QString filename)
 {
 	QFile file;
 	QByteArray bytes;
@@ -65,7 +125,7 @@ QString ObjectDesignerWidget::loadShader(QString filename)
 	return bytes;
 }
 
-void ObjectDesignerWidget::loadTexture(QImage* texture)
+void TileDesignerWidget::loadTexture(QImage* texture)
 {
 	makeCurrent();
 
@@ -124,7 +184,7 @@ void ObjectDesignerWidget::loadTexture(QImage* texture)
 }
 
 
-void ObjectDesignerWidget::initializeGL()
+void TileDesignerWidget::initializeGL()
 {
 	QString level_vs_file = loadShader("level_vs.glsl");
 	QString level_fs_file = loadShader("level_fs.glsl");
@@ -151,7 +211,7 @@ void ObjectDesignerWidget::initializeGL()
 	m_vbo[3].pos = glm::vec3(1.0f, 0.0f, 0.0f);		m_vbo[3].uv = glm::vec2(1.0f, 0.0f);		m_vbo[3].color = 0xffffffff;
 }
 
-void ObjectDesignerWidget::paintGL()
+void TileDesignerWidget::paintGL()
 {
 	makeCurrent();
 
@@ -235,6 +295,7 @@ void ObjectDesignerWidget::paintGL()
 	if (m_show_grid)
 		drawGrid(painter);
 
+	/*
 	if (!m_poly_closed && (m_mode == MODE_DRAW_POLY || m_mode == MODE_DRAW_RECT))
 	{
 		if (m_mode == MODE_DRAW_POLY)
@@ -246,6 +307,12 @@ void ObjectDesignerWidget::paintGL()
 	{
 		renderClosedPoly(painter);
 	}
+	*/
+
+	for (int i = 0; i < 2; i++)
+	{
+		renderPoly(painter, i);
+	}
 
 	painter.end();
 
@@ -253,7 +320,7 @@ void ObjectDesignerWidget::paintGL()
 
 }
 
-void ObjectDesignerWidget::resizeGL(int width, int height)
+void TileDesignerWidget::resizeGL(int width, int height)
 {
 	makeCurrent();
 
@@ -269,7 +336,7 @@ void ObjectDesignerWidget::resizeGL(int width, int height)
 	update();
 }
 
-void ObjectDesignerWidget::setTexture(QImage* texture)
+void TileDesignerWidget::setTexture(QImage* texture)
 {
 	m_texture = texture;
 
@@ -278,34 +345,19 @@ void ObjectDesignerWidget::setTexture(QImage* texture)
 	update();
 }
 
-void ObjectDesignerWidget::setMode(OperationMode mode)
+void TileDesignerWidget::setMode(OperationMode mode)
 {
 	m_mode = mode;
 
 	switch (mode)
 	{
-		case MODE_DRAW_POLY:
-			break;
-
-		case MODE_DRAW_RECT:
-			break;
-
-		case MODE_EDIT_VERTICES:
-			break;
-
-		case MODE_EDIT_EDGES:
-			m_line_dragging = false;
-			break;
 	}
-
-	// always reset edited point
-	m_selected_point = -1;
 
 	update();
 }
 
 // convert uv coords to screen coordinates
-glm::vec2 ObjectDesignerWidget::toScreenCoords(glm::vec2& point)
+glm::vec2 TileDesignerWidget::toScreenCoords(glm::vec2& point)
 {
 	float scale = m_zoom;
 
@@ -322,7 +374,7 @@ glm::vec2 ObjectDesignerWidget::toScreenCoords(glm::vec2& point)
 }
 
 // convert screen coordinates to uv coords
-glm::vec2 ObjectDesignerWidget::toUVCoords(glm::vec2& point)
+glm::vec2 TileDesignerWidget::toUVCoords(glm::vec2& point)
 {
 	float scale = 1.0f / m_zoom;
 
@@ -341,9 +393,9 @@ glm::vec2 ObjectDesignerWidget::toUVCoords(glm::vec2& point)
 	return glm::vec2(x, y);
 }
 
-glm::vec2 ObjectDesignerWidget::snapToGrid(glm::vec2& point)
+glm::vec2 TileDesignerWidget::snapToGrid(glm::vec2& point)
 {
-	float grid_size = ObjectDesigner::GRID_SIZE[m_grid_size];
+	float grid_size = TileDesigner::GRID_SIZE[m_grid_size];
 
 	float tx = point.x / grid_size;
 	float ty = point.y / grid_size;
@@ -360,71 +412,89 @@ glm::vec2 ObjectDesignerWidget::snapToGrid(glm::vec2& point)
 	return glm::vec2(x, y);
 }
 
-void ObjectDesignerWidget::setScale(int scale)
+void TileDesignerWidget::setScale(int scale)
 {
 }
 
-void ObjectDesignerWidget::setZoom(int zoom)
+void TileDesignerWidget::setZoom(int zoom)
 {
-	assert(zoom >= 0 && zoom < ObjectDesigner::NUM_ZOOM_LEVELS);
+	assert(zoom >= 0 && zoom < TileDesigner::NUM_ZOOM_LEVELS);
 
-	m_zoom  = ObjectDesigner::ZOOM_LEVELS[zoom];
+	m_zoom  = TileDesigner::ZOOM_LEVELS[zoom];
 
 	m_scroll = glm::vec2(0.0f, 0.0f);
 
 	update();
 }
 
-void ObjectDesignerWidget::setGrid(int grid)
+void TileDesignerWidget::setGrid(int grid)
 {
-	assert(grid >= 0 && grid < ObjectDesigner::NUM_GRID_SIZES);
+	assert(grid >= 0 && grid < TileDesigner::NUM_GRID_SIZES);
 
 	m_grid_size = grid;
 
 	update();
 }
 
-void ObjectDesignerWidget::enableShowGrid(bool enable)
+void TileDesignerWidget::enableShowGrid(bool enable)
 {
 	m_show_grid = enable;
 	update();
 }
 
-void ObjectDesignerWidget::enableSnapGrid(bool enable)
+void TileDesignerWidget::enableSnapGrid(bool enable)
 {
 	m_snap_grid = enable;
 }
 
-void ObjectDesignerWidget::resetObject()
+void TileDesignerWidget::setTileType(int type)
 {
-	m_polydef->reset();
-	m_poly_closed = false;
+	m_poly[0]->copy(m_poly_top_default[type]);
+	m_poly[1]->copy(m_poly_side_default);
+
+	m_current_tile_type = type;
+
+	m_selected_poly = -1;
 
 	update();
 }
 
-void ObjectDesignerWidget::insertTile(QString& name)
+void TileDesignerWidget::resetObject(int objects)
 {
-	if (m_poly_closed)
+	if (objects & POLY_TOP)
 	{
-		glm::vec2 npoints[4];
-		for (int i=0; i < 4; i++)
-		{
-			glm::vec2 p = m_polydef->getPoint(i);
-			npoints[i] = p;
-		}
-
-		int id = m_level->insertTile(name.toStdString(), npoints, m_color, Tilemap::TILE_FULL);
-		emit onInsertTile(id);
-
-		m_polydef->reset();
-		m_poly_closed = false;
+		m_poly[0]->copy(m_poly_top_default[m_current_tile_type]);
+	}
+	if (objects & POLY_SIDE)
+	{
+		m_poly[1]->copy(m_poly_side_default);
 	}
 
+	m_selected_poly = -1;
+
 	update();
 }
 
-void ObjectDesignerWidget::mouseReleaseEvent(QMouseEvent* event)
+void TileDesignerWidget::insertTile(QString& name)
+{
+	/*
+	glm::vec2 npoints[4];
+	for (int i=0; i < 4; i++)
+	{
+		glm::vec2 p = m_polydef->getPoint(i);
+		npoints[i] = p;
+	}
+
+	int id = m_level->insertTile(name.toStdString(), npoints, m_color, Tilemap::TILE_FULL);
+	emit onInsertTile(id);
+
+	m_polydef->reset();
+	m_poly_closed = false;
+	*/
+	update();
+}
+
+void TileDesignerWidget::mouseReleaseEvent(QMouseEvent* event)
 {
 	QPoint point = this->mapFromGlobal(event->globalPos());
 
@@ -443,121 +513,9 @@ void ObjectDesignerWidget::mouseReleaseEvent(QMouseEvent* event)
 	{
 		switch (m_mode)
 		{
-			case MODE_DRAW_POLY:
-			{
-				glm::vec2 p = toUVCoords(glm::vec2(mouse_x, mouse_y));
-
-				if (m_snap_grid)
-					p = snapToGrid(p);
-
-				if (!m_poly_closed)
-				{
-					m_polydef->insertPoint(p);
-				}
-				break;
-			}
-
-			case MODE_DRAW_RECT:
-			{
-				if (m_rect_drawing && !m_poly_closed)
-				{
-					glm::vec2 sp = m_rect_start_point;
-					glm::vec2 ep = toUVCoords(glm::vec2(mouse_x, mouse_y));
-
-					if (m_snap_grid)
-						ep = snapToGrid(ep);
-
-					glm::vec2 delta = ep - sp;
-
-					if (delta.x != 0.0f && delta.y != 0.0f)
-					{
-						m_polydef->reset();
-
-						if (delta.x < 0.0f && delta.y < 0.0f)		// end point = top left
-						{
-							m_polydef->insertPoint(glm::vec2(ep.x, ep.y));
-							m_polydef->insertPoint(glm::vec2(ep.x, sp.y));
-							m_polydef->insertPoint(glm::vec2(sp.x, sp.y));
-							m_polydef->insertPoint(glm::vec2(sp.x, ep.y));
-						}
-						else if (delta.x > 0.0f && delta.y < 0.0f)	// end point = top right
-						{
-							m_polydef->insertPoint(glm::vec2(sp.x, ep.y));
-							m_polydef->insertPoint(glm::vec2(sp.x, sp.y));
-							m_polydef->insertPoint(glm::vec2(ep.x, sp.y));
-							m_polydef->insertPoint(glm::vec2(ep.x, ep.y));
-						}
-						else if (delta.x < 0.0f && delta.y > 0.0f)	// end point = bottom left
-						{
-							m_polydef->insertPoint(glm::vec2(ep.x, sp.y));
-							m_polydef->insertPoint(glm::vec2(ep.x, ep.y));
-							m_polydef->insertPoint(glm::vec2(sp.x, ep.y));
-							m_polydef->insertPoint(glm::vec2(sp.x, sp.y));
-						}
-						else if (delta.x > 0.0f && delta.y > 0.0f)	// end point = bottom right
-						{
-							m_polydef->insertPoint(glm::vec2(sp.x, sp.y));
-							m_polydef->insertPoint(glm::vec2(sp.x, ep.y));
-							m_polydef->insertPoint(glm::vec2(ep.x, ep.y));
-							m_polydef->insertPoint(glm::vec2(ep.x, sp.y));
-						}
-
-						m_poly_closed = true;
-					}
-
-					m_rect_drawing = false;
-				}
-				break;
-			}
-
 			case MODE_MOVE:
 			{
-				glm::vec2 p = toUVCoords(glm::vec2(mouse_x, mouse_y));
-				if (m_snap_grid)
-					p = snapToGrid(p);
-
-				glm::vec2 delta = p - m_move_reference;
-
-				int num_points = m_polydef->getNumPoints();
-				for (int i=0; i < num_points; i++)
-				{
-					glm::vec2 v = m_polydef->getPoint(i);
-					m_polydef->edit(i, v + delta);
-				}
-
-				m_move_dragging = false;
-				break;
-			}
-
-			case MODE_EDIT_VERTICES:
-			{
-				if (m_selected_point >= 0)
-				{
-					// validate and finalize point edit
-					glm::vec2 old_p = m_polydef->getPoint(m_selected_point);
-
-					glm::vec2 p = toUVCoords(glm::vec2(mouse_x, mouse_y));
-					if (m_snap_grid)
-						p = snapToGrid(p);
-					
-					m_polydef->edit(m_selected_point, p);
-
-					bool valid = m_polydef->fullConvexTest();
-				
-					if (!valid)
-					{
-						// restore old point
-						m_polydef->edit(m_selected_point, old_p);
-					}
-
-					m_selected_point = -1;
-				}
-				break;
-			}
-
-			case MODE_EDIT_EDGES:
-			{
-				if (m_line_dragging)
+				if (m_selected_poly >= 0)
 				{
 					glm::vec2 p = toUVCoords(glm::vec2(mouse_x, mouse_y));
 					if (m_snap_grid)
@@ -565,24 +523,17 @@ void ObjectDesignerWidget::mouseReleaseEvent(QMouseEvent* event)
 
 					glm::vec2 delta = p - m_move_reference;
 
-					glm::vec2 old_p0 = m_polydef->getPoint(m_line_point0);
-					glm::vec2 old_p1 = m_polydef->getPoint(m_line_point1);
-
-					m_polydef->edit(m_line_point0, old_p0 + delta);
-					m_polydef->edit(m_line_point1, old_p1 + delta);
-
-					bool valid = m_polydef->fullConvexTest();
-					if (!valid)
+					int num_points = m_poly[m_selected_poly]->getNumPoints();
+					for (int i = 0; i < num_points; i++)
 					{
-						// restore old points
-						m_polydef->edit(m_line_point0, old_p0);
-						m_polydef->edit(m_line_point1, old_p1);
+						glm::vec2 v = m_poly[m_selected_poly]->getPoint(i);
+						m_poly[m_selected_poly]->edit(i, v + delta);
 					}
-
-					m_line_dragging = false;
-					m_line_point0 = -1;
-					m_line_point1 = -1;
 				}
+
+				m_selected_poly = -1;
+
+				m_move_dragging = false;
 				break;
 			}
 		}
@@ -591,7 +542,7 @@ void ObjectDesignerWidget::mouseReleaseEvent(QMouseEvent* event)
 	update();
 }
 
-void ObjectDesignerWidget::mousePressEvent(QMouseEvent* event)
+void TileDesignerWidget::mousePressEvent(QMouseEvent* event)
 {
 	QPoint point = this->mapFromGlobal(event->globalPos());
 
@@ -612,20 +563,6 @@ void ObjectDesignerWidget::mousePressEvent(QMouseEvent* event)
 	{
 		switch (m_mode)
 		{
-			case MODE_DRAW_RECT:
-			{
-				if (!m_rect_drawing && !m_poly_closed)
-				{
-					m_rect_start_point = toUVCoords(glm::vec2(mouse_x, mouse_y));
-
-					if (m_snap_grid)
-						m_rect_start_point = snapToGrid(m_rect_start_point);
-
-					m_rect_drawing = true;
-				}
-				break;
-			}
-
 			case MODE_MOVE:
 			{
 				if (!m_move_dragging)
@@ -634,87 +571,19 @@ void ObjectDesignerWidget::mousePressEvent(QMouseEvent* event)
 					if (m_snap_grid)
 						mp = snapToGrid(mp);
 
-					bool inside = m_polydef->isPointInside(mp);
-					if (inside)
+					for (int i = 0; i < 2; i++)
 					{
-						m_move_reference = mp;
-						m_move_dragging = true;
-					}
-				}
-				break;
-			}
-
-			case MODE_EDIT_VERTICES:
-			{
-				if (m_poly_closed)
-				{
-					int num_points = m_polydef->getNumPoints();
-	
-					// find possible selected point
-					m_selected_point = -1;
-					for (int i=0; i < num_points; i++)
-					{
-						const glm::vec2& pp = toScreenCoords(m_polydef->getPoint(i));
-						
-						if (mouse_x >= (pp.x - POINT_CLICKING_THRESHOLD) &&
-							mouse_x <= (pp.x + POINT_CLICKING_THRESHOLD) &&
-							mouse_y >= (pp.y - POINT_CLICKING_THRESHOLD) &&
-							mouse_y <= (pp.y + POINT_CLICKING_THRESHOLD))
+						bool inside = m_poly[i]->isPointInside(mp);
+						if (inside)
 						{
-							m_selected_point = i;
-							break;
-						}
-					}
-				}
-				break;
-			}
-
-			case MODE_EDIT_EDGES:
-			{
-				if (!m_line_dragging)
-				{
-					glm::vec2 mp = toUVCoords(glm::vec2(mouse_x, mouse_y));
-					int num_points = m_polydef->getNumPoints();
-
-					float threshold = 0.0f;
-
-					// very ugly way to calculate threshold....
-					if (num_points > 0)
-					{
-						glm::vec2 p1 = m_polydef->getPoint(0);
-						const glm::vec2& pp = toScreenCoords(p1);
-						glm::vec2 p2 = toUVCoords(glm::vec2(pp.x + POINT_CLICKING_THRESHOLD, pp.y + POINT_CLICKING_THRESHOLD));
-						threshold = p2.x - p1.x;
-					}
-
-					for (int i=0; i < num_points; i++)
-					{
-						int point0 = -1;
-						int point1 = -1;
-
-						if (i == 0)
-						{
-							point0 = num_points - 1;
-							point1 = 0;
-						}
-						else
-						{
-							point0 = i - 1;
-							point1 = i;							
-						}											
-
-						if (m_polydef->isPointOnEdge(mp, point0, point1, threshold))
-						{
-							m_line_dragging = true;
-							m_line_point0 = point0;
-							m_line_point1 = point1;
 							m_move_reference = mp;
-							if (m_snap_grid)
-								m_move_reference = snapToGrid(m_move_reference);
+							m_move_dragging = true;
+							m_selected_poly = i;
 							break;
 						}
 					}
 				}
+				
 				break;
 			}
 		}
@@ -723,7 +592,7 @@ void ObjectDesignerWidget::mousePressEvent(QMouseEvent* event)
 	update();
 }
 
-void ObjectDesignerWidget::mouseMoveEvent(QMouseEvent* event)
+void TileDesignerWidget::mouseMoveEvent(QMouseEvent* event)
 {
 	QPoint point = this->mapFromGlobal(event->globalPos());
 
@@ -740,12 +609,13 @@ void ObjectDesignerWidget::mouseMoveEvent(QMouseEvent* event)
 	update();
 }
 
-void ObjectDesignerWidget::keyReleaseEvent(QKeyEvent* event)
+void TileDesignerWidget::keyReleaseEvent(QKeyEvent* event)
 {
 	int key = event->key();
 
 	switch (m_mode)
 	{
+		/*
 		case MODE_DRAW_POLY:
 		{
 			if (key == Qt::Key_Escape)
@@ -793,13 +663,14 @@ void ObjectDesignerWidget::keyReleaseEvent(QKeyEvent* event)
 			}		
 			break;
 		}
+		*/
 	}
 
 	update();
 }
 
-
-void ObjectDesignerWidget::renderDrawPolyMode(QPainter& painter)
+/*
+void TileDesignerWidget::renderDrawPolyMode(QPainter& painter)
 {
 	QPoint mouse_p = this->mapFromGlobal(QCursor::pos());
 
@@ -884,7 +755,7 @@ void ObjectDesignerWidget::renderDrawPolyMode(QPainter& painter)
 	}
 }
 
-void ObjectDesignerWidget::renderDrawRectMode(QPainter& painter)
+void TileDesignerWidget::renderDrawRectMode(QPainter& painter)
 {
 	QPoint mouse_p = this->mapFromGlobal(QCursor::pos());
 	glm::vec2 mouse_lp = toUVCoords(glm::vec2(mouse_p.x(), mouse_p.y()));
@@ -908,8 +779,9 @@ void ObjectDesignerWidget::renderDrawRectMode(QPainter& painter)
 		painter.fillRect(end_p.x-3, start_p.y-2, 5, 5, m_point_color);
 	}
 }
+*/
 
-void ObjectDesignerWidget::renderClosedPoly(QPainter& painter)
+void TileDesignerWidget::renderPoly(QPainter& painter, int polynum)
 {
 	QPoint mouse_p = this->mapFromGlobal(QCursor::pos());
 	glm::vec2 mouse_lp = toUVCoords(glm::vec2(mouse_p.x(), mouse_p.y()));
@@ -917,16 +789,16 @@ void ObjectDesignerWidget::renderClosedPoly(QPainter& painter)
 	if (m_snap_grid)
 		mouse_lp = snapToGrid(mouse_lp);
 
-	int num_points = m_polydef->getNumPoints();
+	int num_points = m_poly[polynum]->getNumPoints();
 
 	if (num_points >= 3)
 	{
 		QPointF ppoints[8];
 		for (int i=0; i < num_points; i++)
 		{
-			glm::vec2 p = toScreenCoords(m_polydef->getPoint(i));
+			glm::vec2 p = toScreenCoords(m_poly[polynum]->getPoint(i));
 			
-			if (m_move_dragging)
+			if (m_move_dragging && polynum == m_selected_poly)
 			{
 				glm::vec2 mouse_delta = toScreenCoords(m_move_reference) - glm::vec2(toScreenCoords(mouse_lp));
 				p -= mouse_delta;
@@ -936,26 +808,16 @@ void ObjectDesignerWidget::renderClosedPoly(QPainter& painter)
 			ppoints[i].setY(p.y);
 		}
 
-		if (m_selected_point >= 0)
+		if (polynum == m_selected_poly)
 		{
-			glm::vec2 p = toScreenCoords(mouse_lp);
-			ppoints[m_selected_point].setX(p.x);
-			ppoints[m_selected_point].setY(p.y);
+			painter.setPen(m_validline_color);
+			painter.setBrush(QBrush(m_validpoly_color));
 		}
-
-		if (m_line_dragging)
+		else
 		{
-			glm::vec2 mouse_delta = toScreenCoords(m_move_reference) - glm::vec2(toScreenCoords(mouse_lp));
-
-			ppoints[m_line_point0].setX(ppoints[m_line_point0].x() - mouse_delta.x);
-			ppoints[m_line_point0].setY(ppoints[m_line_point0].y() - mouse_delta.y);
-			
-			ppoints[m_line_point1].setX(ppoints[m_line_point1].x() - mouse_delta.x);
-			ppoints[m_line_point1].setY(ppoints[m_line_point1].y() - mouse_delta.y);
+			painter.setPen(m_closedline_color);
+			painter.setBrush(QBrush(m_closedpoly_color));
 		}
-
-		painter.setPen(m_closedline_color);
-		painter.setBrush(QBrush(m_closedpoly_color));
 
 		painter.drawPolygon(ppoints, num_points);
 
@@ -965,22 +827,17 @@ void ObjectDesignerWidget::renderClosedPoly(QPainter& painter)
 		{
 			QColor color = m_point_color;
 
-			if (i == m_selected_point)
-			{
-				color = m_errorline_color;
-			}
-
 			painter.fillRect(ppoints[i].x()-3, ppoints[i].y()-2, 5, 5, color);
 		}
 	}
 }
 
-void ObjectDesignerWidget::drawGrid(QPainter& painter)
+void TileDesignerWidget::drawGrid(QPainter& painter)
 {
 	int w = width();
 	int h = height();
 
-	float grid_size = ObjectDesigner::GRID_SIZE[m_grid_size];	
+	float grid_size = TileDesigner::GRID_SIZE[m_grid_size];	
 
 	glm::vec2 tl = toUVCoords(glm::vec2(0, 0));
 	glm::vec2 br = toUVCoords(glm::vec2(w, h));
@@ -1020,17 +877,12 @@ void ObjectDesignerWidget::drawGrid(QPainter& painter)
 }
 
 
-void ObjectDesignerWidget::paintEvent(QPaintEvent* event)
+void TileDesignerWidget::paintEvent(QPaintEvent* event)
 {
 	paintGL();
 }
 
-int ObjectDesignerWidget::numPoints()
-{
-	return m_polydef->getNumPoints();
-}
-
-void ObjectDesignerWidget::setColor(QColor color)
+void TileDesignerWidget::setColor(QColor color)
 {
 	m_object_color = color;
 
@@ -1048,7 +900,7 @@ void ObjectDesignerWidget::setColor(QColor color)
 
 
 
-const float ObjectDesigner::GRID_SIZE[ObjectDesigner::NUM_GRID_SIZES] = 
+const float TileDesigner::GRID_SIZE[TileDesigner::NUM_GRID_SIZES] = 
 {
 	0.00390625f,
 	0.0078125f,
@@ -1060,7 +912,7 @@ const float ObjectDesigner::GRID_SIZE[ObjectDesigner::NUM_GRID_SIZES] =
 	0.5f
 };
 
-const float ObjectDesigner::ZOOM_LEVELS[ObjectDesigner::NUM_ZOOM_LEVELS] =
+const float TileDesigner::ZOOM_LEVELS[TileDesigner::NUM_ZOOM_LEVELS] =
 {
 	0.5f,
 	1.0f,
@@ -1068,11 +920,11 @@ const float ObjectDesigner::ZOOM_LEVELS[ObjectDesigner::NUM_ZOOM_LEVELS] =
 	3.0f,
 };
 
-ObjectDesigner::ObjectDesigner(QWidget* parent, Level* level) : QDockWidget("Object Designer", parent, 0)
+TileDesigner::TileDesigner(QWidget* parent, Level* level) : QDockWidget("Tile Designer", parent, 0)
 {
 	m_level = level;
 
-	m_widget = new ObjectDesignerWidget(parent, m_level);
+	m_widget = new TileDesignerWidget(parent, m_level);
 	m_window = new QMainWindow(0);
 
 	setFocusPolicy(Qt::ClickFocus);
@@ -1083,38 +935,55 @@ ObjectDesigner::ObjectDesigner(QWidget* parent, Level* level) : QDockWidget("Obj
 	// edit tools
 	m_toolgroup = new QActionGroup(this);
 
-	m_draw_poly_action = new QAction(QIcon("polygon.png"), tr("Draw Poly"), this);
-	m_draw_poly_action->setCheckable(true);
-	connect(m_draw_poly_action, SIGNAL(triggered()), this, SLOT(setDrawPolyMode()));
-
-	m_draw_rect_action = new QAction(QIcon("rect.png"), tr("Draw Rect"), this);
-	m_draw_rect_action->setCheckable(true);
-	connect(m_draw_rect_action, SIGNAL(triggered()), this, SLOT(setDrawRectMode()));
-
-	m_move_action = new QAction(QIcon("move.png"), tr("Move Object"), this);
+	m_move_action = new QAction(QIcon("move.png"), tr("Move"), this);
 	m_move_action->setCheckable(true);
 	connect(m_move_action, SIGNAL(triggered()), this, SLOT(setMoveMode()));
 
-	m_edit_vertex_action = new QAction(QIcon("vertexedit.png"), tr("Edit Vertices"), this);
-	m_edit_vertex_action->setCheckable(true);
-	connect(m_edit_vertex_action, SIGNAL(triggered()), this, SLOT(setEditVertexMode()));
+	m_rotate_action = new QAction(QIcon("rotate.png"), tr("Rotate"), this);
+	m_rotate_action->setCheckable(true);
+	connect(m_rotate_action, SIGNAL(triggered()), this, SLOT(setRotateMode()));
 
-	m_edit_edge_action = new QAction(QIcon("edgeedit.png"), tr("Edit Edges"), this);
-	m_edit_edge_action->setCheckable(true);
-	connect(m_edit_edge_action, SIGNAL(triggered()), this, SLOT(setEditEdgeMode()));
-
-	m_toolgroup->addAction(m_draw_poly_action);
-	m_toolgroup->addAction(m_draw_rect_action);
+	m_scale_action = new QAction(QIcon("scale.png"), tr("Scale"), this);
+	m_scale_action->setCheckable(true);
+	connect(m_scale_action, SIGNAL(triggered()), this, SLOT(setScaleMode()));
+		
 	m_toolgroup->addAction(m_move_action);
-	m_toolgroup->addAction(m_edit_vertex_action);
-	m_toolgroup->addAction(m_edit_edge_action);
+	m_toolgroup->addAction(m_rotate_action);
+	m_toolgroup->addAction(m_scale_action);
+
+
+	// tile tools
+	m_tilegroup = new QActionGroup(this);
+
+	m_tiletype_combo = new QComboBox();
+	m_tiletype_combo->setWindowTitle("Tile type");
+	m_tiletype_combo->addItem("Full", QVariant(0));
+	m_tiletype_combo->addItem("Left", QVariant(1));
+	m_tiletype_combo->addItem("Right", QVariant(2));
+	m_tiletype_combo->addItem("Top", QVariant(3));
+	m_tiletype_combo->addItem("Bottom", QVariant(4));
+	m_tiletype_combo->addItem("Middle", QVariant(5));
+	m_tiletype_combo->setFocusPolicy(Qt::NoFocus);
+	connect(m_tiletype_combo, SIGNAL(currentIndexChanged(int)), m_widget, SLOT(setTileType(int)));
+
+	m_tiletype_label = new QLabel("Tile type:");
+	m_tiletype_label->setMinimumWidth(50);
+	QBoxLayout* tiletype_layout = new QBoxLayout(QBoxLayout::LeftToRight);
+	tiletype_layout->setSpacing(2);
+	tiletype_layout->setMargin(1);
+	tiletype_layout->addWidget(m_tiletype_label);
+	tiletype_layout->addWidget(m_tiletype_combo);
+	m_tiletype_widget = new QWidget;
+	m_tiletype_widget->setMaximumHeight(30);
+	m_tiletype_widget->setLayout(tiletype_layout);
+
 
 	// zoom tools
 	m_zoom_box = new QComboBox();
 	m_zoom_box->setWindowTitle("Zoom");
-	for (int i=0; i < ObjectDesigner::NUM_ZOOM_LEVELS; i++)
+	for (int i=0; i < TileDesigner::NUM_ZOOM_LEVELS; i++)
 	{
-		m_zoom_box->addItem(tr("%1%").arg((int)(ObjectDesigner::ZOOM_LEVELS[i] * 100.0f)), QVariant(i + 1));
+		m_zoom_box->addItem(tr("%1%").arg((int)(TileDesigner::ZOOM_LEVELS[i] * 100.0f)), QVariant(i + 1));
 	}
 	m_zoom_box->setFocusPolicy(Qt::NoFocus);
 
@@ -1141,9 +1010,9 @@ ObjectDesigner::ObjectDesigner(QWidget* parent, Level* level) : QDockWidget("Obj
 
 	m_gridsize_combo = new QComboBox();
 	m_gridsize_combo->setWindowTitle("Grid Size");
-	for (int i=0; i < ObjectDesigner::NUM_GRID_SIZES; i++)
+	for (int i=0; i < TileDesigner::NUM_GRID_SIZES; i++)
 	{
-		m_gridsize_combo->addItem(tr("%1").arg(ObjectDesigner::GRID_SIZE[i], 0, 'f', 2));
+		m_gridsize_combo->addItem(tr("%1").arg(TileDesigner::GRID_SIZE[i], 0, 'f', 2));
 	}
 	connect(m_gridsize_combo, SIGNAL(activated(int)), this, SLOT(setGridSize(int)));
 	m_gridsize_label = new QLabel("Grid:");
@@ -1189,12 +1058,14 @@ ObjectDesigner::ObjectDesigner(QWidget* parent, Level* level) : QDockWidget("Obj
 
 	// add toolbar
 	m_edit_toolbar = new QToolBar(m_window);
-	m_edit_toolbar->addAction(m_draw_poly_action);
-	m_edit_toolbar->addAction(m_draw_rect_action);
 	m_edit_toolbar->addAction(m_move_action);
-	m_edit_toolbar->addAction(m_edit_vertex_action);
-	m_edit_toolbar->addAction(m_edit_edge_action);
+	m_edit_toolbar->addAction(m_rotate_action);
+	m_edit_toolbar->addAction(m_scale_action);
 	m_window->addToolBar(m_edit_toolbar);
+
+	m_tile_toolbar = new QToolBar(m_window);
+	m_tile_toolbar->addWidget(m_tiletype_widget);
+	m_window->addToolBar(m_tile_toolbar);
 
 	m_zoom_toolbar = new QToolBar(m_window);
 	m_zoom_toolbar->addWidget(m_zoomlevel_widget);
@@ -1238,86 +1109,54 @@ ObjectDesigner::ObjectDesigner(QWidget* parent, Level* level) : QDockWidget("Obj
 	// default zoom = 100%
 	m_zoom_box->setCurrentIndex(1);
 
-	// draw poly enable initially
-	m_draw_poly_action->setChecked(true);
-	m_widget->setMode(ObjectDesignerWidget::MODE_DRAW_POLY);
+	// move mode enable initially
+	m_move_action->setChecked(true);
+	m_widget->setMode(TileDesignerWidget::MODE_MOVE);
 
 
 	m_gridsize_combo->setCurrentIndex(3);
 	m_widget->setGrid(3);
 }
 
-ObjectDesigner::~ObjectDesigner()
+TileDesigner::~TileDesigner()
 {
 }
 
-
-void ObjectDesigner::setDrawPolyMode()
+void TileDesigner::setMoveMode()
 {
-	m_widget->setMode(ObjectDesignerWidget::MODE_DRAW_POLY);
+	m_widget->setMode(TileDesignerWidget::MODE_MOVE);
 }
 
-void ObjectDesigner::setDrawRectMode()
+void TileDesigner::reset()
 {
-	m_widget->setMode(ObjectDesignerWidget::MODE_DRAW_RECT);
+	m_widget->resetObject(TileDesignerWidget::POLY_TOP | TileDesignerWidget::POLY_SIDE);
 }
 
-void ObjectDesigner::setMoveMode()
+void TileDesigner::insertTile()
 {
-	m_widget->setMode(ObjectDesignerWidget::MODE_MOVE);
-}
+	bool ok;
+	QString name = QInputDialog::getText(this, tr("Enter tile name"), tr("Name:"), QLineEdit::Normal, "", &ok);
 
-void ObjectDesigner::setEditVertexMode()
-{
-	m_widget->setMode(ObjectDesignerWidget::MODE_EDIT_VERTICES);
-}
-
-void ObjectDesigner::setEditEdgeMode()
-{
-	m_widget->setMode(ObjectDesignerWidget::MODE_EDIT_EDGES);
-}
-
-void ObjectDesigner::reset()
-{
-	m_widget->resetObject();
-}
-
-void ObjectDesigner::insertTile()
-{
-	if (m_widget->numPoints() != 4)
+	if (ok && !name.isEmpty())
 	{
-		QMessageBox box;		
-		box.setText("Wrong number of points");
-		box.setInformativeText("Tiles need to have 4 points.");
-		box.setStandardButtons(QMessageBox::Ok);
-		int ret = box.exec();				
-	}
-	else
-	{
-		bool ok;
-		QString name = QInputDialog::getText(this, tr("Enter tile name"), tr("Name:"), QLineEdit::Normal, "", &ok);
-
-		if (ok && !name.isEmpty())
-		{
-			m_widget->insertTile(name);
-		}
+		m_widget->insertTile(name);
 	}
 }
 
 
 
-void ObjectDesigner::closeEvent(QCloseEvent* event)
+void TileDesigner::closeEvent(QCloseEvent* event)
 {
 	emit onClose();
 }
 
-void ObjectDesigner::setTexture(QImage* texture)
+void TileDesigner::setTexture(QImage* texture)
 {
 	m_widget->setTexture(texture);
 }
 
 
-void ObjectDesigner::toggleGrid()
+void TileDesigner::toggleGrid()
 {
 	if (m_togglegrid_action->isChecked())
 		emit m_widget->enableShowGrid(true);
@@ -1325,7 +1164,7 @@ void ObjectDesigner::toggleGrid()
 		emit m_widget->enableShowGrid(false);
 }
 
-void ObjectDesigner::snapGrid()
+void TileDesigner::snapGrid()
 {
 	if (m_snapgrid_action->isChecked())
 		emit m_widget->enableSnapGrid(true);
@@ -1333,12 +1172,12 @@ void ObjectDesigner::snapGrid()
 		emit m_widget->enableSnapGrid(false);
 }
 
-void ObjectDesigner::setGridSize(int size)
+void TileDesigner::setGridSize(int size)
 {
 	emit m_widget->setGrid(size);
 }
 
-void ObjectDesigner::chooseColor()
+void TileDesigner::chooseColor()
 {
 	QColor result = QColorDialog::getColor(m_object_color, this, tr("Select object color"));
 	if (result.isValid())

@@ -2003,8 +2003,8 @@ void GLWidget::renderEdgeData(QPainter& painter)
 	{
 		std::vector<int> points = m_edgedata.at(loop);
 		int num_points = points.size();
-		if (num_points > 255)
-			num_points = 255;
+		if (num_points > 1023)
+			num_points = 1023;
 
 		for (int p = 0; p < num_points; p++)
 		{
