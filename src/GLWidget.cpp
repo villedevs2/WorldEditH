@@ -92,6 +92,11 @@ void GLWidget::reset()
 
 	m_saved_object->reset();
 
+	m_edgedata.clear();
+
+	m_tile_selx = -1;
+	m_tile_sely = -1;
+
 	m_create_type = Level::OBJECT_TYPE_TRIGGER;
 	m_create_trigger_type = 0;
 }

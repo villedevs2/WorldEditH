@@ -38,6 +38,17 @@ public:
 		TILE_TOPBOT = 6,
 	};
 
+	enum TileSide
+	{
+		SIDE_LEFT = 0x1,
+		SIDE_TOP_LEFT = 0x2,
+		SIDE_TOP_RIGHT = 0x4,
+		SIDE_RIGHT = 0x8,
+		SIDE_BOT_RIGHT = 0x10,
+		SIDE_BOT_LEFT = 0x20,
+		SIDE_MID = 0x40,
+	};
+
 	struct Tile
 	{
 		glm::vec2 top_points[6];
@@ -46,6 +57,7 @@ public:
 		unsigned int color;
 		int id;
 		Tilemap::TileType type;
+		int side_bits;
 	};
 
 

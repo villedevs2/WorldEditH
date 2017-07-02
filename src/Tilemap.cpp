@@ -537,6 +537,56 @@ int Tilemap::insertTile(std::string name, PolygonDef* top, PolygonDef* side, uns
 	}
 	*/
 
+	tile.side_bits = 0;
+
+	switch (type)
+	{
+		case TILE_FULL:
+		{
+			tile.side_bits |= SIDE_LEFT;
+			tile.side_bits |= SIDE_TOP_LEFT;
+			tile.side_bits |= SIDE_TOP_RIGHT;
+			tile.side_bits |= SIDE_RIGHT;
+			tile.side_bits |= SIDE_BOT_RIGHT;
+			tile.side_bits |= SIDE_BOT_LEFT;
+			break;
+		}
+		case TILE_LEFT:
+		{
+			tile.side_bits |= SIDE_LEFT;
+			tile.side_bits |= SIDE_TOP_LEFT;
+			tile.side_bits |= SIDE_BOT_LEFT;
+			tile.side_bits |= SIDE_MID;
+			break;
+		}
+		case TILE_RIGHT:
+		{
+			tile.side_bits |= SIDE_RIGHT;
+			tile.side_bits |= SIDE_TOP_RIGHT;
+			tile.side_bits |= SIDE_BOT_RIGHT;
+			tile.side_bits |= SIDE_MID;
+			break;
+		}
+		case TILE_TOP:
+		{
+			tile.side_bits |= SIDE_TOP_RIGHT;
+			tile.side_bits |= SIDE_TOP_LEFT;
+			break;
+		}
+		case TILE_BOTTOM:
+		{
+			tile.side_bits |= SIDE_BOT_RIGHT;
+			tile.side_bits |= SIDE_BOT_LEFT;
+			break;
+		}
+		case TILE_MID:
+		{
+			tile.side_bits |= SIDE_LEFT;
+			tile.side_bits |= SIDE_RIGHT;
+			break;
+		}
+	}
+
 
 	for (int i = 0; i < side->getNumPoints(); i++)
 	{

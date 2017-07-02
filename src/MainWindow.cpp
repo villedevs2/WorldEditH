@@ -924,41 +924,187 @@ void MainWindow::edgify()
 					{
 						int ctile = m_level->readTilemap(tx, ty);
 						if (ctile >= 0)
-							tilecon[i] = 1;
+						{
+							const Tilemap::Tile* tt = m_level->getTile(ctile);
+
+							switch (i)
+							{
+								case 0:		// LEFT
+								{
+									if ((tt->side_bits & Tilemap::SIDE_RIGHT) && (tile->side_bits & Tilemap::SIDE_LEFT))
+										tilecon[i] = 1;
+									break;
+								}
+								case 1:		// TOPLEFT
+								{
+									if ((tt->side_bits & Tilemap::SIDE_BOT_RIGHT) && (tile->side_bits & Tilemap::SIDE_TOP_LEFT))
+										tilecon[i] = 1;
+									break;
+								}
+								case 2:		// TOPRIGHT
+								{
+									if ((tt->side_bits & Tilemap::SIDE_BOT_LEFT) && (tile->side_bits & Tilemap::SIDE_TOP_RIGHT))
+										tilecon[i] = 1;
+									break;
+								}
+								case 3:		// RIGHT
+								{
+									if ((tt->side_bits & Tilemap::SIDE_LEFT) && (tile->side_bits & Tilemap::SIDE_RIGHT))
+										tilecon[i] = 1;
+									break;
+								}
+								case 4:		// BOTTOM RIGHT
+								{
+									if ((tt->side_bits & Tilemap::SIDE_TOP_LEFT) && (tile->side_bits & Tilemap::SIDE_BOT_RIGHT))
+										tilecon[i] = 1;
+									break;
+								}
+								case 5:		// BOTTOM LEFT
+								{
+									if ((tt->side_bits & Tilemap::SIDE_TOP_RIGHT) && (tile->side_bits & Tilemap::SIDE_BOT_LEFT))
+										tilecon[i] = 1;
+									break;
+								}
+							}
+						}
 					}
 				}
 
 				fprintf(fout, "Tile %d, %d: L %d, TL %d, TR %d, R: %d, BR: %d, BL: %d\n", x, y, tilecon[0], tilecon[1], tilecon[2], tilecon[3], tilecon[4], tilecon[5]);
 
-				// LEFT
-				if (tilecon[0] == 0)
+				/*		p1
+					p0		p2
+					p5		p3
+						p4
+				*/
+
+				switch (tile->type)
 				{
-					edgify_fill_point(fout, points, p[0], p[5]);
-				}
-				// TOPLEFT
-				if (tilecon[1] == 0)
-				{
-					edgify_fill_point(fout, points, p[0], p[1]);
-				}
-				// TOPRIGHT
-				if (tilecon[2] == 0)
-				{
-					edgify_fill_point(fout, points, p[1], p[2]);
-				}
-				// RIGHT
-				if (tilecon[3] == 0)
-				{
-					edgify_fill_point(fout, points, p[2], p[3]);
-				}
-				// BOTTOM RIGHT
-				if (tilecon[4] == 0)
-				{
-					edgify_fill_point(fout, points, p[3], p[4]);
-				}
-				// BOTTOM LEFT
-				if (tilecon[5] == 0)
-				{
-					edgify_fill_point(fout, points, p[4], p[5]);
+					case Tilemap::TILE_FULL:
+					{
+						// LEFT
+						if (tilecon[0] == 0)
+						{
+							edgify_fill_point(fout, points, p[0], p[5]);
+						}
+						// TOPLEFT
+						if (tilecon[1] == 0)
+						{
+							edgify_fill_point(fout, points, p[0], p[1]);
+						}
+						// TOPRIGHT
+						if (tilecon[2] == 0)
+						{
+							edgify_fill_point(fout, points, p[1], p[2]);
+						}
+						// RIGHT
+						if (tilecon[3] == 0)
+						{
+							edgify_fill_point(fout, points, p[2], p[3]);
+						}
+						// BOTTOM RIGHT
+						if (tilecon[4] == 0)
+						{
+							edgify_fill_point(fout, points, p[3], p[4]);
+						}
+						// BOTTOM LEFT
+						if (tilecon[5] == 0)
+						{
+							edgify_fill_point(fout, points, p[4], p[5]);
+						}
+						break;
+					}
+					case Tilemap::TILE_LEFT:
+					{
+						// LEFT
+						if (tilecon[0] == 0)
+						{
+							edgify_fill_point(fout, points, p[0], p[5]);
+						}
+						// TOPLEFT
+						if (tilecon[1] == 0)
+						{
+							edgify_fill_point(fout, points, p[0], p[1]);
+						}
+						// BOTTOM LEFT
+						if (tilecon[5] == 0)
+						{
+							edgify_fill_point(fout, points, p[4], p[5]);
+						}
+						// always fill mid
+						edgify_fill_point(fout, points, p[4], p[1]);
+						break;
+					}
+					case Tilemap::TILE_RIGHT:
+					{
+						// TOPRIGHT
+						if (tilecon[2] == 0)
+						{
+							edgify_fill_point(fout, points, p[1], p[2]);
+						}
+						// RIGHT
+						if (tilecon[3] == 0)
+						{
+							edgify_fill_point(fout, points, p[2], p[3]);
+						}
+						// BOTTOM RIGHT
+						if (tilecon[4] == 0)
+						{
+							edgify_fill_point(fout, points, p[3], p[4]);
+						}
+						// always fill mid
+						edgify_fill_point(fout, points, p[4], p[1]);
+						break;
+					}
+					case Tilemap::TILE_TOP:
+					{
+						// TOPLEFT
+						if (tilecon[1] == 0)
+						{
+							edgify_fill_point(fout, points, p[0], p[1]);
+						}
+						// TOPRIGHT
+						if (tilecon[2] == 0)
+						{
+							edgify_fill_point(fout, points, p[1], p[2]);
+						}
+						// always fill mid
+						edgify_fill_point(fout, points, p[0], p[2]);
+						break;
+					}
+					case Tilemap::TILE_BOTTOM:
+					{
+						// BOTTOM RIGHT
+						if (tilecon[4] == 0)
+						{
+							edgify_fill_point(fout, points, p[3], p[4]);
+						}
+						// BOTTOM LEFT
+						if (tilecon[5] == 0)
+						{
+							edgify_fill_point(fout, points, p[4], p[5]);
+						}
+						// always fill mid
+						edgify_fill_point(fout, points, p[5], p[3]);
+						break;
+					}
+					case Tilemap::TILE_MID:
+					{
+						// LEFT
+						if (tilecon[0] == 0)
+						{
+							edgify_fill_point(fout, points, p[0], p[5]);
+						}
+						// RIGHT
+						if (tilecon[3] == 0)
+						{
+							edgify_fill_point(fout, points, p[2], p[3]);
+						}
+						// always fill mid
+						edgify_fill_point(fout, points, p[0], p[2]);
+						edgify_fill_point(fout, points, p[5], p[3]);
+						break;
+					}
 				}
 
 				//fprintf(fout, "Tile %d, %d: tl %d, %d, tr %d, %d, bl %d, %d, br %d, %d\n", x, y, topleft.x, topleft.y, topright.x, topright.y, botleft.x, botleft.y, botright.x, botright.y);
