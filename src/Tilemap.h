@@ -35,7 +35,6 @@ public:
 		TILE_TOP = 3,
 		TILE_BOTTOM = 4,
 		TILE_MID = 5,
-		TILE_TOPBOT = 6,
 	};
 
 	enum TileSide

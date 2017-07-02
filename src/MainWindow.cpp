@@ -364,7 +364,7 @@ void MainWindow::openFile()
 	QString filename = QFileDialog::getOpenFileName(this,
 													tr("Open Level File"),
 													getLevelDir(),
-													tr("Level File (*.blpf);;All Files (*.*)"));
+													tr("Level File (*.hspf);;All Files (*.*)"));
 
 	if (!filename.isEmpty())
 	{
@@ -386,7 +386,7 @@ bool MainWindow::saveFile()
 		QString filename = QFileDialog::getSaveFileName(this,
 														tr("Save Level File"),
 														getLevelDir(),
-														tr("Level File (*.blpf);;All Files (*.*)"));
+														tr("Level File (*.hspf);;All Files (*.*)"));
 		if (!filename.isEmpty())
 		{
 			//writeLevelFile(filename);
@@ -419,7 +419,7 @@ bool MainWindow::saveAsFile()
 	QString filename = QFileDialog::getSaveFileName(this,
 													tr("Save Level File"),
 													getLevelDir(),
-													tr("Level File (*.blpf);;All Files (*.*)"));
+													tr("Level File (*.hspf);;All Files (*.*)"));
 
 	if (!filename.isEmpty())
 	{
@@ -443,7 +443,7 @@ void MainWindow::exportLevel()
 	QString filename = QFileDialog::getSaveFileName(this,
 													tr("Export Level File"),
 													getExportDir(),
-													tr("Level Binary (*.blb);;All Files (*.*)"));
+													tr("Level Binary (*.level);;All Files (*.*)"));
 
 	if (!filename.isEmpty())
 	{
@@ -793,7 +793,7 @@ void MainWindow::edgify_fill_point(FILE* fout, coord_point* points, int p1, int 
 	}
 }
 
-void MainWindow::edgify()
+bool MainWindow::edgify(std::vector<std::vector<int>>& ptlist)
 {
 	struct coord_pair
 	{
@@ -1125,7 +1125,7 @@ void MainWindow::edgify()
 		}
 	}
 
-	std::vector<std::vector<int>> ptlist;
+	
 
 	ptlist.clear();
 
@@ -1199,6 +1199,8 @@ void MainWindow::edgify()
 			if (!closed)
 			{
 				fprintf(fout, "Loop not closed!\n");
+
+				return false;
 			}
 
 			ptlist.push_back(newlist);
@@ -1215,14 +1217,26 @@ void MainWindow::edgify()
 		fprintf(fout, "\n");
 	}
 
-	m_glwidget->setEdgeData(ptlist);
 
 
 	fclose(fout);
 
 	delete[] points;
+
+	return true;
 }
 
+
+
+void MainWindow::doEdgify()
+{
+	std::vector<std::vector<int>> ptlist;
+
+	if (edgify(ptlist))
+	{
+		m_glwidget->setEdgeData(ptlist);
+	}
+}
 
 
 void MainWindow::createActions()
@@ -1405,7 +1419,7 @@ void MainWindow::createActions()
 
 	// edgify
 	m_edgify_action = new QAction(tr("Edgify"), this);
-	connect(m_edgify_action, SIGNAL(triggered()), this, SLOT(edgify()));
+	connect(m_edgify_action, SIGNAL(triggered()), this, SLOT(doEdgify()));
 
 
 	// zoom
@@ -1984,10 +1998,8 @@ bool MainWindow::writeBinaryProjectFile(QString& filename)
 {
 	BinaryFile output;
 
-	const char blpf_id[4] = { 0x42, 0x4c, 0x50, 0x46 };
-	const unsigned int blpf_version = 0x10003;
-
-	const char affix_id[4] = { 0x41, 0x46, 0x58, 0x58 };
+	const char hspf_id[4] = { 0x48, 0x53, 0x50, 0x46 };
+	const unsigned int hspf_version = 0x10002;
 
 	int num_objects = m_level->numObjects();
 
@@ -1996,10 +2008,10 @@ bool MainWindow::writeBinaryProjectFile(QString& filename)
 		output.open(filename.toStdString(), BinaryFile::MODE_WRITEONLY);
 
 		// ID
-		output.write((char*)blpf_id, 4);
+		output.write((char*)hspf_id, 4);
 
 		// version
-		output.write_dword(blpf_version);
+		output.write_dword(hspf_version);
 
 		// texture name
 		QByteArray texname = m_texture_file.toLocal8Bit();
@@ -2085,97 +2097,81 @@ bool MainWindow::writeBinaryProjectFile(QString& filename)
 			}
 			output.write_byte(0);	// null terminator
 
-			output.write_dword(tile->id);
+			// tile type
+			output.write_dword(tile->type);
 
-			// TODOOOOOOOO
-			/*
-			for (int j=0; j < 4; j++)
+			int num_top_points = 0;
+
+			// top UVs
+			switch (tile->type)
 			{
-				output.write_float(tile->points[j].x);
-				output.write_float(tile->points[j].y);
+				case Tilemap::TILE_FULL:	num_top_points = 6; break;				
+				case Tilemap::TILE_LEFT:	num_top_points = 4; break;				
+				case Tilemap::TILE_RIGHT:	num_top_points = 4; break;
+				case Tilemap::TILE_TOP:		num_top_points = 3; break;				
+				case Tilemap::TILE_BOTTOM:	num_top_points = 3; break;
+				case Tilemap::TILE_MID:		num_top_points = 4; break;
 			}
-			*/
+
+			for (int j = 0; j < num_top_points; j++)
+			{
+				output.write_float(tile->top_points[j].x);
+				output.write_float(tile->top_points[j].y);
+			}
+
+			// side UVs
+			for (int j = 0; j < 4; j++)
+			{
+				output.write_float(tile->side_points[j].x);
+				output.write_float(tile->side_points[j].y);
+			}
+
+			// tile color
+			output.write_dword(tile->color);
 		}
 
 		// tilemap
-		const Tilemap::Config& tilemap = m_level->getTilemapConfig();
 
-		// tilemap xstart
-		output.write_dword(tilemap.xstart);
+		// tilemap width
+		output.write_dword(m_level->getTilemapWidth());
 
-		// tilemap xend
-		output.write_dword(tilemap.xend);
-
-		// tilemap ystart
-		output.write_dword(tilemap.ystart);
-
-		// tilemap yend
-		output.write_dword(tilemap.yend);
-
-		// tilemap tile width
-		output.write_float(tilemap.tile_width);
-
-		// tilemap tile height
-		output.write_float(tilemap.tile_height);
+		// tilemap height
+		output.write_dword(m_level->getTilemapHeight());
 
 		// tilemap data
-		for (int j=tilemap.ystart; j < tilemap.yend; j++)
+		for (int j=0; j < m_level->getTilemapHeight(); j++)
 		{
-			for (int i=tilemap.xstart; i < tilemap.xend; i++)
+			for (int i=0; i < m_level->getTilemapWidth(); i++)
 			{
 				output.write_dword(m_level->readTilemap(i, j));
 			}
 		}
 
+		std::vector<std::vector<int>> ptlist;
 
-		// affixes
-		bool enable;
-		int mins, secs;
-		QString item;
-		int num;
+		if (!edgify(ptlist))
+		{
+			throw "Edgify failed!";
+		}
 
-		// ID
-		output.write((char*)affix_id, 4);
+		// edges
+		int num_edges = ptlist.size();
 
-		// time limit
-		m_level_conf->getTimelimit(&enable, &mins, &secs);
-		output.write_dword(enable ? 1 : 0);
-		output.write_dword(mins << 8 | secs);
+		// num of edges
+		output.write_dword(num_edges);
 
-		// collect 1
-		m_level_conf->getCollect1(&enable, &item, &num);
-		output.write_dword(enable ? 1 : 0);
-		output.write_string(item.toStdString());
-		output.write_dword(num);
+		for (int j = 0; j < num_edges; j++)
+		{
+			std::vector<int> points = ptlist.at(j);
+			int num_points = points.size();
 
-		// collect 2
-		m_level_conf->getCollect2(&enable, &item, &num);
-		output.write_dword(enable ? 1 : 0);
-		output.write_string(item.toStdString());
-		output.write_dword(num);
+			output.write_dword(num_points);
+			for (int k = 0; k < num_points; k++)
+			{
+				output.write_dword(points[k]);
+			}
+		}
 
-		// collect 3
-		m_level_conf->getCollect3(&enable, &item, &num);
-		output.write_dword(enable ? 1 : 0);
-		output.write_string(item.toStdString());
-		output.write_dword(num);
-
-		// don't collect
-		m_level_conf->getDontcollect(&enable, &item);
-		output.write_dword(enable ? 1 : 0);
-		output.write_string(item.toStdString());
-
-		// avoid
-		m_level_conf->getAvoid(&enable);
-		output.write_dword(enable ? 1 : 0);
-		
-		// exit
-		m_level_conf->getExit(&enable);
-		output.write_dword(enable ? 1 : 0);
-
-		// inverse gravity
-		m_level_conf->getGravity(&enable);
-		output.write_dword(enable ? 1 : 0);
 	}
 	catch (ios_base::failure&)
 	{

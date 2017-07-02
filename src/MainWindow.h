@@ -175,6 +175,7 @@ private:
 	};
 
 	void edgify_fill_point(FILE* fout, coord_point* points, int p1, int p2);
+	bool edgify(std::vector<std::vector<int>>& ptlist);
 
 public slots:
 	void texEditClosed();
@@ -233,5 +234,5 @@ private slots:
 
 	void levelConfig();
 
-	void edgify();
+	void doEdgify();
 };
