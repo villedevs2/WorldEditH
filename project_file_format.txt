@@ -20,9 +20,6 @@ n bytes		| Tile structures
 4 bytes		| Tilemap height
 n bytes		| Tilemap data [4 bytes * width * height]
 
-4 bytes		| Num of edges
-n bytes		| Edge structures
-
 
 Object structure
 ----------------
@@ -49,9 +46,3 @@ n bytes		| Tile name (null-terminated)
 n bytes		| Top UVs 4-6x [2 floats: U, V]
 n bytes		| Side UVs 4x [2 floats: U, V]
 4 bytes		| Tile color
-
-Edge structure
---------------
-
-4 bytes		| Num of points
-n bytes		| Points [int: Point number]

@@ -1238,6 +1238,13 @@ void MainWindow::doEdgify()
 	}
 }
 
+void MainWindow::clearEdgify()
+{
+	std::vector<std::vector<int>> ptlist;
+
+	m_glwidget->setEdgeData(ptlist);
+}
+
 
 void MainWindow::createActions()
 {
@@ -1421,6 +1428,10 @@ void MainWindow::createActions()
 	m_edgify_action = new QAction(tr("Edgify"), this);
 	connect(m_edgify_action, SIGNAL(triggered()), this, SLOT(doEdgify()));
 
+	// clear edgify
+	m_clear_edgify_action = new QAction(tr("Clear Edgify"), this);
+	connect(m_clear_edgify_action, SIGNAL(triggered()), this, SLOT(clearEdgify()));
+
 
 	// zoom
 	m_zoomLevelCombo = new QComboBox();
@@ -1504,6 +1515,7 @@ void MainWindow::createMenus()
 	m_editMenu->addAction(m_levelConfAction);
 	m_editMenu->addSeparator();
 	m_editMenu->addAction(m_edgify_action);
+	m_editMenu->addAction(m_clear_edgify_action);
 
 	// texture menu
 	m_textureMenu = menuBar()->addMenu(tr("&Texture"));
@@ -1719,14 +1731,12 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 {
 	BinaryFile input;
 
-	const unsigned int blpf_id = 0x424c5046;
-	const unsigned int blpf_version = 0x10003;
-	const unsigned int affix_id = 0x41465858;
+	const unsigned int hspf_id = 0x48535046;
+	const unsigned int hspf_version = 0x10002;
 	
 	Level::Object::Param params[Level::Object::NUM_PARAMS];
 	QString object_name = "";
 	QString texture_name = "";
-	QString prefab_name = "";
 	QString tile_name = "";
 
 	QColor custom_colors[16];
@@ -1743,13 +1753,13 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 
 		// ID
 		unsigned int id = input.read_dword();
-		if (id != blpf_id)
-			throw "BLPF ID not found";
+		if (id != hspf_id)
+			throw "HSPF ID not found";
 
 		// version
 		unsigned int version = input.read_dword();
-		if (version != blpf_version)
-			throw "Wrong BLPF version";
+		if (version != hspf_version)
+			throw "Wrong HSPF version";
 
 		// texture name
 		inb = 0;
@@ -1832,6 +1842,9 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 		// num of tiles
 		int num_tiles = input.read_dword();
 
+		PolygonDef* top = new PolygonDef(6);
+		PolygonDef* side = new PolygonDef(4);
+
 		// tiles
 		for (int i=0; i < num_tiles; i++)
 		{
@@ -1846,25 +1859,52 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 
 			tile_name = QString(buf);
 
-			int tileid = input.read_dword();
+			//  tile type
+			unsigned int type = input.read_dword();
 
-			glm::vec2 pps[4];
+			int num_top_points = 0;
+			glm::vec2 top_pps[6];
+			glm::vec2 side_pps[4];
+
+			top->reset();
+			side->reset();
+
+			// top UVs
+			switch (type)
+			{
+				case Tilemap::TILE_FULL:	num_top_points = 6; break;
+				case Tilemap::TILE_LEFT:	num_top_points = 4; break;
+				case Tilemap::TILE_RIGHT:	num_top_points = 4; break;
+				case Tilemap::TILE_TOP:		num_top_points = 3; break;
+				case Tilemap::TILE_BOTTOM:	num_top_points = 3; break;
+				case Tilemap::TILE_MID:		num_top_points = 4; break;
+			}
+
+			for (int j = 0; j < num_top_points; j++)
+			{
+				float x = input.read_float();
+				float y = input.read_float();
+
+				top->insertPoint(glm::vec2(x, y));
+			}
+
+			// side UVs
 			for (int j=0; j < 4; j++)
 			{
 				float x = input.read_float();
 				float y = input.read_float();
 				
-				pps[j] = glm::vec2(x, y);
+				side->insertPoint(glm::vec2(x, y));
 			}
 
 			unsigned int tile_color = input.read_dword();
 
-			unsigned int tile_type = input.read_dword();
-
-			// TODOOOOOOO
-	//		int id = m_level->insertTile(tile_name.toStdString(), pps, tile_color, (Tilemap::TileType)tile_type);
-	//		emit m_tileset_window->add(id);
+			int id = m_level->insertTile(tile_name.toStdString(), top, side, tile_color, (Tilemap::TileType)type);
+			emit m_tileset_window->add(id);
 		}
+
+		delete top;
+		delete side;
 
 		// ----------------
 
@@ -1882,74 +1922,6 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 				m_level->editTilemap(x, y, data);
 			}
 		}
-
-		// ------------------------
-		std::string col1_item;
-		std::string col2_item;
-		std::string col3_item;
-		std::string dcol_item;
-
-		// affix ID
-		id = input.read_dword();
-		if (id != affix_id)
-			throw "AFFX ID not found";
-
-		// time limit
-		unsigned int tlim_enable = input.read_dword();
-		unsigned int tlim = input.read_dword();
-
-		// collect 1
-		unsigned int col1_enable = input.read_dword();
-		input.read_string(&col1_item);
-		unsigned int col1_num = input.read_dword();
-
-		// collect 2
-		unsigned int col2_enable = input.read_dword();
-		input.read_string(&col2_item);
-		unsigned int col2_num = input.read_dword();
-
-		// collect 3
-		unsigned int col3_enable = input.read_dword();
-		input.read_string(&col3_item);
-		unsigned int col3_num = input.read_dword();
-
-		// don't collect
-		unsigned int dcol_enable = input.read_dword();
-		input.read_string(&dcol_item);
-
-		// avoid
-		unsigned int avoid_enable = input.read_dword();
-
-		// exit
-		unsigned int exit_enable = input.read_dword();
-
-		// inverse gravity
-		unsigned int grav_enable = input.read_dword();
-
-
-		m_level_conf->timelimitEnable(tlim_enable ? true : false);
-		m_level_conf->setTimelimit(tlim);
-
-		m_level_conf->collect1Enable(col1_enable ? true : false);
-		m_level_conf->setCollect1Item(col1_item);
-		m_level_conf->setCollect1Num(col1_num);
-
-		m_level_conf->collect2Enable(col2_enable ? true : false);
-		m_level_conf->setCollect2Item(col2_item);
-		m_level_conf->setCollect2Num(col2_num);
-
-		m_level_conf->collect3Enable(col3_enable ? true : false);
-		m_level_conf->setCollect3Item(col3_item);
-		m_level_conf->setCollect3Num(col3_num);
-
-		m_level_conf->dontcollectEnable(dcol_enable ? true : false);
-		m_level_conf->setDontcollectItem(dcol_item);
-
-		m_level_conf->avoidEnable(avoid_enable ? true : false);
-		m_level_conf->exitEnable(exit_enable ? true : false);
-		m_level_conf->gravityEnable(grav_enable ? true : false);
-
-
 
 
 		// ------------------------
@@ -2147,6 +2119,7 @@ bool MainWindow::writeBinaryProjectFile(QString& filename)
 			}
 		}
 
+		/*
 		std::vector<std::vector<int>> ptlist;
 
 		if (!edgify(ptlist))
@@ -2171,7 +2144,7 @@ bool MainWindow::writeBinaryProjectFile(QString& filename)
 				output.write_dword(points[k]);
 			}
 		}
-
+		*/
 	}
 	catch (ios_base::failure&)
 	{

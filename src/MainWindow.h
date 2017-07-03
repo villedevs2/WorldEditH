@@ -117,6 +117,7 @@ private:
 	QAction* m_tilemap_shrink_action;
 
 	QAction* m_edgify_action;
+	QAction* m_clear_edgify_action;
 
 	QString m_open_file;
 	QString m_texture_file;
@@ -235,4 +236,5 @@ private slots:
 	void levelConfig();
 
 	void doEdgify();
+	void clearEdgify();
 };
