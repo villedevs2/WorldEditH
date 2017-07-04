@@ -64,6 +64,8 @@ GLWidget::GLWidget(QWidget *parent, Level* level)
 	m_create_poly_color = 0xffffffff;
 
 	reset();
+
+	this->setMouseTracking(true);
 }
 
 GLWidget::~GLWidget(void)
@@ -455,7 +457,22 @@ bool GLWidget::filterObject(Level::Object* obj)
 
 
 
-void GLWidget::tilemapDraw(glm::vec2 mouse_lp)
+void GLWidget::tilemapDraw()
+{
+	if (m_tile_selx >= 0 &&
+		m_tile_sely >= 0 &&
+		m_tile_selx < m_level->getTilemapWidth() &&
+		m_tile_sely < m_level->getTilemapHeight())
+	{
+		int brush = m_tile_brush;
+		if (brush < 0)
+			brush = Tilemap::TILE_EMPTY;
+
+		m_level->editTilemapTile(m_tile_selx, m_tile_sely, brush);
+	}
+}
+
+void GLWidget::updateTileDrawLocation(const glm::vec2& mouse_lp)
 {
 	float tile_width = m_level->getTileWidth();
 	float tile_height = m_level->getTileHeight();
@@ -487,11 +504,11 @@ void GLWidget::tilemapDraw(glm::vec2 mouse_lp)
 		{
 			/*
 			e1\-   -/e2
-			  +\   /+
-			    \ /
-			     |
-			    +|-
-				 e3
+			+\   /+
+			\ /
+			|
+			+|-
+			e3
 			*/
 
 			glm::vec2 e1 = glm::vec2(mx, vy2) - glm::vec2(lx, vy1);
@@ -555,18 +572,11 @@ void GLWidget::tilemapDraw(glm::vec2 mouse_lp)
 				m_tile_selx = block_x;
 			}
 		}
-
-		if (m_tile_selx >= 0 &&
-			m_tile_sely >= 0 &&
-			m_tile_selx < m_level->getTilemapWidth() &&
-			m_tile_sely < m_level->getTilemapHeight())
-		{
-			int brush = m_tile_brush;
-			if (brush < 0)
-				brush = Tilemap::TILE_EMPTY;
-
-			m_level->editTilemapTile(m_tile_selx, m_tile_sely, brush);
-		}
+	}
+	else
+	{
+		m_tile_selx = -1;
+		m_tile_sely = -1;
 	}
 }
 
@@ -969,7 +979,9 @@ void GLWidget::mousePressEvent(QMouseEvent* event)
 			{
 				glm::vec2 mouse_lp = toLevelCoords(glm::vec2(mouse_x, mouse_y));
 
-				tilemapDraw(mouse_lp);
+				updateTileDrawLocation(mouse_lp);
+
+				tilemapDraw();
 				m_tilemap_painting = true;
 			}
 			break;
@@ -1005,16 +1017,28 @@ void GLWidget::mouseMoveEvent(QMouseEvent* event)
 					mouse_p = snapToGrid(mouse_p);
 
 				m_polydef->edit(m_selected_point, mouse_p);
-			}
+				update();
+			}			
 			break;
 		}
 
 		case MODE_TILEMAP:
 		{
+			glm::vec2 mouse_lp = toLevelCoords(glm::vec2(mouse_x, mouse_y));
+
+			int prev_x = m_tile_selx;
+			int prev_y = m_tile_sely;
+
+			updateTileDrawLocation(mouse_lp);
+
+			if (m_tile_selx != prev_x || m_tile_sely != prev_y)
+				update();
+
 			if (m_tilemap_painting)
 			{
-				glm::vec2 mouse_lp = toLevelCoords(glm::vec2(mouse_x, mouse_y));
-				tilemapDraw(mouse_lp);
+				//glm::vec2 mouse_lp = toLevelCoords(glm::vec2(mouse_x, mouse_y));
+				tilemapDraw();
+				update();
 			}
 
 			/*
@@ -1054,9 +1078,8 @@ void GLWidget::mouseMoveEvent(QMouseEvent* event)
 		glm::vec2 delta = (m_pan_point - mouse_p) * 0.4f;
 
 		m_scroll = m_scroll_saved - delta;
-	}
-
-	update();
+		update();
+	}	
 }
 
 void GLWidget::keyReleaseEvent(QKeyEvent* event)

@@ -119,7 +119,8 @@ private:
 	float makeScalingScale(float scale);
 	float makeRotationAngle(float angle);
 	bool filterObject(Level::Object* obj);
-	void tilemapDraw(glm::vec2 mouse_lp);
+	void updateTileDrawLocation(const glm::vec2& mouse_lp);
+	void tilemapDraw();
 
 	Level* m_level;
 	QColor m_bgcolor;
