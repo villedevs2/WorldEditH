@@ -17,16 +17,6 @@ public:
 		unsigned int color;
 	};
 
-	struct Config
-	{
-		int xstart;
-		int xend;
-		int ystart;
-		int yend;
-		float tile_width;
-		float tile_height;
-	};
-
 	enum TileType
 	{
 		TILE_FULL = 0,
@@ -59,6 +49,11 @@ public:
 		int side_bits;
 	};
 
+	static const unsigned int TILE_MASK = 0xffff;
+	static const unsigned int TILE_EMPTY = 0xffff;
+	static const unsigned int Z_MASK = 0xff0000;
+	static const unsigned int Z_SHIFT = 16;
+
 
 
 	Tilemap();
@@ -70,10 +65,14 @@ public:
 	void reset();
 	float* getVBO();
 	int numTris();
-	int get(int x, int y);
+	int getTile(int x, int y);
+	int getZ(int x, int y);	
 	void edit(int x, int y, int tile);
+	void editZ(int x, int y, int z);
+	void incZ(int x, int y, int z);
+	unsigned int getRaw(int x, int y);
+	void editRaw(int x, int y, unsigned int data);
 	void tesselateAll();
-	const Tilemap::Config& getConfig();
 	int insertTile(std::string name, PolygonDef* top, PolygonDef* side, unsigned int color, Tilemap::TileType type);
 	bool removeTile(int id);
 	void removeTiles();
@@ -95,11 +94,9 @@ private:
 	float m_tile_width;
 	float m_tile_height;
 
-	int *m_map;
+	unsigned int *m_map;
 
 	VBO* m_vb; 
-
-	Config m_config;
 
 	int m_cumulative_tile_id;
 	std::vector<Tile> m_tiles;

@@ -5,13 +5,6 @@ Tilemap::Tilemap()
 	m_vb = NULL;
 	m_map = NULL;
 
-	m_config.xstart = 0;
-	m_config.xend = 50;
-	m_config.ystart = 0;
-	m_config.yend = 50;
-	m_config.tile_width = 1.0f;
-	m_config.tile_height = 1.2f;
-
 	m_tile_width = 1.0f;
 	m_tile_height = 1.4f;
 
@@ -31,7 +24,7 @@ Tilemap::~Tilemap()
 
 void Tilemap::reset()
 {
-	memset(m_map, -1, sizeof(int) * m_width * m_height);
+	memset(m_map, TILE_EMPTY | 0, sizeof(int) * m_width * m_height);
 	removeTiles();
 	tesselateAll();
 }
@@ -61,9 +54,9 @@ void Tilemap::resize(int width, int height)
 	if (m_map != NULL)
 		delete[] m_map;
 
-	m_map = new int[width * height];
+	m_map = new unsigned int[width * height];
 
-	memset(m_map, -1, sizeof(int) * width * height);
+	memset(m_map, TILE_EMPTY | 0, sizeof(int) * width * height);
 
 	m_width = width;
 	m_height = height;
@@ -85,9 +78,9 @@ bool Tilemap::enlarge(int xleft, int xright, int ytop, int ybottom)
 	if (xleft == 0 && xright == 0 && ytop == 0 && ybottom == 0)
 		return false;
 
-	int* new_map = new int[new_width * new_height];
+	unsigned int* new_map = new unsigned int[new_width * new_height];
 
-	memset(new_map, -1, sizeof(int) * new_width * new_height);
+	memset(new_map, TILE_EMPTY | 0, sizeof(int) * new_width * new_height);
 
 	// copy old data
 	for (int j=0; j < m_height; j++)
@@ -129,9 +122,9 @@ bool Tilemap::shrink(int xleft, int xright, int ytop, int ybottom)
 	if (xleft == 0 && xright == 0 && ytop == 0 && ybottom == 0)
 		return false;
 
-	int* new_map = new int[new_width * new_height];
+	unsigned int* new_map = new unsigned int[new_width * new_height];
 
-	memset(new_map, -1, sizeof(int) * new_width * new_height);
+	memset(new_map, TILE_EMPTY | 0, sizeof(int) * new_width * new_height);
 
 	// copy old data
 	for (int j = 0; j < new_height; j++)
@@ -185,7 +178,7 @@ void Tilemap::tesselateTile(int x, int y, bool odd)
 	assert(x >= 0 && x < m_width);
 	assert(y >= 0 && y < m_height);
 
-	int tile = m_map[(y * m_width) + x];
+	int tile = m_map[(y * m_width) + x] & TILE_MASK;
 
 	int vb_index = ((y * m_width) + x) * num_verts;
 
@@ -202,7 +195,7 @@ void Tilemap::tesselateTile(int x, int y, bool odd)
 
 	float z = 100.0f;
 	
-	if (tile == -1)
+	if (tile == TILE_EMPTY)
 	{
 		// make degen geo
 		for (int i = 0; i < num_verts; i++)
@@ -444,12 +437,20 @@ int Tilemap::numTris()
 	return m_width * m_height * 4;
 }
 
-int Tilemap::get(int x, int y)
+int Tilemap::getTile(int x, int y)
 {
 	assert(x >= 0 && x < m_width);
 	assert(y >= 0 && y < m_height);
 
-	return m_map[(y * m_width) + x];
+	return m_map[(y * m_width) + x] & TILE_MASK;
+}
+
+int Tilemap::getZ(int x, int y)
+{
+	assert(x >= 0 && x < m_width);
+	assert(y >= 0 && y < m_height);
+
+	return (m_map[(y * m_width) + x] & Z_MASK) >> Z_SHIFT;
 }
 
 void Tilemap::edit(int x, int y, int tile)
@@ -457,17 +458,67 @@ void Tilemap::edit(int x, int y, int tile)
 	assert(x >= 0 && x < m_width);
 	assert(y >= 0 && y < m_height);
 
-	m_map[(y * m_width) + x] = tile;
+	int index = (y * m_width) + x;
+
+	m_map[index] &= ~TILE_MASK;
+	m_map[index] |= tile & TILE_MASK;
+
+	// if empty tile, reset Z as well
+	if (tile == TILE_EMPTY)
+	{
+		m_map[index] &= ~Z_MASK;
+	}
 
 	bool odd = y & 1;
 	tesselateTile(x, y, odd);
 }
 
-const Tilemap::Config& Tilemap::getConfig()
+void Tilemap::editZ(int x, int y, int z)
 {
-	return m_config;
+	assert(x >= 0 && x < m_width);
+	assert(y >= 0 && y < m_height);
+
+	int index = (y * m_width) + x;
+
+	m_map[index] &= ~Z_MASK;
+	m_map[index] |= (z << Z_SHIFT) & Z_MASK;
 }
 
+void Tilemap::incZ(int x, int y, int z)
+{
+	assert(x >= 0 && x < m_width);
+	assert(y >= 0 && y < m_height);
+
+	int index = (y * m_width) + x;
+
+	int oz = (m_map[index] & Z_MASK) >> Z_SHIFT;
+	oz += z;
+	if (oz > 255)
+		oz = 255;
+	if (oz < 0)
+		oz = 0;
+
+	m_map[index] &= ~Z_MASK;
+	m_map[index] |= (oz << Z_SHIFT) & Z_MASK;
+}
+
+unsigned int Tilemap::getRaw(int x, int y)
+{
+	assert(x >= 0 && x < m_width);
+	assert(y >= 0 && y < m_height);
+
+	return m_map[(y * m_width) + x];
+}
+
+void Tilemap::editRaw(int x, int y, unsigned int data)
+{
+	assert(x >= 0 && x < m_width);
+	assert(y >= 0 && y < m_height);
+
+	m_map[(y * m_width) + x] = data;
+	bool odd = y & 1;
+	tesselateTile(x, y, odd);
+}
 
 int Tilemap::insertTile(std::string name, PolygonDef* top, PolygonDef* side, unsigned int color, Tilemap::TileType type)
 {

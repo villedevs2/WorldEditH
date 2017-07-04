@@ -50,7 +50,7 @@ private:
 	void setCurrentFile(QString& filename);
 	void resetControls();
 	bool handleUnsaved();
-	void writeBLBFile(QString& filename);
+	void writeLevelFile(QString& filename);
 	QString getLevelDir();
 	void setLevelDir(QString path);
 	QString getTextureDir();

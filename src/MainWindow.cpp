@@ -447,7 +447,7 @@ void MainWindow::exportLevel()
 
 	if (!filename.isEmpty())
 	{
-		writeBLBFile(filename);
+		writeLevelFile(filename);
 
 		// set current directory
 		setExportDir(filename);
@@ -820,9 +820,9 @@ bool MainWindow::edgify(std::vector<std::vector<int>>& ptlist)
 	{
 		for (int x = 0; x < tm_width; x++)
 		{
-			int ti = m_level->readTilemap(x, y);
+			int ti = m_level->readTilemapTile(x, y);
 			const Tilemap::Tile* tile = nullptr;
-			if (ti >= 0)
+			if (ti != Tilemap::TILE_EMPTY)
 			{
 				tile = m_level->getTile(ti);
 
@@ -922,8 +922,8 @@ bool MainWindow::edgify(std::vector<std::vector<int>>& ptlist)
 
 					if (tx >= 0 && ty >= 0 && tx < m_level->getTilemapWidth() && ty < m_level->getTilemapHeight())
 					{
-						int ctile = m_level->readTilemap(tx, ty);
-						if (ctile >= 0)
+						int ctile = m_level->readTilemapTile(tx, ty);
+						if (ctile != Tilemap::TILE_EMPTY)
 						{
 							const Tilemap::Tile* tt = m_level->getTile(ctile);
 
@@ -1199,7 +1199,8 @@ bool MainWindow::edgify(std::vector<std::vector<int>>& ptlist)
 			if (!closed)
 			{
 				fprintf(fout, "Loop not closed!\n");
-
+				delete[] points;
+				fclose(fout);
 				return false;
 			}
 
@@ -1919,7 +1920,7 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 			for (int x=0; x < tilemap_width; x++)
 			{
 				int data = input.read_dword();
-				m_level->editTilemap(x, y, data);
+				m_level->editTilemapRaw(x, y, data);
 			}
 		}
 
@@ -2115,7 +2116,7 @@ bool MainWindow::writeBinaryProjectFile(QString& filename)
 		{
 			for (int i=0; i < m_level->getTilemapWidth(); i++)
 			{
-				output.write_dword(m_level->readTilemap(i, j));
+				output.write_dword(m_level->readTilemapRaw(i, j));
 			}
 		}
 
@@ -2161,68 +2162,25 @@ bool MainWindow::writeBinaryProjectFile(QString& filename)
 }
 
 
-void MainWindow::writeBLBFile(QString& filename)
+void MainWindow::writeLevelFile(QString& filename)
 {
 	BinaryFile output;
 
-	const char blbx_id[4] = { 0x42, 0x4c, 0x42, 0x58 };
-	const char blox_id[4] = { 0x42, 0x4c, 0x4f, 0x58 };
-	const char tlex_id[4] = { 0x54, 0x4c, 0x45, 0x58 };
-	const char lafx_id[4] = { 0x4c, 0x41, 0x46, 0x58 };
-	const unsigned int blb_version = 0x10003;
+	const char hslx_id[4] = { 0x48, 0x53, 0x4c, 0x58 };
+	const unsigned int level_version = 0x10000;
 
 	int num_objects = m_level->numObjects();
-
-	if (num_objects <= 0)		// TODO: error message
-		return;
-
-	// calculate level bounds
-	float level_minx;
-	float level_maxx;
-	float level_miny;
-	float level_maxy;
-
-	level_minx = m_level->getObject(0)->getPoint(0).x;
-	level_maxx = level_minx;
-	level_miny = m_level->getObject(0)->getPoint(0).y;
-	level_maxy = level_miny;
-
-	for (int i=0; i < num_objects; i++)
-	{
-		Level::Object* obj = m_level->getObject(i);
-		int num_points = obj->getNumPoints();
-
-		for (int p=0; p < num_points; p++)
-		{
-			glm::vec2 point = obj->getPoint(p);
-			if (point.x < level_minx)
-				level_minx = point.x;
-			if (point.x > level_maxx)
-				level_maxx = point.x;
-			if (point.y < level_miny)
-				level_miny = point.y;
-			if (point.y > level_maxy)
-				level_maxy = point.y;
-		}
-	}
-
 	int num_tiles = m_level->getNumTiles();
-
-
-
 
 	try
 	{
 		output.open(filename.toStdString(), BinaryFile::MODE_WRITEONLY);
 
 		// ID
-		output.write((char*)blbx_id, 4);
+		output.write((char*)hslx_id, 4);
 
 		// BLB version
-		output.write_dword(blb_version);
-
-		// Number of objects
-		output.write_dword(num_objects);
+		output.write_dword(level_version);
 
 		// Texture name
 		QString texname_stripped = m_texture_file.section('/', -1);
@@ -2233,63 +2191,8 @@ void MainWindow::writeBLBFile(QString& filename)
 		}
 		output.write_byte(0);	// null terminator
 
-
-		// Level bounds
-		output.write_float(level_minx);
-		output.write_float(level_maxx);
-		output.write_float(level_miny);
-		output.write_float(level_maxy);
-
-
-		// affixes
-		{
-			bool timelimit_enable;
-			int timelimit_mins, timelimit_secs;
-			bool collect_enable[3];
-			QString collect_item[3];
-			int collect_amount[3];
-			bool dont_collect_enable;
-			QString dont_collect_item;
-			bool avoid_enable;
-			bool exit_enable;
-			bool inv_grav_enable;
-
-			unsigned int affix_bits = 0;
-
-			m_level_conf->getTimelimit(&timelimit_enable, &timelimit_mins, &timelimit_secs);
-			m_level_conf->getCollect1(&collect_enable[0], &collect_item[0], &collect_amount[0]);
-			m_level_conf->getCollect2(&collect_enable[1], &collect_item[1], &collect_amount[1]);
-			m_level_conf->getCollect3(&collect_enable[2], &collect_item[2], &collect_amount[2]);
-			m_level_conf->getDontcollect(&dont_collect_enable, &dont_collect_item);
-			m_level_conf->getAvoid(&avoid_enable);
-			m_level_conf->getExit(&exit_enable);
-			m_level_conf->getGravity(&inv_grav_enable);
-
-			if (timelimit_enable)		affix_bits |= 0x1;
-			if (collect_enable[0])		affix_bits |= 0x2;
-			if (collect_enable[1])		affix_bits |= 0x4;
-			if (collect_enable[2])		affix_bits |= 0x8;
-			if (dont_collect_enable)	affix_bits |= 0x10;
-			if (avoid_enable)			affix_bits |= 0x20;
-			if (exit_enable)			affix_bits |= 0x40;
-			if (inv_grav_enable)		affix_bits |= 0x80;
-
-			output.write((char*)lafx_id, 4);
-
-			output.write_dword(affix_bits);
-
-			// timelimit
-			output.write_dword(timelimit_mins * 60 + timelimit_secs);
-
-			for (int i = 0; i < 3; i++)
-			{
-				// collect amount
-				output.write_dword(collect_amount[i]);
-			}
-		}
-
-		// Object ID
-		output.write((char*)blox_id, 4);
+		// Number of objects
+		output.write_dword(num_objects);
 
 		// Objects
 		for (int i=0; i < num_objects; i++)
@@ -2354,9 +2257,6 @@ void MainWindow::writeBLBFile(QString& filename)
 		// Number of tiles
 		output.write_dword(num_tiles);
 
-		// ID
-		output.write((char*)tlex_id, 4);
-
 		for (int i=0; i < num_tiles; i++)
 		{
 			const Tilemap::Tile* tile = m_level->getTile(i);	
@@ -2364,33 +2264,44 @@ void MainWindow::writeBLBFile(QString& filename)
 			// tile color
 			output.write_dword(tile->color);
 
-			// UVs
-			// TODOOOOOOOOOOOOOOOOOOOO
-			/*
-			for (int j=0; j < 4; j++)
+			// tile type
+			output.write_dword(tile->type);
+
+			int num_top_points = 0;
+
+			switch (tile->type)
 			{
-				output.write_float(tile->points[j].x);
-				output.write_float(tile->points[j].y);
+				case Tilemap::TILE_FULL:	num_top_points = 6; break;				
+				case Tilemap::TILE_LEFT:	num_top_points = 4;	break;				
+				case Tilemap::TILE_RIGHT:	num_top_points = 4; break;
+				case Tilemap::TILE_TOP:		num_top_points = 3; break;				
+				case Tilemap::TILE_BOTTOM:	num_top_points = 3; break;
+				case Tilemap::TILE_MID:		num_top_points = 4; break;				
 			}
-			*/
+
+			for (int j = 0; j < num_top_points; j++)
+			{
+				output.write_float(tile->top_points[j].x);
+				output.write_float(tile->top_points[j].y);
+			}
+
+			for (int j = 0; j < 4; j++)
+			{
+				output.write_float(tile->side_points[j].x);
+				output.write_float(tile->side_points[j].y);
+			}
 		}
 
-		// Tilemap variables
-		const Tilemap::Config& tilemap = m_level->getTilemapConfig();
-
-		output.write_dword(tilemap.xstart);
-		output.write_dword(tilemap.xend);
-		output.write_dword(tilemap.ystart);
-		output.write_dword(tilemap.yend);
-		output.write_float(tilemap.tile_width);
-		output.write_float(tilemap.tile_height);
+		// Tilemap
+		int tm_width = m_level->getTilemapWidth();
+		int tm_height = m_level->getTilemapHeight();
 
 		// Tilemap data
-		for (int j=tilemap.ystart; j < tilemap.yend; j++)
+		for (int j=0; j < tm_height; j++)
 		{
-			for (int i=tilemap.xstart; i < tilemap.xend; i++)
+			for (int i=0; i < tm_width; i++)
 			{
-				int data = m_level->readTilemap(i, j) + 1;
+				int data = m_level->readTilemapRaw(i, j) + 1;
 
 				assert(data >= 0 && data < 32768);
 
@@ -2410,6 +2321,33 @@ void MainWindow::writeBLBFile(QString& filename)
 				}
 			}
 		}
+
+		// Edges
+		std::vector<std::vector<int>> ptlist;
+
+		if (!edgify(ptlist))
+		{
+			throw "Edgify failed!";
+		}
+
+		// edges
+		int num_edges = ptlist.size();
+
+		// num of edges
+		output.write_dword(num_edges);
+
+		for (int j = 0; j < num_edges; j++)
+		{
+			std::vector<int> points = ptlist.at(j);
+			int num_points = points.size();
+
+			output.write_dword(num_points);
+			for (int k = 0; k < num_points; k++)
+			{
+				output.write_dword(points[k]);
+			}
+		}
+
 	}
 	catch (ios_base::failure&)
 	{

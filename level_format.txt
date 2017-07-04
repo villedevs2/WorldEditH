@@ -1,0 +1,59 @@
+Homestar Level Format Specification
+v1.0 / 03.07.2017
+
+Header
+------
+
+4 bytes		| Format ID (HSLX) 0x48534C58
+4 bytes		| Header version (0x00010000)
+n bytes		| Texture name (null-terminated)
+4 bytes		| Number of objects
+n bytes		| Objects
+4 bytes		| Number of tiles
+n bytes		| Tiles
+4 bytes		| Tilemap width
+4 bytes		| Tilemap height
+4 bytes		| Tilemap tile size (float)
+n bytes		| Tilemap data [4 bytes * width * height]
+4 bytes		| Number of edges
+n bytes		| Edges
+
+Object
+------
+
+4 bytes		| Object Type
+4 bytes		| Num points
+4 bytes		| Object Z
+4 bytes		| Object color (XRGB)
+n bytes		| Points
+n bytes		| Parameters (1-8, depending on object type)
+
+Point structure
+---------------
+
+4 bytes		| X-coordinate (float)
+4 bytes		| Y-coordinate (float)
+4 bytes		| U-coordinate (float)
+4 bytes		| V-coordinate (float)
+
+Object parameters
+----------
+
+Trigger	(1)	| 0 = Trigger type, 1 = Angle, 2 = int parameter, 3 = int parameter
+Destructible (2)| No params
+Mover (3)	| 0 = Angle, 1 = Length, 2 = Up time, 3 = Down time, 4 = Time
+Enemy (4)	| ?
+
+Tile
+----
+
+4 bytes		| Tile color (XRGB)
+4 bytes		| Tile type
+n bytes		| Top UV coords [4-6x UV-pairs]
+32 bytes	| Side UV coords [4x UV-pairs]
+
+Edge
+----
+
+4 bytes		| Number of points
+n bytes		| Points [int: point index]

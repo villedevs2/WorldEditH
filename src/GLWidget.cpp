@@ -561,7 +561,11 @@ void GLWidget::tilemapDraw(glm::vec2 mouse_lp)
 			m_tile_selx < m_level->getTilemapWidth() &&
 			m_tile_sely < m_level->getTilemapHeight())
 		{
-			m_level->editTilemap(m_tile_selx, m_tile_sely, m_tile_brush);
+			int brush = m_tile_brush;
+			if (brush < 0)
+				brush = Tilemap::TILE_EMPTY;
+
+			m_level->editTilemapTile(m_tile_selx, m_tile_sely, brush);
 		}
 	}
 }
@@ -2036,7 +2040,7 @@ void GLWidget::renderEdgeData(QPainter& painter)
 
 			glm::vec2 sp = toScreenCoords(point);
 
-			pp[p] = QPoint(sp.x, sp.y);
+			pp[p] = QPoint((int)(sp.x + 0.5f), (int)(sp.y + 0.5f));
 		}
 
 		painter.drawPolygon(pp, num_points);

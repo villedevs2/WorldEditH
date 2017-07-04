@@ -688,14 +688,42 @@ void Level::shrinkTilemap(int xleft, int xright, int ytop, int ybottom)
 	setModified();
 }
 
-int Level::readTilemap(int x, int y)
+int Level::readTilemapTile(int x, int y)
 {
-	return m_tilemap->get(x, y);
+	return m_tilemap->getTile(x, y);
 }
 
-void Level::editTilemap(int x, int y, int tile)
+int Level::readTilemapZ(int x, int y)
+{
+	return m_tilemap->getZ(x, y);
+}
+
+void Level::editTilemapTile(int x, int y, int tile)
 {
 	m_tilemap->edit(x, y, tile);
+	setModified();
+}
+
+void Level::editTilemapZ(int x, int y, int z)
+{
+	m_tilemap->editZ(x, y, z);
+	setModified();
+}
+
+void Level::incTilemapZ(int x, int y, int z)
+{
+	m_tilemap->incZ(x, y, z);
+	setModified();
+}
+
+unsigned int Level::readTilemapRaw(int x, int y)
+{
+	return m_tilemap->getRaw(x, y);
+}
+
+void Level::editTilemapRaw(int x, int y, unsigned int data)
+{
+	m_tilemap->editRaw(x, y, data);
 	setModified();
 }
 
@@ -707,11 +735,6 @@ float* Level::getTilemapVBO()
 int Level::numTilemapTris()
 {
 	return m_tilemap->numTris();
-}
-
-const Tilemap::Config& Level::getTilemapConfig()
-{
-	return m_tilemap->getConfig();
 }
 
 
