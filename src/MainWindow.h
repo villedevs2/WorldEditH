@@ -27,6 +27,7 @@
 #include "TilemapWidget.h"
 #include "Tileset.h"
 #include "LevelConf.h"
+#include "Preview.h"
 
 class MainWindow : public QMainWindow
 {
@@ -109,6 +110,7 @@ private:
 	QAction* m_toggle_objfilter;
 	QAction* m_toggle_tiledesigner;
 	QAction* m_toggle_tileset_window;
+	QAction* m_toggle_preview;
 
 	QAction* m_toggle_visbox;
 	QAction* m_visbox_conf_action;
@@ -143,7 +145,7 @@ private:
 	bool m_objfilter_open;
 	bool m_tiledesigner_open;
 	bool m_tileset_window_open;
-	bool m_tiledprefabs_window_open;
+	bool m_preview_open;
 
 	bool m_enable_grid;
 	bool m_snap_grid;
@@ -151,6 +153,7 @@ private:
 	ObjectEdit* m_objedit;
 	ObjectFilter* m_objfilter;
 	TileDesigner* m_tiledesigner;
+	PreviewWindow* m_preview;
 
 	bool m_enable_visbox;
 	VisboxConf* m_visbox_conf;
@@ -184,6 +187,7 @@ public slots:
 	void objFilterClosed();
 	void tileDesignerClosed();
 	void tilesetWindowClosed();
+	void previewClosed();
 	void setColor();
 
 private slots:
@@ -208,6 +212,7 @@ private slots:
 	void toggleObjFilter();
 	void toggleTileDesigner();
 	void toggleTilesetWindow();
+	void togglePreview();
 
 	void toggleGrid();
 	void snapGrid();

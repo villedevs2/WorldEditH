@@ -24,6 +24,8 @@ MainWindow::MainWindow()
 	m_objfilter = new ObjectFilter(this);
 	
 	m_tiledesigner = new TileDesigner(this, m_level);
+
+	m_preview = new PreviewWindow(this, m_level);
 	
 
 	m_visbox_conf = new VisboxConf(this);
@@ -100,6 +102,7 @@ MainWindow::MainWindow()
 	connect(m_objfilter, SIGNAL(onClose()), this, SLOT(objFilterClosed()));
 	connect(m_tiledesigner, SIGNAL(onClose()),this, SLOT(tileDesignerClosed()));
 	connect(m_tileset_window, SIGNAL(onClose()), this, SLOT(tilesetWindowClosed()));
+	connect(m_preview, SIGNAL(onClose()), this, SLOT(previewClosed()));
 
 	connect(m_objedit, SIGNAL(onSetCreateType(Level::ObjectType)), m_glwidget, SLOT(setCreateType(Level::ObjectType)));
 	connect(m_objedit, SIGNAL(onSetCreateTriggerType(int)), m_glwidget, SLOT(setCreateTriggerType(int)));
@@ -149,6 +152,9 @@ MainWindow::MainWindow()
 	// tileset window positioning
 	m_tileset_window->move(QPoint(width() + 850, 600));
 
+	// preview window positioning
+	m_preview->move(QPoint(width() + 850, 100));
+
 
 	// tex edit hidden by default
 	m_texedit_open = false;
@@ -174,6 +180,11 @@ MainWindow::MainWindow()
 	m_tileset_window_open = true;
 	m_toggle_tileset_window->setChecked(true);
 	m_tileset_window->setHidden(false);
+
+	// preview shown by default
+	m_preview_open = true;
+	m_toggle_preview->setChecked(true);
+	m_preview->setHidden(false);
 
 	
 	// grid settings
@@ -611,6 +622,28 @@ void MainWindow::tilesetWindowClosed()
 {
 	m_tileset_window_open = false;
 	m_toggle_tileset_window->setChecked(false);
+}
+
+void MainWindow::togglePreview()
+{
+	if (m_preview_open)
+	{
+		emit m_preview->setHidden(true);
+		m_preview_open = false;
+		m_toggle_preview->setChecked(false);
+	}
+	else
+	{
+		emit m_preview->setHidden(false);
+		m_preview_open = true;
+		m_toggle_preview->setChecked(true);
+	}
+}
+
+void MainWindow::previewClosed()
+{
+	m_preview_open = false;
+	m_toggle_preview->setChecked(false);
 }
 
 void MainWindow::toggleVisbox()
@@ -1406,6 +1439,10 @@ void MainWindow::createActions()
 	m_toggle_tileset_window->setCheckable(true);
 	connect(m_toggle_tileset_window, SIGNAL(triggered()), this, SLOT(toggleTilesetWindow()));
 
+	m_toggle_preview = new QAction(QIcon("3d.png"), tr("Toggle Preview"), this);
+	m_toggle_preview->setCheckable(true);
+	connect(m_toggle_preview, SIGNAL(triggered()), this, SLOT(togglePreview()));
+
 
 	// visbox
 	m_toggle_visbox = new QAction(QIcon("visbox.png"), tr("Toggle Visualization Box"), this);
@@ -1556,6 +1593,7 @@ void MainWindow::createToolbars()
 	m_editor_toolbar->addAction(m_toggle_objfilter);
 	m_editor_toolbar->addAction(m_toggle_tiledesigner);
 	m_editor_toolbar->addAction(m_toggle_tileset_window);
+	m_editor_toolbar->addAction(m_toggle_preview);
 	m_editor_toolbar->addAction(m_tilemap_enlarge_action);
 	m_editor_toolbar->addAction(m_tilemap_shrink_action);
 
