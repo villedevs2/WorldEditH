@@ -8,6 +8,7 @@
 
 #include <glm.hpp>
 #include <gtx/rotate_vector.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include "Level.h"
 #include "PolygonDef.h"
@@ -20,8 +21,66 @@ public:
 	GLPreview(QWidget* parent, Level* level);
 	~GLPreview();
 
+	void setTexture(QImage* texture);
+	void tesselateTile(int x, int y);
+	void tesselateAll();
+
+protected:
+	void paintEvent(QPaintEvent* event);
+	void mouseReleaseEvent(QMouseEvent* event);
+	void mousePressEvent(QMouseEvent* event);
+	void keyReleaseEvent(QKeyEvent* event);
+	void mouseMoveEvent(QMouseEvent* event);
+
+	void initializeGL();
+	void paintGL();
+	void resizeGL(int width, int height);
+
 private:
+	struct Shader
+	{
+		int location;
+		int scale;
+		int position;
+		int tex_coord;
+		int color;
+		int vp_matrix;
+		int rot_matrix;
+	};
+
+	struct VBO
+	{
+		glm::vec3 pos;
+		glm::vec2 uv;
+		unsigned int color;
+	};
+
+	static const int LEVEL_VIS_WIDTH = 32;
+
+	QString loadShader(QString filename);
+	void loadTexture(QImage* texture);
+	glm::vec2 toLevelCoords(glm::vec2& point);
+
 	Level* m_level;
+
+	QImage* m_texture;
+
+	float m_viewport_width;
+	float m_viewport_height;
+	float m_viewport_aspect;
+
+	GLuint m_shader;
+	GLuint m_base_tex;
+	QGLShaderProgram* m_level_program;
+	Shader m_level_shader;
+
+	VBO m_vbo[32];
+
+
+	bool m_panning;
+	glm::vec2 m_scroll;
+	glm::vec2 m_scroll_saved;
+	glm::vec2 m_pan_point;
 };
 
 
@@ -41,6 +100,9 @@ protected:
 
 signals:
 	void onClose();
+
+public slots:
+	void tileUpdated(int x, int y);
 
 private:
 	QMainWindow* m_window;

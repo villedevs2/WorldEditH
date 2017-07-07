@@ -65,6 +65,7 @@ signals:
 	void onSelectObject(int id);
 	void onDeselectObject();
 	void onSetMode(GLWidget::OperationMode mode);
+	void onTileUpdate(int x, int y);
 
 public slots:
 	void animate();

@@ -118,6 +118,7 @@ MainWindow::MainWindow()
 	connect(m_tiledesigner, SIGNAL(onInsertTile(int)), m_tileset_window, SLOT(add(int)));
 
 	connect(m_tileset_window, SIGNAL(onSelectTile(int)), m_glwidget, SLOT(setTileBrush(int)));
+	connect(m_glwidget, SIGNAL(onTileUpdate(int, int)), m_preview, SLOT(tileUpdated(int, int)));
 
 	// zoom shortcuts
 	m_zoomin_shortcut = new QShortcut(QKeySequence(Qt::Key_Plus), this);
@@ -177,9 +178,9 @@ MainWindow::MainWindow()
 	m_tiledesigner->setHidden(true);
 
 	// tileset shown by default
-	m_tileset_window_open = true;
-	m_toggle_tileset_window->setChecked(true);
-	m_tileset_window->setHidden(false);
+	m_tileset_window_open = false;
+	m_toggle_tileset_window->setChecked(false);
+	m_tileset_window->setHidden(true);
 
 	// preview shown by default
 	m_preview_open = true;
@@ -734,6 +735,7 @@ void MainWindow::changeTexture(QString path)
 	m_texedit->setTexture(m_texture);
 	m_tiledesigner->setTexture(m_texture);
 	m_tileset_window->setTexture(m_texture);
+	m_preview->setTexture(m_texture);
 }
 
 

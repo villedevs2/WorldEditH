@@ -469,6 +469,7 @@ void GLWidget::tilemapDraw()
 			brush = Tilemap::TILE_EMPTY;
 
 		m_level->editTilemapTile(m_tile_selx, m_tile_sely, brush);
+		emit onTileUpdate(m_tile_selx, m_tile_sely);
 	}
 }
 
@@ -1408,7 +1409,6 @@ void GLWidget::initializeGL()
 {
 	QString level_vs_file = loadShader("level_vs.glsl");
 	QString level_fs_file = loadShader("level_fs.glsl");
-	QString level_coll_fs_file = loadShader("level_coll_fs.glsl");
 	QString grid_vs_file = loadShader("grid_vs.glsl");
 	QString grid_fs_file = loadShader("grid_fs.glsl");
 
