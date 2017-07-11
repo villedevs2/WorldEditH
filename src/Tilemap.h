@@ -6,17 +6,11 @@
 #include <vector>
 
 #include "PolygonDef.h"
+#include "VBO.h"
 
 class Tilemap
 {
 public:
-	struct VBO
-	{
-		glm::vec3 pos;
-		glm::vec2 uv;
-		unsigned int color;
-	};
-
 	enum TileType
 	{
 		TILE_FULL = 0,

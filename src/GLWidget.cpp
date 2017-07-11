@@ -2143,6 +2143,7 @@ void GLWidget::paintGL()
 	{
 		float* geo = m_level->getTilemapVBO();
 		int num_tris = m_level->numTilemapTris();
+		int vbsize = VBO::getVertexSize();
 
 		// TODO filter
 
@@ -2150,11 +2151,11 @@ void GLWidget::paintGL()
 		if (render && num_tris > 0)
 		{
 			m_level_program->enableAttributeArray(m_level_shader.position);
-			m_level_program->setAttributeArray(m_level_shader.position, (GLfloat*)geo, 3, sizeof(Tilemap::VBO));
+			m_level_program->setAttributeArray(m_level_shader.position, (GLfloat*)geo, 3, vbsize);
 			m_level_program->enableAttributeArray(m_level_shader.tex_coord);
-			m_level_program->setAttributeArray(m_level_shader.tex_coord, (GLfloat*)geo+3, 2, sizeof(Tilemap::VBO));
+			m_level_program->setAttributeArray(m_level_shader.tex_coord, (GLfloat*)geo+3, 2, vbsize);
 			m_level_program->enableAttributeArray(m_level_shader.color);
-			m_level_program->setAttributeArray(m_level_shader.color, GL_UNSIGNED_BYTE, (GLbyte*)geo + 20, 4, sizeof(Tilemap::VBO));
+			m_level_program->setAttributeArray(m_level_shader.color, GL_UNSIGNED_BYTE, (GLbyte*)geo + 20, 4, vbsize);
 
 			glBindTexture(GL_TEXTURE_2D, m_base_tex);
 			glDrawArrays(GL_TRIANGLES, 0, num_tris*3);

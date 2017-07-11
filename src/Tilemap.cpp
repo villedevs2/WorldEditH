@@ -2,8 +2,8 @@
 
 Tilemap::Tilemap()
 {
-	m_vb = NULL;
-	m_map = NULL;
+	m_vb = nullptr;
+	m_map = nullptr;
 
 	m_tile_width = 1.0f;
 	m_tile_height = 1.4f;
@@ -15,11 +15,11 @@ Tilemap::Tilemap()
 
 Tilemap::~Tilemap()
 {
-	if (m_map != NULL)
+	if (m_map != nullptr)
 		delete [] m_map;
 
-	if (m_vb != NULL)
-		delete [] m_vb;
+	if (m_vb != nullptr)
+		delete m_vb;
 }
 
 void Tilemap::reset()
@@ -61,13 +61,10 @@ void Tilemap::resize(int width, int height)
 	m_width = width;
 	m_height = height;
 
-	if (m_vb != NULL)
-	{
-		delete[] m_vb;
-		m_vb = NULL;
-	}
+	if (m_vb != nullptr)
+		delete m_vb;
 
-	m_vb = new VBO[width * height * 12];
+	m_vb = new VBO(width * height * 4);
 }
 
 bool Tilemap::enlarge(int xleft, int xright, int ytop, int ybottom)
@@ -101,13 +98,10 @@ bool Tilemap::enlarge(int xleft, int xright, int ytop, int ybottom)
 	m_width = new_width;
 	m_height = new_height;
 
-	if (m_vb != NULL)
-	{
-		delete [] m_vb;
-		m_vb = NULL;
-	}
+	if (m_vb != nullptr)
+		delete m_vb;
 
-	m_vb = new VBO[new_width * new_height * 12];
+	m_vb = new VBO(new_width * new_height * 4);
 
 	tesselateAll();
 
@@ -145,13 +139,10 @@ bool Tilemap::shrink(int xleft, int xright, int ytop, int ybottom)
 	m_width = new_width;
 	m_height = new_height;
 
-	if (m_vb != NULL)
-	{
-		delete[] m_vb;
-		m_vb = NULL;
-	}
+	if (m_vb != nullptr)
+		delete m_vb;
 
-	m_vb = new VBO[new_width * new_height * 12];
+	m_vb = new VBO(new_width * new_height * 4);
 
 	tesselateAll();
 
@@ -173,14 +164,14 @@ void Tilemap::tesselateAll()
 
 void Tilemap::tesselateTile(int x, int y, bool odd)
 {
-	const int num_verts = 3 * 4;
+	const int num_tris = 4;
 
 	assert(x >= 0 && x < m_width);
 	assert(y >= 0 && y < m_height);
 
 	int tile = m_map[(y * m_width) + x] & TILE_MASK;
 
-	int vb_index = ((y * m_width) + x) * num_verts;
+	int vb_index = ((y * m_width) + x) * num_tris;
 
 	float tx1 = (float)(x) * m_tile_width;
 	float tx2 = tx1 + m_tile_width;
@@ -198,11 +189,9 @@ void Tilemap::tesselateTile(int x, int y, bool odd)
 	if (tile == TILE_EMPTY)
 	{
 		// make degen geo
-		for (int i = 0; i < num_verts; i++)
+		for (int i = 0; i < num_tris; i++)
 		{
-			m_vb[vb_index + i].pos = glm::vec3(0, 0, 0);
-			m_vb[vb_index + i].uv = glm::vec2(0, 0);
-			m_vb[vb_index + i].color = 0;
+			m_vb->degenTri(vb_index + i);
 		}
 	}
 	else
@@ -213,25 +202,6 @@ void Tilemap::tesselateTile(int x, int y, bool odd)
 		glm::vec2 vr = tiledata.top_points[2] - tiledata.top_points[3];
 		glm::vec2 vt = tiledata.top_points[3] - tiledata.top_points[0];
 		glm::vec2 vb = tiledata.top_points[2] - tiledata.top_points[1];
-
-		/*
-		glm::vec2 tex_my1 = tiledata.points[0] + (vt * 0.5f);
-		glm::vec2 tex_my2 = tiledata.points[1] + (vb * 0.5f);
-		glm::vec2 tex_ly1 = tiledata.points[0] + (vl * (float)(15.0 / 50.0));
-		glm::vec2 tex_ly2 = tiledata.points[0] + (vl * (float)(35.0 / 50.0));
-		glm::vec2 tex_ry1 = tiledata.points[3] + (vr * (float)(15.0 / 50.0));
-		glm::vec2 tex_ry2 = tiledata.points[3] + (vr * (float)(35.0 / 50.0));
-		*/
-
-		
-		/*
-		glm::vec2 uv1 = tiledata.top_points[0] + (vl * (float)(15.0 / 50.0));
-		glm::vec2 uv2 = tiledata.top_points[0] + (vl * (float)(35.0 / 50.0));
-		glm::vec2 uv3 = tiledata.top_points[1] + (vb * 0.5f);
-		glm::vec2 uv4 = tiledata.top_points[3] + (vr * (float)(35.0 / 50.0));
-		glm::vec2 uv5 = tiledata.top_points[3] + (vr * (float)(15.0 / 50.0));
-		glm::vec2 uv6 = tiledata.top_points[0] + (vt * 0.5f);
-		*/
 
 		glm::vec2 uv1 = tiledata.top_points[0];
 		glm::vec2 uv2 = tiledata.top_points[1];
@@ -266,22 +236,10 @@ void Tilemap::tesselateTile(int x, int y, bool odd)
 					  \  /
 					   \/
 				*/
-
-				m_vb[vb_index + 0].pos = p1;	m_vb[vb_index + 0].uv = uv1;		m_vb[vb_index + 0].color = tiledata.color;
-				m_vb[vb_index + 1].pos = p6;	m_vb[vb_index + 1].uv = uv6;		m_vb[vb_index + 1].color = tiledata.color;
-				m_vb[vb_index + 2].pos = p5;	m_vb[vb_index + 2].uv = uv5;		m_vb[vb_index + 2].color = tiledata.color;
-
-				m_vb[vb_index + 3].pos = p1;	m_vb[vb_index + 3].uv = uv1;		m_vb[vb_index + 3].color = tiledata.color;
-				m_vb[vb_index + 4].pos = p5;	m_vb[vb_index + 4].uv = uv5;		m_vb[vb_index + 4].color = tiledata.color;
-				m_vb[vb_index + 5].pos = p4;	m_vb[vb_index + 5].uv = uv4;		m_vb[vb_index + 5].color = tiledata.color;
-
-				m_vb[vb_index + 6].pos = p1;	m_vb[vb_index + 6].uv = uv1;		m_vb[vb_index + 6].color = tiledata.color;
-				m_vb[vb_index + 7].pos = p4;	m_vb[vb_index + 7].uv = uv4;		m_vb[vb_index + 7].color = tiledata.color;
-				m_vb[vb_index + 8].pos = p3;	m_vb[vb_index + 8].uv = uv3;		m_vb[vb_index + 8].color = tiledata.color;
-
-				m_vb[vb_index + 9].pos = p1;	m_vb[vb_index + 9].uv = uv1;		m_vb[vb_index + 9].color = tiledata.color;
-				m_vb[vb_index + 10].pos = p3;	m_vb[vb_index + 10].uv = uv3;		m_vb[vb_index + 10].color = tiledata.color;
-				m_vb[vb_index + 11].pos = p2;	m_vb[vb_index + 11].uv = uv2;		m_vb[vb_index + 11].color = tiledata.color;
+				m_vb->makeTri(vb_index + 0, p1, p6, p5, uv1, uv6, uv5, tiledata.color);
+				m_vb->makeTri(vb_index + 1, p1, p5, p4, uv1, uv5, uv4, tiledata.color);
+				m_vb->makeTri(vb_index + 2, p1, p4, p3, uv1, uv4, uv3, tiledata.color);
+				m_vb->makeTri(vb_index + 3, p1, p3, p2, uv1, uv3, uv2, tiledata.color);
 				break;
 			}
 			case Tilemap::TILE_LEFT:
@@ -294,23 +252,10 @@ void Tilemap::tesselateTile(int x, int y, bool odd)
 			        \ |
 			         \|
 				*/
-
-				m_vb[vb_index + 0].pos = p1;	m_vb[vb_index + 0].uv = uv1;		m_vb[vb_index + 0].color = tiledata.color;
-				m_vb[vb_index + 1].pos = p6;	m_vb[vb_index + 1].uv = uv4;		m_vb[vb_index + 1].color = tiledata.color;
-				m_vb[vb_index + 2].pos = p3;	m_vb[vb_index + 2].uv = uv3;		m_vb[vb_index + 2].color = tiledata.color;
-
-				m_vb[vb_index + 3].pos = p1;	m_vb[vb_index + 3].uv = uv1;		m_vb[vb_index + 3].color = tiledata.color;
-				m_vb[vb_index + 4].pos = p3;	m_vb[vb_index + 4].uv = uv3;		m_vb[vb_index + 4].color = tiledata.color;
-				m_vb[vb_index + 5].pos = p2;	m_vb[vb_index + 5].uv = uv2;		m_vb[vb_index + 5].color = tiledata.color;
-
-				// degen
-				m_vb[vb_index + 6].pos = p2;	m_vb[vb_index + 6].uv = uv2;		m_vb[vb_index + 6].color = tiledata.color;
-				m_vb[vb_index + 7].pos = p2;	m_vb[vb_index + 7].uv = uv2;		m_vb[vb_index + 7].color = tiledata.color;
-				m_vb[vb_index + 8].pos = p2;	m_vb[vb_index + 8].uv = uv2;		m_vb[vb_index + 8].color = tiledata.color;
-				m_vb[vb_index + 9].pos = p2;	m_vb[vb_index + 9].uv = uv2;		m_vb[vb_index + 9].color = tiledata.color;
-				m_vb[vb_index + 10].pos = p2;	m_vb[vb_index + 10].uv = uv2;		m_vb[vb_index + 10].color = tiledata.color;
-				m_vb[vb_index + 11].pos = p2;	m_vb[vb_index + 11].uv = uv2;		m_vb[vb_index + 11].color = tiledata.color;
-
+				m_vb->makeTri(vb_index + 0, p1, p6, p3, uv1, uv4, uv3, tiledata.color);
+				m_vb->makeTri(vb_index + 1, p1, p3, p2, uv1, uv3, uv2, tiledata.color);
+				m_vb->degenTri(vb_index + 2);
+				m_vb->degenTri(vb_index + 3);
 				break;
 			}
 			case Tilemap::TILE_RIGHT:
@@ -323,22 +268,10 @@ void Tilemap::tesselateTile(int x, int y, bool odd)
 			        | /
 			        |/
 				*/
-
-				m_vb[vb_index + 0].pos = p6;	m_vb[vb_index + 0].uv = uv2;		m_vb[vb_index + 0].color = tiledata.color;
-				m_vb[vb_index + 1].pos = p5;	m_vb[vb_index + 1].uv = uv1;		m_vb[vb_index + 1].color = tiledata.color;
-				m_vb[vb_index + 2].pos = p4;	m_vb[vb_index + 2].uv = uv4;		m_vb[vb_index + 2].color = tiledata.color;
-
-				m_vb[vb_index + 3].pos = p6;	m_vb[vb_index + 3].uv = uv2;		m_vb[vb_index + 3].color = tiledata.color;
-				m_vb[vb_index + 4].pos = p4;	m_vb[vb_index + 4].uv = uv4;		m_vb[vb_index + 4].color = tiledata.color;
-				m_vb[vb_index + 5].pos = p3;	m_vb[vb_index + 5].uv = uv3;		m_vb[vb_index + 5].color = tiledata.color;
-
-				// degen
-				m_vb[vb_index + 6].pos = p3;	m_vb[vb_index + 6].uv = uv3;		m_vb[vb_index + 6].color = tiledata.color;
-				m_vb[vb_index + 7].pos = p3;	m_vb[vb_index + 7].uv = uv3;		m_vb[vb_index + 7].color = tiledata.color;
-				m_vb[vb_index + 8].pos = p3;	m_vb[vb_index + 8].uv = uv3;		m_vb[vb_index + 8].color = tiledata.color;
-				m_vb[vb_index + 9].pos = p3;	m_vb[vb_index + 9].uv = uv3;		m_vb[vb_index + 9].color = tiledata.color;
-				m_vb[vb_index + 10].pos = p3;	m_vb[vb_index + 10].uv = uv3;		m_vb[vb_index + 10].color = tiledata.color;
-				m_vb[vb_index + 11].pos = p3;	m_vb[vb_index + 11].uv = uv3;		m_vb[vb_index + 11].color = tiledata.color;
+				m_vb->makeTri(vb_index + 0, p6, p5, p4, uv2, uv1, uv4, tiledata.color);
+				m_vb->makeTri(vb_index + 1, p6, p4, p3, uv2, uv4, uv3, tiledata.color);
+				m_vb->degenTri(vb_index + 2);
+				m_vb->degenTri(vb_index + 3);
 				break;
 			}
 			case Tilemap::TILE_TOP:
@@ -347,21 +280,10 @@ void Tilemap::tesselateTile(int x, int y, bool odd)
 			        /\
 			       /__\
 				*/
-
-				m_vb[vb_index + 0].pos = p1;	m_vb[vb_index + 0].uv = uv1;		m_vb[vb_index + 0].color = tiledata.color;
-				m_vb[vb_index + 1].pos = p6;	m_vb[vb_index + 1].uv = uv3;		m_vb[vb_index + 1].color = tiledata.color;
-				m_vb[vb_index + 2].pos = p5;	m_vb[vb_index + 2].uv = uv2;		m_vb[vb_index + 2].color = tiledata.color;
-
-				// degen
-				m_vb[vb_index + 3].pos = p5;	m_vb[vb_index + 3].uv = uv5;		m_vb[vb_index + 3].color = tiledata.color;
-				m_vb[vb_index + 4].pos = p5;	m_vb[vb_index + 4].uv = uv5;		m_vb[vb_index + 4].color = tiledata.color;
-				m_vb[vb_index + 5].pos = p5;	m_vb[vb_index + 5].uv = uv5;		m_vb[vb_index + 5].color = tiledata.color;
-				m_vb[vb_index + 6].pos = p5;	m_vb[vb_index + 6].uv = uv5;		m_vb[vb_index + 6].color = tiledata.color;
-				m_vb[vb_index + 7].pos = p5;	m_vb[vb_index + 7].uv = uv5;		m_vb[vb_index + 7].color = tiledata.color;
-				m_vb[vb_index + 8].pos = p5;	m_vb[vb_index + 8].uv = uv5;		m_vb[vb_index + 8].color = tiledata.color;
-				m_vb[vb_index + 9].pos = p5;	m_vb[vb_index + 9].uv = uv5;		m_vb[vb_index + 9].color = tiledata.color;
-				m_vb[vb_index + 10].pos = p5;	m_vb[vb_index + 10].uv = uv5;		m_vb[vb_index + 10].color = tiledata.color;
-				m_vb[vb_index + 11].pos = p5;	m_vb[vb_index + 11].uv = uv5;		m_vb[vb_index + 11].color = tiledata.color;
+				m_vb->makeTri(vb_index + 0, p1, p6, p5, uv1, uv3, uv2, tiledata.color);
+				m_vb->degenTri(vb_index + 1);
+				m_vb->degenTri(vb_index + 2);
+				m_vb->degenTri(vb_index + 3);
 				break;
 			}
 			case Tilemap::TILE_BOTTOM:
@@ -370,21 +292,10 @@ void Tilemap::tesselateTile(int x, int y, bool odd)
 				   \  /
 			        \/
 				*/
-
-				m_vb[vb_index + 0].pos = p2;	m_vb[vb_index + 0].uv = uv1;		m_vb[vb_index + 0].color = tiledata.color;
-				m_vb[vb_index + 1].pos = p4;	m_vb[vb_index + 1].uv = uv3;		m_vb[vb_index + 1].color = tiledata.color;
-				m_vb[vb_index + 2].pos = p3;	m_vb[vb_index + 2].uv = uv2;		m_vb[vb_index + 2].color = tiledata.color;
-
-				// degen
-				m_vb[vb_index + 3].pos = p3;	m_vb[vb_index + 3].uv = uv3;		m_vb[vb_index + 3].color = tiledata.color;
-				m_vb[vb_index + 4].pos = p3;	m_vb[vb_index + 4].uv = uv3;		m_vb[vb_index + 4].color = tiledata.color;
-				m_vb[vb_index + 5].pos = p3;	m_vb[vb_index + 5].uv = uv3;		m_vb[vb_index + 5].color = tiledata.color;
-				m_vb[vb_index + 6].pos = p3;	m_vb[vb_index + 6].uv = uv3;		m_vb[vb_index + 6].color = tiledata.color;
-				m_vb[vb_index + 7].pos = p3;	m_vb[vb_index + 7].uv = uv3;		m_vb[vb_index + 7].color = tiledata.color;
-				m_vb[vb_index + 8].pos = p3;	m_vb[vb_index + 8].uv = uv3;		m_vb[vb_index + 8].color = tiledata.color;
-				m_vb[vb_index + 9].pos = p3;	m_vb[vb_index + 9].uv = uv3;		m_vb[vb_index + 9].color = tiledata.color;
-				m_vb[vb_index + 10].pos = p3;	m_vb[vb_index + 10].uv = uv3;		m_vb[vb_index + 10].color = tiledata.color;
-				m_vb[vb_index + 11].pos = p3;	m_vb[vb_index + 11].uv = uv3;		m_vb[vb_index + 11].color = tiledata.color;
+				m_vb->makeTri(vb_index + 0, p2, p4, p3, uv1, uv3, uv2, tiledata.color);
+				m_vb->degenTri(vb_index + 1);
+				m_vb->degenTri(vb_index + 2);
+				m_vb->degenTri(vb_index + 3);
 				break;
 			}
 			case Tilemap::TILE_MID:
@@ -393,33 +304,19 @@ void Tilemap::tesselateTile(int x, int y, bool odd)
 			      |    |
 			      |____|
 				*/
-
-				m_vb[vb_index + 0].pos = p1;	m_vb[vb_index + 0].uv = uv1;		m_vb[vb_index + 0].color = tiledata.color;
-				m_vb[vb_index + 1].pos = p5;	m_vb[vb_index + 1].uv = uv4;		m_vb[vb_index + 1].color = tiledata.color;
-				m_vb[vb_index + 2].pos = p4;	m_vb[vb_index + 2].uv = uv3;		m_vb[vb_index + 2].color = tiledata.color;
-				
-				m_vb[vb_index + 3].pos = p1;	m_vb[vb_index + 3].uv = uv1;		m_vb[vb_index + 3].color = tiledata.color;
-				m_vb[vb_index + 4].pos = p4;	m_vb[vb_index + 4].uv = uv3;		m_vb[vb_index + 4].color = tiledata.color;
-				m_vb[vb_index + 5].pos = p2;	m_vb[vb_index + 5].uv = uv2;		m_vb[vb_index + 5].color = tiledata.color;
-				
-				// degen
-				m_vb[vb_index + 6].pos = p2;	m_vb[vb_index + 6].uv = uv2;		m_vb[vb_index + 6].color = tiledata.color;
-				m_vb[vb_index + 7].pos = p2;	m_vb[vb_index + 7].uv = uv2;		m_vb[vb_index + 7].color = tiledata.color;
-				m_vb[vb_index + 8].pos = p2;	m_vb[vb_index + 8].uv = uv2;		m_vb[vb_index + 8].color = tiledata.color;
-				m_vb[vb_index + 9].pos = p2;	m_vb[vb_index + 9].uv = uv2;		m_vb[vb_index + 9].color = tiledata.color;
-				m_vb[vb_index + 10].pos = p2;	m_vb[vb_index + 10].uv = uv2;		m_vb[vb_index + 10].color = tiledata.color;
-				m_vb[vb_index + 11].pos = p2;	m_vb[vb_index + 11].uv = uv2;		m_vb[vb_index + 11].color = tiledata.color;
+				m_vb->makeTri(vb_index + 0, p1, p5, p4, uv1, uv4, uv3, tiledata.color);
+				m_vb->makeTri(vb_index + 1, p1, p4, p2, uv1, uv3, uv2, tiledata.color);
+				m_vb->degenTri(vb_index + 2);
+				m_vb->degenTri(vb_index + 3);
 				break;
 			}
 
 			default:
 			{
 				// make degen geo
-				for (int i = 0; i < num_verts; i++)
+				for (int i = 0; i < num_tris; i++)
 				{
-					m_vb[vb_index + i].pos = glm::vec3(0, 0, 0);
-					m_vb[vb_index + i].uv = glm::vec2(0, 0);
-					m_vb[vb_index + i].color = 0;
+					m_vb->degenTri(vb_index + i);
 				}
 				break;
 			}
@@ -429,12 +326,12 @@ void Tilemap::tesselateTile(int x, int y, bool odd)
 
 float* Tilemap::getVBO()
 {
-	return (float*)m_vb;
+	return (float*)m_vb->getPointer();
 }
 
 int Tilemap::numTris()
 {
-	return m_width * m_height * 4;
+	return m_vb->getCapacity();
 }
 
 int Tilemap::getTile(int x, int y)

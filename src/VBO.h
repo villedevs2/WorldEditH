@@ -16,7 +16,7 @@ public:
 	void makeQuad(int index, const glm::vec3& p1, const glm::vec3& p2, const glm::vec3& p3, const glm::vec3& p4,
 							 const glm::vec2& uv1, const glm::vec2& uv2, const glm::vec2& uv3, const glm::vec2& uv4, unsigned int color);
 	void degenTri(int index);
-	int getVertexSize();
+	static int getVertexSize();
 	void* getPointer();
 	int getCapacity();
 

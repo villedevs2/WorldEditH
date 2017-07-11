@@ -300,7 +300,7 @@ void GLPreview::mouseMoveEvent(QMouseEvent* event)
 	if (m_panning)
 	{
 		glm::vec2 mouse_p = toLevelCoords(glm::vec2(mouse_x, mouse_y));
-		glm::vec2 delta = (m_pan_point - mouse_p) * 0.4f;
+		glm::vec2 delta = (mouse_p - m_pan_point) * 0.4f;
 		m_scroll = m_scroll_saved - delta;
 	}
 
@@ -412,7 +412,7 @@ void GLPreview::tesselateTile(int x, int y)
 			     \ |
 			      \|
 			*/
-				m_vb->makeTri(vb_index + 0, p1, p6, p3, uv1, uv6, uv3, tiledata->color);
+				m_vb->makeTri(vb_index + 0, p1, p6, p3, uv1, uv4, uv3, tiledata->color);
 				m_vb->makeTri(vb_index + 1, p1, p3, p2, uv1, uv3, uv2, tiledata->color);
 				m_vb->degenTri(vb_index + 2);
 				m_vb->degenTri(vb_index + 3);
