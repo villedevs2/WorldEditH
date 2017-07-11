@@ -12,6 +12,7 @@
 
 #include "Level.h"
 #include "PolygonDef.h"
+#include "VBO.h"
 
 class GLPreview : public QGLWidget
 {
@@ -24,6 +25,7 @@ public:
 	void setTexture(QImage* texture);
 	void tesselateTile(int x, int y);
 	void tesselateAll();
+	void resizeTilemap(int width, int height);
 
 protected:
 	void paintEvent(QPaintEvent* event);
@@ -39,20 +41,10 @@ protected:
 private:
 	struct Shader
 	{
-		int location;
-		int scale;
 		int position;
 		int tex_coord;
 		int color;
 		int vp_matrix;
-		int rot_matrix;
-	};
-
-	struct VBO
-	{
-		glm::vec3 pos;
-		glm::vec2 uv;
-		unsigned int color;
 	};
 
 	static const int LEVEL_VIS_WIDTH = 32;
@@ -74,7 +66,11 @@ private:
 	QGLShaderProgram* m_level_program;
 	Shader m_level_shader;
 
-	VBO m_vbo[32];
+	VBO* m_vb;
+	VBO* m_vbback;
+
+	int m_width;
+	int m_height;
 
 
 	bool m_panning;

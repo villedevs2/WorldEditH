@@ -154,7 +154,7 @@ MainWindow::MainWindow()
 	m_tileset_window->move(QPoint(width() + 850, 600));
 
 	// preview window positioning
-	m_preview->move(QPoint(width() + 850, 100));
+	m_preview->move(QPoint(width() + 250, 100));
 
 
 	// tex edit hidden by default

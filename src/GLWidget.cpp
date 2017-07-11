@@ -469,6 +469,7 @@ void GLWidget::tilemapDraw()
 			brush = Tilemap::TILE_EMPTY;
 
 		m_level->editTilemapTile(m_tile_selx, m_tile_sely, brush);
+		m_level->editTilemapZ(m_tile_selx, m_tile_sely, (float)(rand() % 100));
 		emit onTileUpdate(m_tile_selx, m_tile_sely);
 	}
 }
@@ -504,12 +505,12 @@ void GLWidget::updateTileDrawLocation(const glm::vec2& mouse_lp)
 		if (m_tile_sely & 1)
 		{
 			/*
-			e1\-   -/e2
-			+\   /+
-			\ /
-			|
-			+|-
-			e3
+			 e1\-   -/e2
+			   +\   /+
+		         \ /
+		          |
+			     +|-
+			     e3
 			*/
 
 			glm::vec2 e1 = glm::vec2(mx, vy2) - glm::vec2(lx, vy1);
