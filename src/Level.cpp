@@ -710,12 +710,6 @@ void Level::editTilemapZ(int x, int y, int z)
 	setModified();
 }
 
-void Level::incTilemapZ(int x, int y, int z)
-{
-	m_tilemap->incZ(x, y, z);
-	setModified();
-}
-
 unsigned int Level::readTilemapRaw(int x, int y)
 {
 	return m_tilemap->getRaw(x, y);

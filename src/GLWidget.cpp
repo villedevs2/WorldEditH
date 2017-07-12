@@ -55,6 +55,7 @@ GLWidget::GLWidget(QWidget *parent, Level* level)
 
 	m_tile_selx = -1;
 	m_tile_sely = -1;
+	m_tile_basez = 0.0f;
 
 	m_filter = 0;
 	m_display_filter = 0;
@@ -168,6 +169,7 @@ void GLWidget::setMode(OperationMode mode)
 		}
 
 		case MODE_TILEMAP:
+		case MODE_TILE_ZEDIT:
 		{
 			deselectObject();
 			m_tilemap_painting = false;
@@ -339,6 +341,11 @@ void GLWidget::setTileBrush(int tile)
 	m_tile_brush = tile;
 }
 
+void GLWidget::setTileBaseZ(float z)
+{
+	m_tile_basez = z;
+}
+
 // ----------------------------------------------------------------------------
 
 
@@ -469,7 +476,38 @@ void GLWidget::tilemapDraw()
 			brush = Tilemap::TILE_EMPTY;
 
 		m_level->editTilemapTile(m_tile_selx, m_tile_sely, brush);
-		m_level->editTilemapZ(m_tile_selx, m_tile_sely, (float)(rand() % 100));
+		m_level->editTilemapZ(m_tile_selx, m_tile_sely, m_tile_basez);
+		emit onTileUpdate(m_tile_selx, m_tile_sely);
+	}
+}
+
+void GLWidget::tilemapZDraw()
+{
+	if (m_tile_selx >= 0 &&
+		m_tile_sely >= 0 &&
+		m_tile_selx < m_level->getTilemapWidth() &&
+		m_tile_sely < m_level->getTilemapHeight())
+	{
+		m_level->editTilemapZ(m_tile_selx, m_tile_sely, m_tile_basez);
+		emit onTileUpdate(m_tile_selx, m_tile_sely);
+	}
+}
+
+void GLWidget::tilemapZEdit(int zmod)
+{
+	if (m_tile_selx >= 0 &&
+		m_tile_sely >= 0 &&
+		m_tile_selx < m_level->getTilemapWidth() &&
+		m_tile_sely < m_level->getTilemapHeight())
+	{
+		int z = m_level->readTilemapZ(m_tile_selx, m_tile_sely);
+		z += zmod;
+		if (z < 0)
+			z = 0;
+		if (z > Tilemap::Z_MAX)
+			z = Tilemap::Z_MAX;
+
+		m_level->editTilemapZ(m_tile_selx, m_tile_sely, z);
 		emit onTileUpdate(m_tile_selx, m_tile_sely);
 	}
 }
@@ -874,6 +912,7 @@ void GLWidget::mouseReleaseEvent(QMouseEvent* event)
 		}
 
 		case MODE_TILEMAP:
+		case MODE_TILE_ZEDIT:
 		{
 			if (event->button() & Qt::LeftButton)
 			{
@@ -976,6 +1015,7 @@ void GLWidget::mousePressEvent(QMouseEvent* event)
 		}
 		
 		case MODE_TILEMAP:
+		case MODE_TILE_ZEDIT:
 		{
 			if (event->button() & Qt::LeftButton)
 			{
@@ -983,7 +1023,11 @@ void GLWidget::mousePressEvent(QMouseEvent* event)
 
 				updateTileDrawLocation(mouse_lp);
 
-				tilemapDraw();
+				if (m_opmode == MODE_TILEMAP)
+					tilemapDraw();
+				else if (m_opmode == MODE_TILE_ZEDIT)
+					tilemapZDraw();
+
 				m_tilemap_painting = true;
 			}
 			break;
@@ -1025,6 +1069,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent* event)
 		}
 
 		case MODE_TILEMAP:
+		case MODE_TILE_ZEDIT:
 		{
 			glm::vec2 mouse_lp = toLevelCoords(glm::vec2(mouse_x, mouse_y));
 
@@ -1039,37 +1084,13 @@ void GLWidget::mouseMoveEvent(QMouseEvent* event)
 			if (m_tilemap_painting)
 			{
 				//glm::vec2 mouse_lp = toLevelCoords(glm::vec2(mouse_x, mouse_y));
-				tilemapDraw();
+				if (m_opmode == MODE_TILEMAP)
+					tilemapDraw();
+				else if (m_opmode == MODE_TILE_ZEDIT)
+					tilemapZDraw();
+
 				update();
 			}
-
-			/*
-			//if (event->button() & Qt::LeftButton)
-			if (m_tilemap_painting)
-			{
-				glm::vec2 mouse_lp = toLevelCoords(glm::vec2(mouse_x, mouse_y));
-
-				float tx1 = (float)(m_tilemap_xstart) * m_tilemap_size;
-				float ty1 = (float)(m_tilemap_ystart) * m_tilemap_size;
-				float tx2 = (float)(m_tilemap_xend) * m_tilemap_size;
-				float ty2 = (float)(m_tilemap_yend) * m_tilemap_size;
-
-				if (mouse_lp.x >= tx1 && mouse_lp.x < tx2 &&
-					mouse_lp.y >= ty1 && mouse_lp.y < ty2)
-				{
-			//		float x = (mouse_lp.x - tx1) / (tx2 - tx1);
-			//		float y = (mouse_lp.y - ty1) / (ty2 - ty1);
-
-			//		int tile_x = (int)((x / m_tilemap_size) * (float)(m_tilemap_xend - m_tilemap_xstart));
-			//		int tile_y = (int)((y / m_tilemap_size) * (float)(m_tilemap_yend - m_tilemap_ystart));
-
-					int tile_x = (int)(mouse_lp.x / m_tilemap_size);
-					int tile_y = (int)(mouse_lp.y / m_tilemap_size);
-
-					m_level->editTilemap(tile_x, tile_y, 1);
-				}
-			}
-			*/
 			break;
 		}
 	}
@@ -1299,6 +1320,19 @@ void GLWidget::keyReleaseEvent(QKeyEvent* event)
 					
 					deselectObject();
 				}
+			}
+			break;
+		}
+
+		case MODE_TILE_ZEDIT:
+		{
+			if (key == Qt::Key_Q)
+			{
+				tilemapZEdit(1);
+			}
+			else if (key == Qt::Key_A)
+			{
+				tilemapZEdit(-1);
 			}
 			break;
 		}
@@ -2312,6 +2346,11 @@ void GLWidget::paintGL()
 		case MODE_TILEMAP:
 		{
 			modetext = tr("Tilemap: X: %1, Y: %2, TX: %3, TY: %4").arg(mlp.x).arg(mlp.y).arg(m_tile_selx).arg(m_tile_sely);
+			break;
+		}
+		case MODE_TILE_ZEDIT:
+		{
+			modetext = tr("Tilemap Z Edit: X: %1, Y: %1, TX: %3, TY: %4").arg(mlp.x).arg(mlp.y).arg(m_tile_selx).arg(m_tile_sely);
 			break;
 		}
 	}	

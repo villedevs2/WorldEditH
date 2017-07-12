@@ -128,7 +128,6 @@ public:
 	int readTilemapZ(int x, int y);
 	void editTilemapTile(int x, int y, int tile);
 	void editTilemapZ(int x, int y, int z);
-	void incTilemapZ(int x, int y, int z);
 	unsigned int readTilemapRaw(int x, int y);
 	void editTilemapRaw(int x, int y, unsigned int data);
 	int getTilemapWidth();

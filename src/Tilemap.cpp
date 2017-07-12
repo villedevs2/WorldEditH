@@ -381,24 +381,6 @@ void Tilemap::editZ(int x, int y, int z)
 	m_map[index] |= (z << Z_SHIFT) & Z_MASK;
 }
 
-void Tilemap::incZ(int x, int y, int z)
-{
-	assert(x >= 0 && x < m_width);
-	assert(y >= 0 && y < m_height);
-
-	int index = (y * m_width) + x;
-
-	int oz = (m_map[index] & Z_MASK) >> Z_SHIFT;
-	oz += z;
-	if (oz > 255)
-		oz = 255;
-	if (oz < 0)
-		oz = 0;
-
-	m_map[index] &= ~Z_MASK;
-	m_map[index] |= (oz << Z_SHIFT) & Z_MASK;
-}
-
 unsigned int Tilemap::getRaw(int x, int y)
 {
 	assert(x >= 0 && x < m_width);

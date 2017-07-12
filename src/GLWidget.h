@@ -24,6 +24,7 @@ public:
 		MODE_DRAW_POLY,
 		MODE_DRAW_RECT,
 		MODE_TILEMAP,
+		MODE_TILE_ZEDIT,
 	};
 
 	struct Shader
@@ -86,6 +87,7 @@ public slots:
 	void setTilemapConfig(int width, int height);
 	void setTileBrush(int tile);
 	void setObjectColor(QColor color);
+	void setTileBaseZ(float z);
 
 protected:
 	void initializeGL();
@@ -122,6 +124,8 @@ private:
 	bool filterObject(Level::Object* obj);
 	void updateTileDrawLocation(const glm::vec2& mouse_lp);
 	void tilemapDraw();
+	void tilemapZDraw();
+	void tilemapZEdit(int zmod);
 
 	Level* m_level;
 	QColor m_bgcolor;
@@ -197,6 +201,8 @@ private:
 
 	int m_tile_selx;
 	int m_tile_sely;
+
+	float m_tile_basez;
 
 	std::vector<std::vector<int>> m_edgedata;
 };

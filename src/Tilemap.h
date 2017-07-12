@@ -48,6 +48,8 @@ public:
 	static const unsigned int Z_MASK = 0xff0000;
 	static const unsigned int Z_SHIFT = 16;
 
+	static const int Z_MAX = 100;
+
 
 
 	Tilemap();
@@ -63,7 +65,6 @@ public:
 	int getZ(int x, int y);	
 	void edit(int x, int y, int tile);
 	void editZ(int x, int y, int z);
-	void incZ(int x, int y, int z);
 	unsigned int getRaw(int x, int y);
 	void editRaw(int x, int y, unsigned int data);
 	void tesselateAll();

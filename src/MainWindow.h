@@ -104,6 +104,7 @@ private:
 	QAction* m_draw_poly_action;
 	QAction* m_draw_rect_action;
 	QAction* m_tilemap_action;
+	QAction* m_tile_zedit_action;
 
 	QAction* m_toggle_texedit;
 	QAction* m_toggle_objedit;
@@ -206,6 +207,7 @@ private slots:
 	void drawPolyMode();
 	void drawRectMode();
 	void tilemapMode();
+	void tileZEditMode();
 
 	void toggleTexEdit();
 	void toggleObjEdit();

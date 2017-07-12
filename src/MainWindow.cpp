@@ -514,6 +514,12 @@ void MainWindow::tilemapMode()
 	m_tilemap_action->setChecked(true);
 }
 
+void MainWindow::tileZEditMode()
+{
+	emit m_glwidget->setMode(GLWidget::MODE_TILE_ZEDIT);
+	m_tile_zedit_action->setChecked(true);
+}
+
 
 void MainWindow::toggleTexEdit()
 {
@@ -1411,6 +1417,10 @@ void MainWindow::createActions()
 	m_tilemap_action->setCheckable(true);
 	connect(m_tilemap_action, SIGNAL(triggered()), this, SLOT(tilemapMode()));
 
+	m_tile_zedit_action = new QAction(QIcon("tilezedit.png"), tr("Edit Z on tilemap"), this);
+	m_tile_zedit_action->setCheckable(true);
+	connect(m_tile_zedit_action, SIGNAL(triggered()), this, SLOT(tileZEditMode()));
+
 	m_opgroup->addAction(m_select_action);
 	m_opgroup->addAction(m_move_action);
 	m_opgroup->addAction(m_rotate_action);
@@ -1418,6 +1428,7 @@ void MainWindow::createActions()
 	m_opgroup->addAction(m_draw_poly_action);
 	m_opgroup->addAction(m_draw_rect_action);
 	m_opgroup->addAction(m_tilemap_action);
+	m_opgroup->addAction(m_tile_zedit_action);
 
 
 	// editor tools
@@ -1583,6 +1594,7 @@ void MainWindow::createToolbars()
 	m_op_toolbar->addAction(m_draw_poly_action);
 	m_op_toolbar->addAction(m_draw_rect_action);
 	m_op_toolbar->addAction(m_tilemap_action);
+	m_op_toolbar->addAction(m_tile_zedit_action);
 
 	m_grid_toolbar = addToolBar("Grid");
 	m_grid_toolbar->addAction(m_toggleGridAction);
