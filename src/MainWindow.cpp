@@ -768,6 +768,7 @@ void MainWindow::tilemapEnlarged()
 
 	emit m_glwidget->setTilemapConfig(w, h);
 	m_level->enlargeTilemap(xleft, xright, ytop, ybottom);
+	emit m_preview->resizeTilemap(w, h);
 }
 
 void MainWindow::tilemapShrank()
@@ -782,6 +783,7 @@ void MainWindow::tilemapShrank()
 
 	emit m_glwidget->setTilemapConfig(w, h);
 	m_level->shrinkTilemap(xleft, xright, ytop, ybottom);
+	emit m_preview->resizeTilemap(w, h);
 }
 
 
@@ -796,6 +798,11 @@ void MainWindow::setColor()
 
 		emit m_glwidget->setObjectColor(m_object_color);
 	}
+}
+
+void MainWindow::zbaseChanged(int value)
+{
+	emit m_glwidget->setTileBaseZ(value);
 }
 
 
@@ -1346,6 +1353,19 @@ void MainWindow::createActions()
 	m_levelConfAction = new QAction(tr("Level settings"), this);
 	connect(m_levelConfAction, SIGNAL(triggered()), this, SLOT(levelConfig()));
 
+	m_zbaseLabel = new QLabel(tr("Z Base:"));
+	m_zbaseSpin = new QSpinBox();
+	m_zbaseSpin->setRange(0, Tilemap::Z_MAX);
+	m_zbaseSpin->setSingleStep(1);
+	QBoxLayout* zbase_layout = new QBoxLayout(QBoxLayout::LeftToRight);
+	zbase_layout->setSpacing(2);
+	zbase_layout->setMargin(1);
+	zbase_layout->addWidget(m_zbaseLabel);
+	zbase_layout->addWidget(m_zbaseSpin);
+	connect(m_zbaseSpin, SIGNAL(valueChanged(int)), this, SLOT(zbaseChanged(int)));
+
+	m_zbaseWidget = new QWidget;
+	m_zbaseWidget->setLayout(zbase_layout);
 
 	m_gridSizeCombo = new QComboBox();
 	for (int i=0; i < GLWidget::NUM_GRID_SIZES; i++)
@@ -1595,6 +1615,9 @@ void MainWindow::createToolbars()
 	m_op_toolbar->addAction(m_draw_rect_action);
 	m_op_toolbar->addAction(m_tilemap_action);
 	m_op_toolbar->addAction(m_tile_zedit_action);
+
+	m_zbase_toolbar = addToolBar("Z Base");
+	m_zbase_toolbar->addWidget(m_zbaseWidget);
 
 	m_grid_toolbar = addToolBar("Grid");
 	m_grid_toolbar->addAction(m_toggleGridAction);

@@ -355,7 +355,7 @@ void GLPreview::tesselateTile(int x, int y)
 	{
 		const Tilemap::Tile* tiledata = m_level->getTile(ctile);
 
-		float z = m_level->readTilemapZ(x, y);
+		float z = m_level->readTilemapZ(x, y) * 0.1f;
 
 		glm::vec2 vl = tiledata->top_points[1] - tiledata->top_points[0];
 		glm::vec2 vr = tiledata->top_points[2] - tiledata->top_points[3];
@@ -488,7 +488,13 @@ void GLPreview::tesselateTile(int x, int y)
 
 void GLPreview::tesselateAll()
 {
-
+	for (int j = 0; j < m_level->getTilemapHeight(); j++)
+	{
+		for (int i = 0; i < m_level->getTilemapWidth(); i++)
+		{
+			tesselateTile(i, j);
+		}
+	}
 }
 
 // convert screen coordinates to uv coords
@@ -511,7 +517,7 @@ void GLPreview::resizeTilemap(int width, int height)
 	if (m_vb != nullptr)
 		delete m_vb;
 
-	m_vb = new VBO(width * height * 4);
+	m_vb = new VBO(width * height * 16);
 
 	if (m_vbback != nullptr)
 		delete m_vbback;
@@ -580,4 +586,9 @@ void PreviewWindow::tileUpdated(int x, int y)
 void PreviewWindow::setTexture(QImage* texture)
 {
 	m_widget->setTexture(texture);
+}
+
+void PreviewWindow::resizeTilemap(int width, int height)
+{
+	m_widget->resizeTilemap(width, height);
 }

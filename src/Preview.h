@@ -99,6 +99,7 @@ signals:
 
 public slots:
 	void tileUpdated(int x, int y);
+	void resizeTilemap(int width, int height);
 
 private:
 	QMainWindow* m_window;

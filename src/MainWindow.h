@@ -95,6 +95,9 @@ private:
 	QLabel* m_colorLabel;
 	QPushButton* m_colorButton;
 	QWidget* m_colorWidget;
+	QLabel* m_zbaseLabel;
+	QSpinBox* m_zbaseSpin;
+	QWidget* m_zbaseWidget;
 
 	QActionGroup* m_opgroup;
 	QAction* m_select_action;
@@ -127,6 +130,7 @@ private:
 
 	QToolBar* m_file_toolbar;
 	QToolBar* m_op_toolbar;
+	QToolBar* m_zbase_toolbar;
 	QToolBar* m_grid_toolbar;
 	QToolBar* m_editor_toolbar;
 	QToolBar* m_visbox_toolbar;
@@ -244,4 +248,6 @@ private slots:
 
 	void doEdgify();
 	void clearEdgify();
+
+	void zbaseChanged(int);
 };
