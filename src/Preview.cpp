@@ -321,7 +321,7 @@ void GLPreview::paintEvent(QPaintEvent* event)
 
 void GLPreview::tesselateTile(int x, int y)
 {
-	const int num_tris = 4;
+	const int num_tris = 16;
 	
 	const float tile_width = 1.0f;
 	const float tile_height = 1.4f;
@@ -346,10 +346,7 @@ void GLPreview::tesselateTile(int x, int y)
 	if (ctile == Tilemap::TILE_EMPTY)
 	{
 		// make degen geo
-		for (int i = 0; i < num_tris; i++)
-		{
-			m_vb->degenTri(vb_index + i);
-		}
+		m_vb->degenTris(vb_index, num_tris);
 	}
 	else
 	{
@@ -369,6 +366,11 @@ void GLPreview::tesselateTile(int x, int y)
 		glm::vec2 uv5 = tiledata->top_points[4];
 		glm::vec2 uv6 = tiledata->top_points[5];
 
+		glm::vec2 suv1 = tiledata->side_points[0];
+		glm::vec2 suv2 = tiledata->side_points[1];
+		glm::vec2 suv3 = tiledata->side_points[2];
+		glm::vec2 suv4 = tiledata->side_points[3];
+
 		/*
 		         p6
 		    p1         p5
@@ -382,6 +384,13 @@ void GLPreview::tesselateTile(int x, int y)
 		glm::vec3 p4 = glm::vec3(tx2, ty1 + (tile_height * (35.0 / 70.0)), z);
 		glm::vec3 p5 = glm::vec3(tx2, ty1 + (tile_height * (15.0 / 70.0)), z);
 		glm::vec3 p6 = glm::vec3(tx1 + (tile_width * 0.5), ty1, z);
+
+		glm::vec3 bp1 = glm::vec3(tx1, ty1 + (tile_height * (15.0 / 70.0)), 0.0f);
+		glm::vec3 bp2 = glm::vec3(tx1, ty1 + (tile_height * (35.0 / 70.0)), 0.0f);
+		glm::vec3 bp3 = glm::vec3(tx1 + (tile_width * 0.5), ty1 + (tile_height * (50.0 / 70.0)), 0.0f);
+		glm::vec3 bp4 = glm::vec3(tx2, ty1 + (tile_height * (35.0 / 70.0)), 0.0f);
+		glm::vec3 bp5 = glm::vec3(tx2, ty1 + (tile_height * (15.0 / 70.0)), 0.0f);
+		glm::vec3 bp6 = glm::vec3(tx1 + (tile_width * 0.5), ty1, 0.0f);
 
 		switch (tiledata->type)
 		{
@@ -400,6 +409,13 @@ void GLPreview::tesselateTile(int x, int y)
 				m_vb->makeTri(vb_index + 1, p1, p5, p4, uv1, uv5, uv4, tiledata->color);
 				m_vb->makeTri(vb_index + 2, p1, p4, p3, uv1, uv4, uv3, tiledata->color);
 				m_vb->makeTri(vb_index + 3, p1, p3, p2, uv1, uv3, uv2, tiledata->color);
+
+				m_vb->makeQuad(vb_index + 4, p4, p5, bp5, bp4, suv1, suv2, suv3, suv4, tiledata->color);
+				m_vb->makeQuad(vb_index + 6, p3, p4, bp4, bp3, suv1, suv2, suv3, suv4, tiledata->color);
+				m_vb->makeQuad(vb_index + 8, p5, p6, bp6, bp5, suv1, suv2, suv3, suv4, tiledata->color);
+				m_vb->makeQuad(vb_index + 10, p6, p1, bp1, bp6, suv1, suv2, suv3, suv4, tiledata->color);
+				m_vb->makeQuad(vb_index + 12, p1, p2, bp2, bp1, suv1, suv2, suv3, suv4, tiledata->color);
+				m_vb->makeQuad(vb_index + 14, p2, p3, bp3, bp2, suv1, suv2, suv3, suv4, tiledata->color);
 				break;
 			}
 			case Tilemap::TILE_LEFT:
@@ -414,8 +430,12 @@ void GLPreview::tesselateTile(int x, int y)
 			*/
 				m_vb->makeTri(vb_index + 0, p1, p6, p3, uv1, uv4, uv3, tiledata->color);
 				m_vb->makeTri(vb_index + 1, p1, p3, p2, uv1, uv3, uv2, tiledata->color);
-				m_vb->degenTri(vb_index + 2);
-				m_vb->degenTri(vb_index + 3);
+				
+				m_vb->makeQuad(vb_index + 2, p6, p1, bp1, bp6, suv1, suv2, suv3, suv4, tiledata->color);
+				m_vb->makeQuad(vb_index + 4, p1, p2, bp2, bp1, suv1, suv2, suv3, suv4, tiledata->color);
+				m_vb->makeQuad(vb_index + 6, p2, p3, bp3, bp2, suv1, suv2, suv3, suv4, tiledata->color);
+				m_vb->makeQuad(vb_index + 8, p3, p6, bp6, bp3, suv1, suv2, suv3, suv4, tiledata->color);
+				m_vb->degenTris(vb_index + 10, 6);
 				break;
 			}
 			case Tilemap::TILE_RIGHT:
@@ -430,8 +450,12 @@ void GLPreview::tesselateTile(int x, int y)
 			*/
 				m_vb->makeTri(vb_index + 0, p6, p5, p4, uv2, uv1, uv4, tiledata->color);
 				m_vb->makeTri(vb_index + 1, p6, p4, p3, uv2, uv4, uv3, tiledata->color);
-				m_vb->degenTri(vb_index + 2);
-				m_vb->degenTri(vb_index + 3);
+
+				m_vb->makeQuad(vb_index + 2, p4, p5, bp5, bp4, suv1, suv2, suv3, suv4, tiledata->color);
+				m_vb->makeQuad(vb_index + 4, p3, p4, bp4, bp3, suv1, suv2, suv3, suv4, tiledata->color);
+				m_vb->makeQuad(vb_index + 6, p5, p6, bp6, bp5, suv1, suv2, suv3, suv4, tiledata->color);
+				m_vb->makeQuad(vb_index + 8, p6, p3, bp3, bp6, suv1, suv2, suv3, suv4, tiledata->color);
+				m_vb->degenTris(vb_index + 10, 6);
 				break;
 			}
 			case Tilemap::TILE_TOP:
@@ -441,9 +465,11 @@ void GLPreview::tesselateTile(int x, int y)
 			    /__\
 			*/
 				m_vb->makeTri(vb_index + 0, p1, p6, p5, uv1, uv3, uv2, tiledata->color);
-				m_vb->degenTri(vb_index + 1);
-				m_vb->degenTri(vb_index + 2);
-				m_vb->degenTri(vb_index + 3);
+
+				m_vb->makeQuad(vb_index + 1, p6, p1, bp1, bp6, suv1, suv2, suv3, suv4, tiledata->color);
+				m_vb->makeQuad(vb_index + 3, p5, p6, bp6, bp5, suv1, suv2, suv3, suv4, tiledata->color);
+				m_vb->makeQuad(vb_index + 5, p1, p5, bp5, bp1, suv1, suv2, suv3, suv4, tiledata->color);
+				m_vb->degenTris(vb_index + 7, 9);
 				break;
 			}
 			case Tilemap::TILE_BOTTOM:
@@ -453,9 +479,11 @@ void GLPreview::tesselateTile(int x, int y)
 			    \/
 			*/
 				m_vb->makeTri(vb_index + 0, p2, p4, p3, uv1, uv3, uv2, tiledata->color);
-				m_vb->degenTri(vb_index + 1);
-				m_vb->degenTri(vb_index + 2);
-				m_vb->degenTri(vb_index + 3);
+
+				m_vb->makeQuad(vb_index + 1, p3, p4, bp4, bp3, suv1, suv2, suv3, suv4, tiledata->color);
+				m_vb->makeQuad(vb_index + 3, p2, p3, bp3, bp2, suv1, suv2, suv3, suv4, tiledata->color);
+				m_vb->makeQuad(vb_index + 5, p4, p2, bp2, bp4, suv1, suv2, suv3, suv4, tiledata->color);
+				m_vb->degenTris(vb_index + 7, 9);
 				break;
 			}
 			case Tilemap::TILE_MID:
@@ -466,18 +494,19 @@ void GLPreview::tesselateTile(int x, int y)
 			*/
 				m_vb->makeTri(vb_index + 0, p1, p5, p4, uv1, uv4, uv3, tiledata->color);
 				m_vb->makeTri(vb_index + 1, p1, p4, p2, uv1, uv3, uv2, tiledata->color);
-				m_vb->degenTri(vb_index + 2);
-				m_vb->degenTri(vb_index + 3);
+
+				m_vb->makeQuad(vb_index + 2, p4, p5, bp5, bp4, suv1, suv2, suv3, suv4, tiledata->color);
+				m_vb->makeQuad(vb_index + 4, p1, p2, bp2, bp1, suv1, suv2, suv3, suv4, tiledata->color);
+				m_vb->makeQuad(vb_index + 6, p2, p4, bp4, bp2, suv1, suv2, suv3, suv4, tiledata->color);
+				m_vb->makeQuad(vb_index + 8, p5, p1, bp1, bp5, suv1, suv2, suv3, suv4, tiledata->color);
+				m_vb->degenTris(vb_index + 10, 6);
 				break;
 			}
 
 			default:
 			{
 				// make degen geo
-				for (int i = 0; i < num_tris; i++)
-				{
-					m_vb->degenTri(vb_index + i);
-				}
+				m_vb->degenTris(vb_index, num_tris);
 				break;
 			}
 		}

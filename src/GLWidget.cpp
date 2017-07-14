@@ -2350,7 +2350,7 @@ void GLWidget::paintGL()
 		}
 		case MODE_TILE_ZEDIT:
 		{
-			modetext = tr("Tilemap Z Edit: X: %1, Y: %1, TX: %3, TY: %4").arg(mlp.x).arg(mlp.y).arg(m_tile_selx).arg(m_tile_sely);
+			modetext = tr("Tilemap Z Edit: X: %1, Y: %1").arg(m_tile_selx).arg(m_tile_sely);
 			break;
 		}
 	}	

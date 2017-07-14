@@ -62,3 +62,16 @@ void VBO::degenTri(int index)
 	m_data[i + 1].pos = glm::vec3(0, 0, 0);		m_data[i + 1].uv = glm::vec2(0, 0);		m_data[i + 1].color = 0;
 	m_data[i + 2].pos = glm::vec3(0, 0, 0);		m_data[i + 2].uv = glm::vec2(0, 0);		m_data[i + 2].color = 0;
 }
+
+void VBO::degenTris(int index, int num)
+{
+	assert(index >= 0 && (index + num) <= m_capacity);
+
+	for (int j = index; j < index + num; j++)
+	{
+		int i = j * 3;
+		m_data[i + 0].pos = glm::vec3(0, 0, 0);		m_data[i + 0].uv = glm::vec2(0, 0);		m_data[i + 0].color = 0;
+		m_data[i + 1].pos = glm::vec3(0, 0, 0);		m_data[i + 1].uv = glm::vec2(0, 0);		m_data[i + 1].color = 0;
+		m_data[i + 2].pos = glm::vec3(0, 0, 0);		m_data[i + 2].uv = glm::vec2(0, 0);		m_data[i + 2].color = 0;
+	}
+}
