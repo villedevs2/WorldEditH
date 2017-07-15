@@ -121,21 +121,16 @@ public:
 	int getNumTriggers();
 
 
-	void setTilemapSize(int width, int height);
-	void enlargeTilemap(int xleft, int xright, int ytop, int ybottom);
-	void shrinkTilemap(int xleft, int xright, int ytop, int ybottom);
 	int readTilemapTile(int x, int y);
 	int readTilemapZ(int x, int y);
 	void editTilemapTile(int x, int y, int tile);
 	void editTilemapZ(int x, int y, int z);
 	unsigned int readTilemapRaw(int x, int y);
 	void editTilemapRaw(int x, int y, unsigned int data);
-	int getTilemapWidth();
-	int getTilemapHeight();
 	float getTileWidth();
 	float getTileHeight();
-	float* getTilemapVBO();
-	int numTilemapTris();
+	float* getTilemapVBO(int bx, int by);
+	int numTilemapTris(int bx, int by);
 	int insertTile(std::string name, PolygonDef* top, PolygonDef* side, unsigned int color, Tilemap::TileType type);
 	void removeTile(int id);
 	void removeTiles();

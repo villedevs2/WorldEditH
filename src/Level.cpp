@@ -650,17 +650,6 @@ int Level::getNumTriggers()
 	return (int)m_trigger_list.size();
 }
 
-int Level::getTilemapWidth()
-{
-	return m_tilemap->getWidth();
-}
-
-int Level::getTilemapHeight()
-
-{
-	return m_tilemap->getHeight();
-}
-
 float Level::getTileWidth()
 {
 	return m_tilemap->getTileWidth();
@@ -671,26 +660,9 @@ float Level::getTileHeight()
 	return m_tilemap->getTileHeight();
 }
 
-void Level::setTilemapSize(int width, int height)
-{
-	m_tilemap->resize(width, height);
-}
-
-void Level::enlargeTilemap(int xleft, int xright, int ytop, int ybottom)
-{
-	m_tilemap->enlarge(xleft, xright, ytop, ybottom);
-	setModified();
-}
-
-void Level::shrinkTilemap(int xleft, int xright, int ytop, int ybottom)
-{
-	m_tilemap->shrink(xleft, xright, ytop, ybottom);
-	setModified();
-}
-
 int Level::readTilemapTile(int x, int y)
 {
-	return m_tilemap->getTile(x, y);
+	return m_tilemap->get(x, y);
 }
 
 int Level::readTilemapZ(int x, int y)
@@ -721,14 +693,14 @@ void Level::editTilemapRaw(int x, int y, unsigned int data)
 	setModified();
 }
 
-float* Level::getTilemapVBO()
+float* Level::getTilemapVBO(int bx, int by)
 {
-	return m_tilemap->getVBO();
+	return m_tilemap->getVBO(bx, by);
 }
 
-int Level::numTilemapTris()
+int Level::numTilemapTris(int bx, int by)
 {
-	return m_tilemap->numTris();
+	return m_tilemap->numTris(bx, by);
 }
 
 

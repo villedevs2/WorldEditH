@@ -43,6 +43,15 @@ public:
 		int side_bits;
 	};
 
+	struct Bucket
+	{
+		unsigned int* map;
+		int vb_slot;
+		VBO* tiles;
+		VBO* preview;
+		uint64_t coverage;
+	};
+
 	static const unsigned int TILE_MASK = 0xffff;
 	static const unsigned int TILE_EMPTY = 0xffff;
 	static const unsigned int Z_MASK = 0xff0000;
@@ -50,24 +59,27 @@ public:
 
 	static const int Z_MAX = 100;
 
+	static const int AREA_WIDTH = 8192;
+	static const int AREA_HEIGHT = 8192;
+	static const int AREA_CENTER_X = AREA_WIDTH / 2;
+	static const int AREA_CENTER_Y = AREA_HEIGHT / 2;
+	static const int BUCKET_WIDTH = 8;
+	static const int BUCKET_HEIGHT = 8;
+
 
 
 	Tilemap();
 	~Tilemap();
 
-	bool enlarge(int xleft, int xright, int ytop, int ybottom);
-	bool shrink(int xleft, int xright, int ytop, int ybottom);
-	void resize(int width, int height);
 	void reset();
-	float* getVBO();
-	int numTris();
-	int getTile(int x, int y);
+	float* getVBO(int bx, int by);
+	int numTris(int bx, int by);
+	int get(int x, int y);
 	int getZ(int x, int y);	
 	void edit(int x, int y, int tile);
 	void editZ(int x, int y, int z);
 	unsigned int getRaw(int x, int y);
 	void editRaw(int x, int y, unsigned int data);
-	void tesselateAll();
 	int insertTile(std::string name, PolygonDef* top, PolygonDef* side, unsigned int color, Tilemap::TileType type);
 	bool removeTile(int id);
 	void removeTiles();
@@ -75,23 +87,18 @@ public:
 	const Tilemap::Tile* getTile(int index);
 	const Tilemap::Tile* getTileById(int id);
 	int getTileIndexById(int id);
-	int getWidth();
-	int getHeight();
 	float getTileWidth();
 	float getTileHeight();
 
 private:
-	void tesselateTile(int x, int y, bool odd);
-
-	int m_width;
-	int m_height;
+	void tesselateTile(int x, int y);
+	void allocBucket(int bin);
+	void deallocBucket(int bin);
 
 	float m_tile_width;
 	float m_tile_height;
 
-	unsigned int *m_map;
-
-	VBO* m_vb; 
+	Bucket** m_buckets;
 
 	int m_cumulative_tile_id;
 	std::vector<Tile> m_tiles;
