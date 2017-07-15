@@ -30,12 +30,6 @@ MainWindow::MainWindow()
 
 	m_visbox_conf = new VisboxConf(this);
 
-	m_tilemap_enlarge = new TilemapEnlarge(this, m_level);
-	m_tilemap_enlarge->setValues(0, 0, 0, 0);
-
-	m_tilemap_shrink = new TilemapShrink(this, m_level);
-	m_tilemap_shrink->setValues(0, 0, 0, 0);
-
 	m_tileset_window = new TilesetWindow(this, m_level, m_texture);
 
 	m_level_conf = new LevelConf(this);
@@ -111,9 +105,6 @@ MainWindow::MainWindow()
 	connect(m_objfilter, SIGNAL(onFilterDisable(int)), this, SLOT(disableFilters(int)));
 	connect(m_objfilter, SIGNAL(onDisplayEnable(int)), m_glwidget, SLOT(enableDisplays(int)));
 	connect(m_objfilter, SIGNAL(onDisplayDisable(int)), m_glwidget, SLOT(disableDisplays(int)));
-
-	connect(m_tilemap_enlarge, SIGNAL(onEnlarge()), this, SLOT(tilemapEnlarged()));
-	connect(m_tilemap_shrink, SIGNAL(onShrink()), this, SLOT(tilemapShrank()));
 
 	connect(m_tiledesigner, SIGNAL(onInsertTile(int)), m_tileset_window, SLOT(add(int)));
 
@@ -229,9 +220,6 @@ MainWindow::MainWindow()
 	int ye = 50;
 	float tw = 1.0f;
 	float th = 1.2f;
-
-	m_tilemap_enlarge->setValues(0, 0, 0, 0);
-	emit m_glwidget->setTilemapConfig(m_level->getTilemapWidth(), m_level->getTilemapHeight());
 }
 
 MainWindow::~MainWindow(void)
@@ -674,18 +662,6 @@ void MainWindow::visboxConfig()
 	}
 }
 
-void MainWindow::openTilemapEnlarge()
-{
-	m_tilemap_enlarge->setValues(0, 0, 0, 0);
-	m_tilemap_enlarge->exec();
-}
-
-void MainWindow::openTilemapShrink()
-{
-	m_tilemap_shrink->setValues(0, 0, 0, 0);
-	m_tilemap_shrink->exec();
-}
-
 void MainWindow::levelConfig()
 {
 	if (m_level_conf->exec() == QDialog::Accepted)
@@ -755,38 +731,6 @@ void MainWindow::setBGColor()
 	}
 }
 
-
-void MainWindow::tilemapEnlarged()
-{
-	int xleft = m_tilemap_enlarge->getXLeft();
-	int xright = m_tilemap_enlarge->getXRight();
-	int ytop = m_tilemap_enlarge->getYTop();
-	int ybottom = m_tilemap_enlarge->getYBottom();
-
-	int w = m_level->getTilemapWidth() + xleft + xright;
-	int h = m_level->getTilemapHeight() + ytop + ybottom;
-
-	emit m_glwidget->setTilemapConfig(w, h);
-	m_level->enlargeTilemap(xleft, xright, ytop, ybottom);
-	emit m_preview->resizeTilemap(w, h);
-}
-
-void MainWindow::tilemapShrank()
-{
-	int xleft = m_tilemap_shrink->getXLeft();
-	int xright = m_tilemap_shrink->getXRight();
-	int ytop = m_tilemap_shrink->getYTop();
-	int ybottom = m_tilemap_shrink->getYBottom();
-
-	int w = m_level->getTilemapWidth() + xleft + xright;
-	int h = m_level->getTilemapHeight() + ytop + ybottom;
-
-	emit m_glwidget->setTilemapConfig(w, h);
-	m_level->shrinkTilemap(xleft, xright, ytop, ybottom);
-	emit m_preview->resizeTilemap(w, h);
-}
-
-
 void MainWindow::setColor()
 {
 	QColor result = QColorDialog::getColor(m_object_color, this, tr("Select object color"));
@@ -851,8 +795,8 @@ bool MainWindow::edgify(std::vector<std::vector<int>>& ptlist)
 
 	FILE *fout = fopen("edgifylog.txt", "wt");
 
-	int tm_width = m_level->getTilemapWidth();
-	int tm_height = m_level->getTilemapHeight();
+	int tm_width = Tilemap::AREA_WIDTH;
+	int tm_height = Tilemap::AREA_HEIGHT;
 
 	int xpoints = (tm_width * 2) + 2;
 	int ypoints = tm_height + 2;
@@ -968,7 +912,7 @@ bool MainWindow::edgify(std::vector<std::vector<int>>& ptlist)
 
 					tilecon[i] = 0;
 
-					if (tx >= 0 && ty >= 0 && tx < m_level->getTilemapWidth() && ty < m_level->getTilemapHeight())
+					if (tx >= 0 && ty >= 0 && tx < Tilemap::AREA_WIDTH && ty < Tilemap::AREA_HEIGHT)
 					{
 						int ctile = m_level->readTilemapTile(tx, ty);
 						if (ctile != Tilemap::TILE_EMPTY)
@@ -1487,14 +1431,6 @@ void MainWindow::createActions()
 	connect(m_visbox_conf_action, SIGNAL(triggered()), this, SLOT(visboxConfig()));
 
 
-	// tilemap settings
-	m_tilemap_enlarge_action = new QAction(QIcon("polyplus.png"), tr("Tilemap Enlarge"), this);
-	connect(m_tilemap_enlarge_action, SIGNAL(triggered()), this, SLOT(openTilemapEnlarge()));
-
-	m_tilemap_shrink_action = new QAction(QIcon("polyminus.png"), tr("Tilemap Shrink"), this);
-	connect(m_tilemap_shrink_action, SIGNAL(triggered()), this, SLOT(openTilemapShrink()));
-
-
 	// edgify
 	m_edgify_action = new QAction(tr("Edgify"), this);
 	connect(m_edgify_action, SIGNAL(triggered()), this, SLOT(doEdgify()));
@@ -1631,8 +1567,6 @@ void MainWindow::createToolbars()
 	m_editor_toolbar->addAction(m_toggle_tiledesigner);
 	m_editor_toolbar->addAction(m_toggle_tileset_window);
 	m_editor_toolbar->addAction(m_toggle_preview);
-	m_editor_toolbar->addAction(m_tilemap_enlarge_action);
-	m_editor_toolbar->addAction(m_tilemap_shrink_action);
 
 	m_visbox_toolbar = addToolBar("Visualization Box");
 	m_visbox_toolbar->addAction(m_toggle_visbox);
@@ -1984,6 +1918,10 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 
 		// ----------------
 
+
+		// TODO: put to buckets
+
+		/*
 		int tilemap_width = input.read_dword();
 		int tilemap_height = input.read_dword();
 
@@ -1998,6 +1936,7 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 				m_level->editTilemapRaw(x, y, data);
 			}
 		}
+		*/
 
 
 		// ------------------------
@@ -2181,6 +2120,10 @@ bool MainWindow::writeBinaryProjectFile(QString& filename)
 		// tilemap
 
 		// tilemap width
+
+		// TODO: put to buckets
+
+		/*
 		output.write_dword(m_level->getTilemapWidth());
 
 		// tilemap height
@@ -2194,6 +2137,7 @@ bool MainWindow::writeBinaryProjectFile(QString& filename)
 				output.write_dword(m_level->readTilemapRaw(i, j));
 			}
 		}
+		*/
 
 		/*
 		std::vector<std::vector<int>> ptlist;
@@ -2368,6 +2312,9 @@ void MainWindow::writeLevelFile(QString& filename)
 		}
 
 		// Tilemap
+		// TODO: put to buckets
+
+		/*
 		int tm_width = m_level->getTilemapWidth();
 		int tm_height = m_level->getTilemapHeight();
 
@@ -2396,6 +2343,7 @@ void MainWindow::writeLevelFile(QString& filename)
 				}
 			}
 		}
+		*/
 
 		// Edges
 		std::vector<std::vector<int>> ptlist;

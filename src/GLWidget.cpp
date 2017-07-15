@@ -328,12 +328,6 @@ void GLWidget::setObjectColor(QColor color)
 	update();
 }
 
-void GLWidget::setTilemapConfig(int width, int height)
-{
-
-	update();
-}
-
 void GLWidget::setTileBrush(int tile)
 {
 	assert(tile >= -1 && tile < m_level->getNumTiles());
@@ -468,8 +462,8 @@ void GLWidget::tilemapDraw()
 {
 	if (m_tile_selx >= 0 &&
 		m_tile_sely >= 0 &&
-		m_tile_selx < m_level->getTilemapWidth() &&
-		m_tile_sely < m_level->getTilemapHeight())
+		m_tile_selx < Tilemap::AREA_WIDTH &&
+		m_tile_sely < Tilemap::AREA_HEIGHT)
 	{
 		int brush = m_tile_brush;
 		if (brush < 0)
@@ -485,8 +479,8 @@ void GLWidget::tilemapZDraw()
 {
 	if (m_tile_selx >= 0 &&
 		m_tile_sely >= 0 &&
-		m_tile_selx < m_level->getTilemapWidth() &&
-		m_tile_sely < m_level->getTilemapHeight())
+		m_tile_selx < Tilemap::AREA_WIDTH &&
+		m_tile_sely < Tilemap::AREA_HEIGHT)
 	{
 		m_level->editTilemapZ(m_tile_selx, m_tile_sely, m_tile_basez);
 		emit onTileUpdate(m_tile_selx, m_tile_sely);
@@ -497,8 +491,8 @@ void GLWidget::tilemapZEdit(int zmod)
 {
 	if (m_tile_selx >= 0 &&
 		m_tile_sely >= 0 &&
-		m_tile_selx < m_level->getTilemapWidth() &&
-		m_tile_sely < m_level->getTilemapHeight())
+		m_tile_selx < Tilemap::AREA_WIDTH &&
+		m_tile_sely < Tilemap::AREA_HEIGHT)
 	{
 		int z = m_level->readTilemapZ(m_tile_selx, m_tile_sely);
 		z += zmod;
@@ -519,8 +513,8 @@ void GLWidget::updateTileDrawLocation(const glm::vec2& mouse_lp)
 
 	float tx1 = (float)(0) * tile_width;
 	float ty1 = (float)(0) * (tile_height / 2);
-	float tx2 = (float)(m_level->getTilemapWidth()) * tile_width;
-	float ty2 = (float)(m_level->getTilemapHeight()) * (tile_height / 2);
+	float tx2 = (float)(Tilemap::AREA_WIDTH) * tile_width;
+	float ty2 = (float)(Tilemap::AREA_HEIGHT) * (tile_height / 2);
 
 	if (mouse_lp.x >= tx1 && mouse_lp.x < tx2 &&
 		mouse_lp.y >= ty1 && mouse_lp.y < ty2)
@@ -1918,84 +1912,6 @@ void GLWidget::renderOtherObjects(QPainter& painter)
 	}
 }
 
-void GLWidget::renderTilemapBorders(QPainter& painter)
-{
-	float tile_width = m_level->getTileWidth();
-	float tile_height = m_level->getTileHeight();
-
-	float xs = (float)0 * tile_width;
-	float xe = (float)(m_level->getTilemapWidth() * tile_width) + (tile_width / 2);
-	float ys = (float)0 * (tile_height / 2);
-	float ye = (float)(m_level->getTilemapHeight() * (tile_height / 2)) + (tile_height * (15.0/70.0));
-
-	int screen_width = width();
-	int screen_height = height();
-
-	glm::vec2 screen_tl = toLevelCoords(glm::vec2(0.0f, 0.0f));
-	glm::vec2 screen_br = toLevelCoords(glm::vec2(screen_width, screen_height));
-
-	if (!(m_filter & 0x40))
-		return;
-
-	if (xs > screen_br.x) return;
-	if (xe < screen_tl.x) return;
-	if (ys > screen_br.y) return;
-	if (ye < screen_tl.y) return;
-
-	glm::vec2 border_tl = toScreenCoords(glm::vec2(xs, ys));
-	glm::vec2 border_br = toScreenCoords(glm::vec2(xe, ye));
-
-	QColor border_dark = QColor(100, 100, 100, 255);
-	QColor border_light = QColor(128, 128, 128, 255);
-
-	int bsize = 10;
-
-	// left side
-	if (border_tl.x >= 0.0f && border_tl.x < screen_width)
-	{
-		int by = border_tl.y;
-		if (by < 0) by = 0;
-		int bh = border_br.y - by;
-		if (bh > screen_height) bh = screen_height;
-		
-		painter.fillRect(border_tl.x - bsize, by - bsize, bsize, bh + (bsize * 2), border_dark);
-		painter.fillRect(border_tl.x - bsize, by - bsize, bsize >> 1, bh + (bsize * 2), border_light);
-	}
-	// right side
-	if (border_br.x >= 0.0f && border_br.x < screen_width)
-	{
-		int by = border_tl.y;
-		if (by < 0) by = 0;
-		int bh = border_br.y - by;
-		if (bh > screen_height) bh = screen_height;
-		
-		painter.fillRect(border_br.x, by - bsize, bsize, bh + (bsize * 2), border_dark);
-		painter.fillRect(border_br.x + (bsize >> 1), by - bsize, bsize >> 1, bh + (bsize * 2), border_light);
-	}
-	// top side
-	if (border_tl.y >= 0.0f && border_tl.y < screen_height)
-	{
-		int bx = border_tl.x;
-		if (bx < 0) bx = 0;
-		int bw = border_br.x - bx;
-		if (bw > screen_width) bw = screen_width;
-
-		painter.fillRect(bx, border_tl.y - bsize, bw, bsize, border_dark);
-		painter.fillRect(bx - bsize, border_tl.y - bsize, bw + (bsize * 2), bsize >> 1, border_light);
-	}
-	// bottom side
-	if (border_br.y >= 0.0f && border_br.y < screen_height)
-	{
-		int bx = border_tl.x;
-		if (bx < 0) bx = 0;
-		int bw = border_br.x - bx;
-		if (bw > screen_width) bw = screen_width;
-
-		painter.fillRect(bx, border_br.y, bw, bsize, border_dark);
-		painter.fillRect(bx - bsize, border_br.y + (bsize >> 1), bw + (bsize * 2), bsize >> 1, border_light);
-	}
-}
-
 void GLWidget::renderTilemapExtras(QPainter& painter)
 {
 	QBrush brush = QBrush(QColor(224, 150, 0));
@@ -2008,8 +1924,8 @@ void GLWidget::renderTilemapExtras(QPainter& painter)
 
 	if (m_tile_selx >= 0 &&
 		m_tile_sely >= 0 &&
-		m_tile_selx < m_level->getTilemapWidth() &&
-		m_tile_sely < m_level->getTilemapHeight())
+		m_tile_selx < Tilemap::AREA_WIDTH &&
+		m_tile_sely < Tilemap::AREA_HEIGHT)
 	{
 		int highlight_x = m_tile_selx;
 		int highlight_y = m_tile_sely;
@@ -2055,8 +1971,8 @@ void GLWidget::renderTilemapExtras(QPainter& painter)
 
 void GLWidget::renderEdgeData(QPainter& painter)
 {
-	int tm_width = m_level->getTilemapWidth();
-	int tm_height = m_level->getTilemapHeight();
+	int tm_width = Tilemap::AREA_WIDTH;
+	int tm_height = Tilemap::AREA_HEIGHT;
 
 	float tile_width = m_level->getTileWidth();
 	float tile_height = m_level->getTileHeight();
@@ -2174,12 +2090,11 @@ void GLWidget::paintGL()
 
 
 	// tilemap
+	/*
 	{
 		float* geo = m_level->getTilemapVBO();
 		int num_tris = m_level->numTilemapTris();
 		int vbsize = VBO::getVertexSize();
-
-		// TODO filter
 
 		bool render = true;
 		if (render && num_tris > 0)
@@ -2199,6 +2114,7 @@ void GLWidget::paintGL()
 			m_level_program->disableAttributeArray(m_level_shader.color);
 		}
 	}
+	*/
 
 
 	for (int vbo = 0; vbo < Level::NUM_VBOS; vbo++)
@@ -2244,7 +2160,6 @@ void GLWidget::paintGL()
 	QPoint mouse_p = this->mapFromGlobal(QCursor::pos());
 
 
-	renderTilemapBorders(painter);
 	renderOtherObjects(painter);
 
 	renderTilemapExtras(painter);

@@ -326,8 +326,8 @@ void GLPreview::tesselateTile(int x, int y)
 	const float tile_width = 1.0f;
 	const float tile_height = 1.4f;
 
-	assert(x >= 0 && x < m_level->getTilemapWidth());
-	assert(y >= 0 && y < m_level->getTilemapHeight());
+	assert(x >= 0 && x < Tilemap::AREA_WIDTH);
+	assert(y >= 0 && y < Tilemap::AREA_HEIGHT);
 
 	int ctile = m_level->readTilemapTile(x, y);
 	int vb_index = ((y * m_width) + x) * num_tris;
@@ -517,6 +517,9 @@ void GLPreview::tesselateTile(int x, int y)
 
 void GLPreview::tesselateAll()
 {
+	// TODO: handle buckets instead
+
+	/*
 	for (int j = 0; j < m_level->getTilemapHeight(); j++)
 	{
 		for (int i = 0; i < m_level->getTilemapWidth(); i++)
@@ -524,6 +527,7 @@ void GLPreview::tesselateAll()
 			tesselateTile(i, j);
 		}
 	}
+	*/
 }
 
 // convert screen coordinates to uv coords

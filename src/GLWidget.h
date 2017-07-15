@@ -84,7 +84,6 @@ public slots:
 	void enableDisplays(int filter);
 	void disableDisplays(int filter);
 	void setBGColor(QColor color);
-	void setTilemapConfig(int width, int height);
 	void setTileBrush(int tile);
 	void setObjectColor(QColor color);
 	void setTileBaseZ(float z);
@@ -110,7 +109,6 @@ private:
 	void renderEditMode(QPainter& painter);
 	void renderMoveMode(QPainter& painter);
 	void renderOtherObjects(QPainter& painter);
-	void renderTilemapBorders(QPainter& painter);
 	void renderTilemapExtras(QPainter& painter);
 	void renderEdgeData(QPainter& painter);
 	void selectObject(int object);

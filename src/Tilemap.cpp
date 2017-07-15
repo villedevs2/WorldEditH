@@ -253,7 +253,7 @@ int Tilemap::get(int x, int y)
 	}
 	else
 	{
-		return -1;
+		return TILE_EMPTY;
 	}
 }
 
@@ -271,7 +271,7 @@ int Tilemap::getZ(int x, int y)
 	}
 	else
 	{
-		return -1;
+		return 0;
 	}
 }
 
@@ -507,4 +507,36 @@ int Tilemap::getTileIndexById(int id)
 		}
 	}
 	return -1;
+}
+
+void Tilemap::allocBucket(int bin)
+{
+	assert(m_buckets[bin] == nullptr);
+
+	m_buckets[bin] = new Bucket();
+
+	m_buckets[bin]->coverage = 0;
+	m_buckets[bin]->map = new unsigned int[BUCKET_WIDTH * BUCKET_HEIGHT];
+	m_buckets[bin]->tiles = new VBO(BUCKET_WIDTH * BUCKET_HEIGHT * 4);
+	m_buckets[bin]->preview = new VBO(BUCKET_WIDTH * BUCKET_HEIGHT * 16);
+	
+	for (int i = 0; i < BUCKET_WIDTH*BUCKET_HEIGHT; i++)
+	{
+		m_buckets[bin]->map[i] = TILE_EMPTY;
+
+		m_buckets[bin]->tiles->degenTris(i * 4, 4);
+		m_buckets[bin]->preview->degenTris(i * 16, 16);
+	}
+}
+
+void Tilemap::deallocBucket(int bin)
+{
+	assert(m_buckets[bin] != nullptr);
+
+	delete[] m_buckets[bin]->map;
+	delete m_buckets[bin]->tiles;
+	delete m_buckets[bin]->preview;
+	delete m_buckets[bin];
+
+	m_buckets[bin] = nullptr;
 }
