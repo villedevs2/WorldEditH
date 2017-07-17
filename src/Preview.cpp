@@ -321,6 +321,7 @@ void GLPreview::paintEvent(QPaintEvent* event)
 
 void GLPreview::tesselateTile(int x, int y)
 {
+#if 0
 	const int num_tris = 16;
 	
 	const float tile_width = 1.0f;
@@ -354,11 +355,6 @@ void GLPreview::tesselateTile(int x, int y)
 
 		float z = m_level->readTilemapZ(x, y) * 0.1f;
 
-		glm::vec2 vl = tiledata->top_points[1] - tiledata->top_points[0];
-		glm::vec2 vr = tiledata->top_points[2] - tiledata->top_points[3];
-		glm::vec2 vt = tiledata->top_points[3] - tiledata->top_points[0];
-		glm::vec2 vb = tiledata->top_points[2] - tiledata->top_points[1];
-
 		glm::vec2 uv1 = tiledata->top_points[0];
 		glm::vec2 uv2 = tiledata->top_points[1];
 		glm::vec2 uv3 = tiledata->top_points[2];
@@ -372,10 +368,10 @@ void GLPreview::tesselateTile(int x, int y)
 		glm::vec2 suv4 = tiledata->side_points[3];
 
 		/*
-		         p6
-		    p1         p5
-		    p2         p4
-		         p3
+				 p6
+			p1         p5
+			p2         p4
+				 p3
 		*/
 
 		glm::vec3 p1 = glm::vec3(tx1, ty1 + (tile_height * (15.0 / 70.0)), z);
@@ -394,123 +390,124 @@ void GLPreview::tesselateTile(int x, int y)
 
 		switch (tiledata->type)
 		{
-			case Tilemap::TILE_FULL:
-			{
+		case Tilemap::TILE_FULL:
+		{
 			/*
-			      /\
-			     /  \
-			    |    |
-			    |    |
-			     \  /
-		          \/
+				  /\
+				 /  \
+				|    |
+				|    |
+				 \  /
+				  \/
 			*/
 
-				m_vb->makeTri(vb_index + 0, p1, p6, p5, uv1, uv6, uv5, tiledata->color);
-				m_vb->makeTri(vb_index + 1, p1, p5, p4, uv1, uv5, uv4, tiledata->color);
-				m_vb->makeTri(vb_index + 2, p1, p4, p3, uv1, uv4, uv3, tiledata->color);
-				m_vb->makeTri(vb_index + 3, p1, p3, p2, uv1, uv3, uv2, tiledata->color);
+			m_vb->makeTri(vb_index + 0, p1, p6, p5, uv1, uv6, uv5, tiledata->color);
+			m_vb->makeTri(vb_index + 1, p1, p5, p4, uv1, uv5, uv4, tiledata->color);
+			m_vb->makeTri(vb_index + 2, p1, p4, p3, uv1, uv4, uv3, tiledata->color);
+			m_vb->makeTri(vb_index + 3, p1, p3, p2, uv1, uv3, uv2, tiledata->color);
 
-				m_vb->makeQuad(vb_index + 4, p4, p5, bp5, bp4, suv1, suv2, suv3, suv4, tiledata->color);
-				m_vb->makeQuad(vb_index + 6, p3, p4, bp4, bp3, suv1, suv2, suv3, suv4, tiledata->color);
-				m_vb->makeQuad(vb_index + 8, p5, p6, bp6, bp5, suv1, suv2, suv3, suv4, tiledata->color);
-				m_vb->makeQuad(vb_index + 10, p6, p1, bp1, bp6, suv1, suv2, suv3, suv4, tiledata->color);
-				m_vb->makeQuad(vb_index + 12, p1, p2, bp2, bp1, suv1, suv2, suv3, suv4, tiledata->color);
-				m_vb->makeQuad(vb_index + 14, p2, p3, bp3, bp2, suv1, suv2, suv3, suv4, tiledata->color);
-				break;
-			}
-			case Tilemap::TILE_LEFT:
-			{
+			m_vb->makeQuad(vb_index + 4, p4, p5, bp5, bp4, suv1, suv2, suv3, suv4, tiledata->color);
+			m_vb->makeQuad(vb_index + 6, p3, p4, bp4, bp3, suv1, suv2, suv3, suv4, tiledata->color);
+			m_vb->makeQuad(vb_index + 8, p5, p6, bp6, bp5, suv1, suv2, suv3, suv4, tiledata->color);
+			m_vb->makeQuad(vb_index + 10, p6, p1, bp1, bp6, suv1, suv2, suv3, suv4, tiledata->color);
+			m_vb->makeQuad(vb_index + 12, p1, p2, bp2, bp1, suv1, suv2, suv3, suv4, tiledata->color);
+			m_vb->makeQuad(vb_index + 14, p2, p3, bp3, bp2, suv1, suv2, suv3, suv4, tiledata->color);
+			break;
+		}
+		case Tilemap::TILE_LEFT:
+		{
 			/*
-			      /|
-			     / |
-			    |  |
-			    |  |
-			     \ |
-			      \|
+				  /|
+				 / |
+				|  |
+				|  |
+				 \ |
+				  \|
 			*/
-				m_vb->makeTri(vb_index + 0, p1, p6, p3, uv1, uv4, uv3, tiledata->color);
-				m_vb->makeTri(vb_index + 1, p1, p3, p2, uv1, uv3, uv2, tiledata->color);
-				
-				m_vb->makeQuad(vb_index + 2, p6, p1, bp1, bp6, suv1, suv2, suv3, suv4, tiledata->color);
-				m_vb->makeQuad(vb_index + 4, p1, p2, bp2, bp1, suv1, suv2, suv3, suv4, tiledata->color);
-				m_vb->makeQuad(vb_index + 6, p2, p3, bp3, bp2, suv1, suv2, suv3, suv4, tiledata->color);
-				m_vb->makeQuad(vb_index + 8, p3, p6, bp6, bp3, suv1, suv2, suv3, suv4, tiledata->color);
-				m_vb->degenTris(vb_index + 10, 6);
-				break;
-			}
-			case Tilemap::TILE_RIGHT:
-			{
-			/*
-			    |\
-			    | \
-			    |  |
-			    |  |
-			    | /
-			    |/
-			*/
-				m_vb->makeTri(vb_index + 0, p6, p5, p4, uv2, uv1, uv4, tiledata->color);
-				m_vb->makeTri(vb_index + 1, p6, p4, p3, uv2, uv4, uv3, tiledata->color);
+			m_vb->makeTri(vb_index + 0, p1, p6, p3, uv1, uv4, uv3, tiledata->color);
+			m_vb->makeTri(vb_index + 1, p1, p3, p2, uv1, uv3, uv2, tiledata->color);
 
-				m_vb->makeQuad(vb_index + 2, p4, p5, bp5, bp4, suv1, suv2, suv3, suv4, tiledata->color);
-				m_vb->makeQuad(vb_index + 4, p3, p4, bp4, bp3, suv1, suv2, suv3, suv4, tiledata->color);
-				m_vb->makeQuad(vb_index + 6, p5, p6, bp6, bp5, suv1, suv2, suv3, suv4, tiledata->color);
-				m_vb->makeQuad(vb_index + 8, p6, p3, bp3, bp6, suv1, suv2, suv3, suv4, tiledata->color);
-				m_vb->degenTris(vb_index + 10, 6);
-				break;
-			}
-			case Tilemap::TILE_TOP:
-			{
+			m_vb->makeQuad(vb_index + 2, p6, p1, bp1, bp6, suv1, suv2, suv3, suv4, tiledata->color);
+			m_vb->makeQuad(vb_index + 4, p1, p2, bp2, bp1, suv1, suv2, suv3, suv4, tiledata->color);
+			m_vb->makeQuad(vb_index + 6, p2, p3, bp3, bp2, suv1, suv2, suv3, suv4, tiledata->color);
+			m_vb->makeQuad(vb_index + 8, p3, p6, bp6, bp3, suv1, suv2, suv3, suv4, tiledata->color);
+			m_vb->degenTris(vb_index + 10, 6);
+			break;
+		}
+		case Tilemap::TILE_RIGHT:
+		{
 			/*
-			     /\
-			    /__\
+				|\
+				| \
+				|  |
+				|  |
+				| /
+				|/
 			*/
-				m_vb->makeTri(vb_index + 0, p1, p6, p5, uv1, uv3, uv2, tiledata->color);
+			m_vb->makeTri(vb_index + 0, p6, p5, p4, uv2, uv1, uv4, tiledata->color);
+			m_vb->makeTri(vb_index + 1, p6, p4, p3, uv2, uv4, uv3, tiledata->color);
 
-				m_vb->makeQuad(vb_index + 1, p6, p1, bp1, bp6, suv1, suv2, suv3, suv4, tiledata->color);
-				m_vb->makeQuad(vb_index + 3, p5, p6, bp6, bp5, suv1, suv2, suv3, suv4, tiledata->color);
-				m_vb->makeQuad(vb_index + 5, p1, p5, bp5, bp1, suv1, suv2, suv3, suv4, tiledata->color);
-				m_vb->degenTris(vb_index + 7, 9);
-				break;
-			}
-			case Tilemap::TILE_BOTTOM:
-			{
+			m_vb->makeQuad(vb_index + 2, p4, p5, bp5, bp4, suv1, suv2, suv3, suv4, tiledata->color);
+			m_vb->makeQuad(vb_index + 4, p3, p4, bp4, bp3, suv1, suv2, suv3, suv4, tiledata->color);
+			m_vb->makeQuad(vb_index + 6, p5, p6, bp6, bp5, suv1, suv2, suv3, suv4, tiledata->color);
+			m_vb->makeQuad(vb_index + 8, p6, p3, bp3, bp6, suv1, suv2, suv3, suv4, tiledata->color);
+			m_vb->degenTris(vb_index + 10, 6);
+			break;
+		}
+		case Tilemap::TILE_TOP:
+		{
+			/*
+				 /\
+				/__\
+			*/
+			m_vb->makeTri(vb_index + 0, p1, p6, p5, uv1, uv3, uv2, tiledata->color);
+
+			m_vb->makeQuad(vb_index + 1, p6, p1, bp1, bp6, suv1, suv2, suv3, suv4, tiledata->color);
+			m_vb->makeQuad(vb_index + 3, p5, p6, bp6, bp5, suv1, suv2, suv3, suv4, tiledata->color);
+			m_vb->makeQuad(vb_index + 5, p1, p5, bp5, bp1, suv1, suv2, suv3, suv4, tiledata->color);
+			m_vb->degenTris(vb_index + 7, 9);
+			break;
+		}
+		case Tilemap::TILE_BOTTOM:
+		{
 			/* ____
 			   \  /
-			    \/
+				\/
 			*/
-				m_vb->makeTri(vb_index + 0, p2, p4, p3, uv1, uv3, uv2, tiledata->color);
+			m_vb->makeTri(vb_index + 0, p2, p4, p3, uv1, uv3, uv2, tiledata->color);
 
-				m_vb->makeQuad(vb_index + 1, p3, p4, bp4, bp3, suv1, suv2, suv3, suv4, tiledata->color);
-				m_vb->makeQuad(vb_index + 3, p2, p3, bp3, bp2, suv1, suv2, suv3, suv4, tiledata->color);
-				m_vb->makeQuad(vb_index + 5, p4, p2, bp2, bp4, suv1, suv2, suv3, suv4, tiledata->color);
-				m_vb->degenTris(vb_index + 7, 9);
-				break;
-			}
-			case Tilemap::TILE_MID:
-			{
+			m_vb->makeQuad(vb_index + 1, p3, p4, bp4, bp3, suv1, suv2, suv3, suv4, tiledata->color);
+			m_vb->makeQuad(vb_index + 3, p2, p3, bp3, bp2, suv1, suv2, suv3, suv4, tiledata->color);
+			m_vb->makeQuad(vb_index + 5, p4, p2, bp2, bp4, suv1, suv2, suv3, suv4, tiledata->color);
+			m_vb->degenTris(vb_index + 7, 9);
+			break;
+		}
+		case Tilemap::TILE_MID:
+		{
 			/*  ______
-			    |    |
-			    |____|
+				|    |
+				|____|
 			*/
-				m_vb->makeTri(vb_index + 0, p1, p5, p4, uv1, uv4, uv3, tiledata->color);
-				m_vb->makeTri(vb_index + 1, p1, p4, p2, uv1, uv3, uv2, tiledata->color);
+			m_vb->makeTri(vb_index + 0, p1, p5, p4, uv1, uv4, uv3, tiledata->color);
+			m_vb->makeTri(vb_index + 1, p1, p4, p2, uv1, uv3, uv2, tiledata->color);
 
-				m_vb->makeQuad(vb_index + 2, p4, p5, bp5, bp4, suv1, suv2, suv3, suv4, tiledata->color);
-				m_vb->makeQuad(vb_index + 4, p1, p2, bp2, bp1, suv1, suv2, suv3, suv4, tiledata->color);
-				m_vb->makeQuad(vb_index + 6, p2, p4, bp4, bp2, suv1, suv2, suv3, suv4, tiledata->color);
-				m_vb->makeQuad(vb_index + 8, p5, p1, bp1, bp5, suv1, suv2, suv3, suv4, tiledata->color);
-				m_vb->degenTris(vb_index + 10, 6);
-				break;
-			}
+			m_vb->makeQuad(vb_index + 2, p4, p5, bp5, bp4, suv1, suv2, suv3, suv4, tiledata->color);
+			m_vb->makeQuad(vb_index + 4, p1, p2, bp2, bp1, suv1, suv2, suv3, suv4, tiledata->color);
+			m_vb->makeQuad(vb_index + 6, p2, p4, bp4, bp2, suv1, suv2, suv3, suv4, tiledata->color);
+			m_vb->makeQuad(vb_index + 8, p5, p1, bp1, bp5, suv1, suv2, suv3, suv4, tiledata->color);
+			m_vb->degenTris(vb_index + 10, 6);
+			break;
+		}
 
-			default:
-			{
-				// make degen geo
-				m_vb->degenTris(vb_index, num_tris);
-				break;
-			}
+		default:
+		{
+			// make degen geo
+			m_vb->degenTris(vb_index, num_tris);
+			break;
+		}
 		}
 	}
+#endif
 
 	update();
 }

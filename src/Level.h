@@ -138,6 +138,7 @@ public:
 	const Tilemap::Tile* getTile(int index);
 	const Tilemap::Tile* getTileById(int id);
 	int getTileIndexById(int id);
+	Tilemap::Bucket* getTileBucket(int bx, int by);
 
 private:
 	int tesselateObject(int object);

@@ -2115,6 +2115,57 @@ void GLWidget::paintGL()
 		}
 	}
 	*/
+	{
+		glBindTexture(GL_TEXTURE_2D, m_base_tex);
+
+		glm::vec2 tilemap_tl = toLevelCoords(glm::vec2(0, 0));
+		glm::vec2 tilemap_br = toLevelCoords(glm::vec2(width(), height()));
+
+		tilemap_tl.x *= m_level->getTileWidth();
+		tilemap_tl.y *= m_level->getTileHeight();
+		tilemap_br.x *= m_level->getTileWidth();
+		tilemap_br.y *= m_level->getTileHeight();
+
+		int xs = (int)(floor(tilemap_tl.x / Tilemap::BUCKET_WIDTH));
+		int ys = (int)(floor(tilemap_tl.y / Tilemap::BUCKET_HEIGHT));
+		int xe = (int)(ceil(tilemap_br.x / Tilemap::BUCKET_WIDTH));
+		int ye = (int)(ceil(tilemap_br.y / Tilemap::BUCKET_HEIGHT));
+
+		if (xs < 0)
+			xs = 0;
+		if (ys < 0)
+			ys = 0;
+		if (xe > (Tilemap::AREA_WIDTH / Tilemap::BUCKET_WIDTH))
+			xe = Tilemap::AREA_WIDTH / Tilemap::BUCKET_WIDTH;
+		if (ye > (Tilemap::AREA_HEIGHT / Tilemap::BUCKET_HEIGHT))
+			ye = Tilemap::AREA_HEIGHT / Tilemap::BUCKET_HEIGHT;
+
+		for (int j = ys; j < ye; j++)
+		{
+			for (int i = xs; i < xe; i++)
+			{
+				const Tilemap::Bucket* bucket = m_level->getTileBucket(i, j);
+				if (bucket != nullptr)
+				{
+					float* geo = (float*)bucket->tiles->getPointer();
+					int vbsize = bucket->tiles->getVertexSize();
+
+					m_level_program->enableAttributeArray(m_level_shader.position);
+					m_level_program->setAttributeArray(m_level_shader.position, (GLfloat*)geo, 3, vbsize);
+					m_level_program->enableAttributeArray(m_level_shader.tex_coord);
+					m_level_program->setAttributeArray(m_level_shader.tex_coord, (GLfloat*)geo + 3, 2, vbsize);
+					m_level_program->enableAttributeArray(m_level_shader.color);
+					m_level_program->setAttributeArray(m_level_shader.color, GL_UNSIGNED_BYTE, (GLbyte*)geo + 20, 4, vbsize);
+
+					glDrawArrays(GL_TRIANGLES, 0, Tilemap::BUCKET_WIDTH*Tilemap::BUCKET_HEIGHT*4*3);
+
+					m_level_program->disableAttributeArray(m_level_shader.position);
+					m_level_program->disableAttributeArray(m_level_shader.tex_coord);
+					m_level_program->disableAttributeArray(m_level_shader.color);
+				}
+			}
+		}
+	}
 
 
 	for (int vbo = 0; vbo < Level::NUM_VBOS; vbo++)
@@ -2260,7 +2311,36 @@ void GLWidget::paintGL()
 		}
 		case MODE_TILEMAP:
 		{
-			modetext = tr("Tilemap: X: %1, Y: %2, TX: %3, TY: %4").arg(mlp.x).arg(mlp.y).arg(m_tile_selx).arg(m_tile_sely);
+			glm::vec2 tl = toLevelCoords(glm::vec2(0, 0));
+			glm::vec2 br = toLevelCoords(glm::vec2(width(), height()));
+
+			tl.x *= m_level->getTileWidth();
+			tl.y *= m_level->getTileHeight();
+			br.x *= m_level->getTileWidth();
+			br.y *= m_level->getTileHeight();
+
+			int xs = (int)(floor(tl.x / Tilemap::BUCKET_WIDTH));
+			int ys = (int)(floor(tl.y / Tilemap::BUCKET_HEIGHT));
+			int xe = (int)(ceil(br.x / Tilemap::BUCKET_WIDTH));
+			int ye = (int)(ceil(br.y / Tilemap::BUCKET_HEIGHT));
+
+			painter.setPen(QColor(255, 255, 0));
+			painter.drawText(8, 32, tr("XS: %1, YS: %2, XE: %3, YE: %4").arg(xs).arg(ys).arg(xe).arg(ye));
+			painter.drawText(8, 48, tr("TLX: %1, TLY: %2, BRX: %3, BRY: %4").arg(tl.x).arg(tl.y).arg(br.x).arg(br.y));
+
+			painter.setPen(QColor(0, 255, 0));
+			//painter.drawText(8, 32, tr("XS: %1, YS: %2, XE: %3, YE: %4").arg(xs).arg(ys).arg(xe).arg(ye));
+			for (int j = ys; j < ye; j++)
+			{
+				QString str = "";
+				for (int i = xs; i < xe; i++)
+				{
+					str += tr("%1 ").arg((j * (Tilemap::AREA_WIDTH / Tilemap::BUCKET_WIDTH)) + i);
+				}
+				painter.drawText(8, 64 + ((j-ys) * 8), str);
+			}
+
+			modetext = tr("Tilemap: X: %1, Y: %2").arg(m_tile_selx).arg(m_tile_sely);
 			break;
 		}
 		case MODE_TILE_ZEDIT:

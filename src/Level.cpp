@@ -742,3 +742,8 @@ int Level::getTileIndexById(int id)
 {
 	return m_tilemap->getTileIndexById(id);
 }
+
+Tilemap::Bucket* Level::getTileBucket(int bx, int by)
+{
+	return m_tilemap->getTileBucket(bx, by);
+}

@@ -50,6 +50,8 @@ public:
 		VBO* tiles;
 		VBO* preview;
 		uint64_t coverage;
+		int x;
+		int y;
 	};
 
 	static const unsigned int TILE_MASK = 0xffff;
@@ -89,9 +91,10 @@ public:
 	int getTileIndexById(int id);
 	float getTileWidth();
 	float getTileHeight();
+	Tilemap::Bucket* getTileBucket(int bx, int by);
 
 private:
-	void tesselateTile(int x, int y);
+	void tesselateTile(Bucket* bucket, int bx, int by);
 	void allocBucket(int bin);
 	void deallocBucket(int bin);
 
