@@ -544,9 +544,12 @@ void Tilemap::editZ(int x, int y, int z)
 
 		m_buckets[bin]->map[index] &= ~Z_MASK;
 		m_buckets[bin]->map[index] |= (z << Z_SHIFT) & Z_MASK;
+
+		tesselateTile(m_buckets[bin], ix, iy);
 	}
 }
 
+/*
 unsigned int Tilemap::getRaw(int x, int y)
 {
 	assert(x >= 0 && x < AREA_WIDTH);
@@ -578,6 +581,7 @@ void Tilemap::editRaw(int x, int y, unsigned int data)
 		tesselateTile(m_buckets[bin], ix, iy);
 	}
 }
+*/
 
 int Tilemap::insertTile(std::string name, PolygonDef* top, PolygonDef* side, unsigned int color, Tilemap::TileType type)
 {

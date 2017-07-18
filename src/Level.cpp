@@ -682,17 +682,6 @@ void Level::editTilemapZ(int x, int y, int z)
 	setModified();
 }
 
-unsigned int Level::readTilemapRaw(int x, int y)
-{
-	return m_tilemap->getRaw(x, y);
-}
-
-void Level::editTilemapRaw(int x, int y, unsigned int data)
-{
-	m_tilemap->editRaw(x, y, data);
-	setModified();
-}
-
 float* Level::getTilemapVBO(int bx, int by)
 {
 	return m_tilemap->getVBO(bx, by);

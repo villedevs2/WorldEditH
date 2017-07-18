@@ -80,8 +80,6 @@ public:
 	int getZ(int x, int y);	
 	void edit(int x, int y, int tile);
 	void editZ(int x, int y, int z);
-	unsigned int getRaw(int x, int y);
-	void editRaw(int x, int y, unsigned int data);
 	int insertTile(std::string name, PolygonDef* top, PolygonDef* side, unsigned int color, Tilemap::TileType type);
 	bool removeTile(int id);
 	void removeTiles();

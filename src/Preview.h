@@ -23,9 +23,6 @@ public:
 	~GLPreview();
 
 	void setTexture(QImage* texture);
-	void tesselateTile(int x, int y);
-	void tesselateAll();
-	void resizeTilemap(int width, int height);
 
 protected:
 	void paintEvent(QPaintEvent* event);
@@ -66,11 +63,7 @@ private:
 	QGLShaderProgram* m_level_program;
 	Shader m_level_shader;
 
-	VBO* m_vb;
 	VBO* m_vbback;
-
-	int m_width;
-	int m_height;
 
 
 	bool m_panning;
@@ -99,7 +92,6 @@ signals:
 
 public slots:
 	void tileUpdated(int x, int y);
-	void resizeTilemap(int width, int height);
 
 private:
 	QMainWindow* m_window;

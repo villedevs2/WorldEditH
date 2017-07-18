@@ -7,21 +7,22 @@ GLPreview::GLPreview(QWidget* parent, Level* level) : QGLWidget(QGLFormat(QGL::S
 {
 	m_level = level;
 
-	m_scroll = glm::vec2(16.0f, 16.0f);
+	m_scroll = glm::vec2(0.0f, 0.0f);
 	m_scroll_saved = m_scroll;
 
-	m_width = 0;
-	m_height = 0;
+	m_vbback = new VBO(2);
 
-	m_vb = nullptr;
-	m_vbback = nullptr;
+	glm::vec3 p1(0.0f, 0.0, 0.0f);
+	glm::vec3 p2(Tilemap::AREA_WIDTH, 0.0f, 0.0f);
+	glm::vec3 p3(Tilemap::AREA_WIDTH, Tilemap::AREA_HEIGHT, 0.0f);
+	glm::vec3 p4(0.0f, Tilemap::AREA_HEIGHT, 0.0f);
 
-	resizeTilemap(50, 50);
+	m_vbback->makeQuad(0, p1, p2, p3, p4, glm::vec2(0.0f, 0.0f), glm::vec2(1.0f, 0.0f), glm::vec2(1.0f, 1.0f), glm::vec2(0.0f, 1.0f), 0xff404040);
 }
 
 GLPreview::~GLPreview()
 {
-
+	delete m_vbback;
 }
 
 QString GLPreview::loadShader(QString filename)
@@ -141,8 +142,7 @@ void GLPreview::paintGL()
 	// opengl scene rendering
 	// --------------------------------------------------------------------------
 	glDisable(GL_CULL_FACE);
-	glEnable(GL_DEPTH_TEST);
-
+	
 	qglClearColor(QColor(0,64,192));
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -160,9 +160,11 @@ void GLPreview::paintGL()
 
 	float camera_distance = ((float)(LEVEL_VIS_WIDTH) / 2) / tan((fov * M_PI / 180.0) / 2);
 
+	glm::vec2 cam_pos = m_scroll + glm::vec2(halfw, halfh);
 
-	glm::vec3 pos = glm::vec3(m_scroll.x, m_scroll.y+0.0f, camera_distance);
-	glm::vec3 eye = glm::vec3(m_scroll.x, m_scroll.y, 0.0f);
+
+	glm::vec3 pos = glm::vec3(cam_pos.x, cam_pos.y + 0.0f, camera_distance);
+	glm::vec3 eye = glm::vec3(cam_pos.x, cam_pos.y, 0.0f);
 
 	glm::mat4 camera_proj_matrix = glm::frustum<float>(-size, size, size / aspect, -size / aspect, 0.01f, 100.0f);
 	glm::mat4 camera_view_matrix = glm::lookAt(pos, eye, glm::vec3(0.0f, 1.0f, 0.0));
@@ -175,6 +177,9 @@ void GLPreview::paintGL()
 
 	m_level_program->setUniformValue(m_level_shader.vp_matrix, vp_mat);
 
+	glDisable(GL_DEPTH_TEST);
+	glDepthMask(GL_FALSE);
+	
 	void* vbptr;
 	int vbsize;
 	int capacity;
@@ -197,6 +202,11 @@ void GLPreview::paintGL()
 		m_level_program->disableAttributeArray(m_level_shader.color);
 	}
 
+	glEnable(GL_DEPTH_TEST);
+	glDepthMask(GL_TRUE);
+	
+	
+	/*
 	vbptr = m_vb->getPointer();
 	vbsize = m_vb->getVertexSize();
 	capacity = m_vb->getCapacity();
@@ -217,10 +227,96 @@ void GLPreview::paintGL()
 		m_level_program->disableAttributeArray(m_level_shader.tex_coord);
 		m_level_program->disableAttributeArray(m_level_shader.color);
 	}
+	*/
 
 
+	
+	glBindTexture(GL_TEXTURE_2D, m_base_tex);
+	
+	glm::vec2 tilemap_tl = toLevelCoords(glm::vec2(0, 0));
+	glm::vec2 tilemap_br = toLevelCoords(glm::vec2(width(), height()));
+
+	tilemap_tl.x *= m_level->getTileWidth();
+	tilemap_tl.y *= m_level->getTileHeight();
+	tilemap_br.x *= m_level->getTileWidth();
+	tilemap_br.y *= m_level->getTileHeight();
+
+	int xs = (int)(floor(tilemap_tl.x / Tilemap::BUCKET_WIDTH));
+	int ys = (int)(floor(tilemap_tl.y / Tilemap::BUCKET_HEIGHT));
+	int xe = (int)(ceil(tilemap_br.x / Tilemap::BUCKET_WIDTH));
+	int ye = (int)(ceil(tilemap_br.y / Tilemap::BUCKET_HEIGHT));
+
+	if (xs < 0)
+		xs = 0;
+	if (ys < 0)
+		ys = 0;
+	if (xe >(Tilemap::AREA_WIDTH / Tilemap::BUCKET_WIDTH))
+		xe = Tilemap::AREA_WIDTH / Tilemap::BUCKET_WIDTH;
+	if (ye >(Tilemap::AREA_HEIGHT / Tilemap::BUCKET_HEIGHT))
+		ye = Tilemap::AREA_HEIGHT / Tilemap::BUCKET_HEIGHT;
+	
+	for (int j = ys; j < ye; j++)
+	{
+		for (int i = xs; i < xe; i++)
+		{
+			const Tilemap::Bucket* bucket = m_level->getTileBucket(i, j);
+			if (bucket != nullptr)
+			{
+				float* geo = (float*)bucket->preview->getPointer();
+				int vbsize = bucket->preview->getVertexSize();
+
+				m_level_program->enableAttributeArray(m_level_shader.position);
+				m_level_program->setAttributeArray(m_level_shader.position, (GLfloat*)geo, 3, vbsize);
+				m_level_program->enableAttributeArray(m_level_shader.tex_coord);
+				m_level_program->setAttributeArray(m_level_shader.tex_coord, (GLfloat*)geo + 3, 2, vbsize);
+				m_level_program->enableAttributeArray(m_level_shader.color);
+				m_level_program->setAttributeArray(m_level_shader.color, GL_UNSIGNED_BYTE, (GLbyte*)geo + 20, 4, vbsize);
+
+				glDrawArrays(GL_TRIANGLES, 0, Tilemap::BUCKET_WIDTH*Tilemap::BUCKET_HEIGHT * 16 * 3);
+
+				m_level_program->disableAttributeArray(m_level_shader.position);
+				m_level_program->disableAttributeArray(m_level_shader.tex_coord);
+				m_level_program->disableAttributeArray(m_level_shader.color);
+			}
+		}
+	}
+	
+	glDisable(GL_DEPTH_TEST);	// depth must disabled, or QPainter stuff won't be visible
 
 	painter.endNativePainting();
+
+	/*
+	painter.beginNativePainting();
+
+	// opengl scene rendering
+	// --------------------------------------------------------------------------
+	glDisable(GL_CULL_FACE);
+
+	qglClearColor(QColor(0, 64, 192));
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	painter.endNativePainting();
+	*/
+	{
+		glm::vec2 tl = toLevelCoords(glm::vec2(0, 0));
+		glm::vec2 br = toLevelCoords(glm::vec2(width(), height()));
+
+		tl.x *= m_level->getTileWidth();
+		tl.y *= m_level->getTileHeight();
+		br.x *= m_level->getTileWidth();
+		br.y *= m_level->getTileHeight();
+
+		int xs = (int)(floor(tl.x / Tilemap::BUCKET_WIDTH));
+		int ys = (int)(floor(tl.y / Tilemap::BUCKET_HEIGHT));
+		int xe = (int)(ceil(br.x / Tilemap::BUCKET_WIDTH));
+		int ye = (int)(ceil(br.y / Tilemap::BUCKET_HEIGHT));
+
+		painter.setPen(QColor(255, 255, 0, 255));
+		painter.drawText(8, 32, tr("XS: %1, YS: %2, XE: %3, YE: %4").arg(xs).arg(ys).arg(xe).arg(ye));
+		painter.drawText(8, 48, tr("TLX: %1, TLY: %2, BRX: %3, BRY: %4").arg(tl.x).arg(tl.y).arg(br.x).arg(br.y));
+		painter.drawText(8, 64, tr("SX: %1, SY: %2").arg(m_scroll.x).arg(m_scroll.y));
+	}
+
 	painter.end();
 	doneCurrent();
 }
@@ -245,8 +341,6 @@ void GLPreview::setTexture(QImage* texture)
 {
 	m_texture = texture;
 	loadTexture(m_texture);
-
-	tesselateAll();
 
 	update();
 }
@@ -319,214 +413,6 @@ void GLPreview::paintEvent(QPaintEvent* event)
 	paintGL();
 }
 
-void GLPreview::tesselateTile(int x, int y)
-{
-#if 0
-	const int num_tris = 16;
-	
-	const float tile_width = 1.0f;
-	const float tile_height = 1.4f;
-
-	assert(x >= 0 && x < Tilemap::AREA_WIDTH);
-	assert(y >= 0 && y < Tilemap::AREA_HEIGHT);
-
-	int ctile = m_level->readTilemapTile(x, y);
-	int vb_index = ((y * m_width) + x) * num_tris;
-
-	float tx1 = (float)(x)* tile_width;
-	float tx2 = tx1 + tile_width;
-	float ty1 = (float)(y) * (tile_height / 2);
-	float ty2 = ty1 + (tile_height / 2);
-
-	if (y & 1)
-	{
-		tx1 += tile_width / 2;
-		tx2 += tile_width / 2;
-	}
-
-	if (ctile == Tilemap::TILE_EMPTY)
-	{
-		// make degen geo
-		m_vb->degenTris(vb_index, num_tris);
-	}
-	else
-	{
-		const Tilemap::Tile* tiledata = m_level->getTile(ctile);
-
-		float z = m_level->readTilemapZ(x, y) * 0.1f;
-
-		glm::vec2 uv1 = tiledata->top_points[0];
-		glm::vec2 uv2 = tiledata->top_points[1];
-		glm::vec2 uv3 = tiledata->top_points[2];
-		glm::vec2 uv4 = tiledata->top_points[3];
-		glm::vec2 uv5 = tiledata->top_points[4];
-		glm::vec2 uv6 = tiledata->top_points[5];
-
-		glm::vec2 suv1 = tiledata->side_points[0];
-		glm::vec2 suv2 = tiledata->side_points[1];
-		glm::vec2 suv3 = tiledata->side_points[2];
-		glm::vec2 suv4 = tiledata->side_points[3];
-
-		/*
-				 p6
-			p1         p5
-			p2         p4
-				 p3
-		*/
-
-		glm::vec3 p1 = glm::vec3(tx1, ty1 + (tile_height * (15.0 / 70.0)), z);
-		glm::vec3 p2 = glm::vec3(tx1, ty1 + (tile_height * (35.0 / 70.0)), z);
-		glm::vec3 p3 = glm::vec3(tx1 + (tile_width * 0.5), ty1 + (tile_height * (50.0 / 70.0)), z);
-		glm::vec3 p4 = glm::vec3(tx2, ty1 + (tile_height * (35.0 / 70.0)), z);
-		glm::vec3 p5 = glm::vec3(tx2, ty1 + (tile_height * (15.0 / 70.0)), z);
-		glm::vec3 p6 = glm::vec3(tx1 + (tile_width * 0.5), ty1, z);
-
-		glm::vec3 bp1 = glm::vec3(tx1, ty1 + (tile_height * (15.0 / 70.0)), 0.0f);
-		glm::vec3 bp2 = glm::vec3(tx1, ty1 + (tile_height * (35.0 / 70.0)), 0.0f);
-		glm::vec3 bp3 = glm::vec3(tx1 + (tile_width * 0.5), ty1 + (tile_height * (50.0 / 70.0)), 0.0f);
-		glm::vec3 bp4 = glm::vec3(tx2, ty1 + (tile_height * (35.0 / 70.0)), 0.0f);
-		glm::vec3 bp5 = glm::vec3(tx2, ty1 + (tile_height * (15.0 / 70.0)), 0.0f);
-		glm::vec3 bp6 = glm::vec3(tx1 + (tile_width * 0.5), ty1, 0.0f);
-
-		switch (tiledata->type)
-		{
-		case Tilemap::TILE_FULL:
-		{
-			/*
-				  /\
-				 /  \
-				|    |
-				|    |
-				 \  /
-				  \/
-			*/
-
-			m_vb->makeTri(vb_index + 0, p1, p6, p5, uv1, uv6, uv5, tiledata->color);
-			m_vb->makeTri(vb_index + 1, p1, p5, p4, uv1, uv5, uv4, tiledata->color);
-			m_vb->makeTri(vb_index + 2, p1, p4, p3, uv1, uv4, uv3, tiledata->color);
-			m_vb->makeTri(vb_index + 3, p1, p3, p2, uv1, uv3, uv2, tiledata->color);
-
-			m_vb->makeQuad(vb_index + 4, p4, p5, bp5, bp4, suv1, suv2, suv3, suv4, tiledata->color);
-			m_vb->makeQuad(vb_index + 6, p3, p4, bp4, bp3, suv1, suv2, suv3, suv4, tiledata->color);
-			m_vb->makeQuad(vb_index + 8, p5, p6, bp6, bp5, suv1, suv2, suv3, suv4, tiledata->color);
-			m_vb->makeQuad(vb_index + 10, p6, p1, bp1, bp6, suv1, suv2, suv3, suv4, tiledata->color);
-			m_vb->makeQuad(vb_index + 12, p1, p2, bp2, bp1, suv1, suv2, suv3, suv4, tiledata->color);
-			m_vb->makeQuad(vb_index + 14, p2, p3, bp3, bp2, suv1, suv2, suv3, suv4, tiledata->color);
-			break;
-		}
-		case Tilemap::TILE_LEFT:
-		{
-			/*
-				  /|
-				 / |
-				|  |
-				|  |
-				 \ |
-				  \|
-			*/
-			m_vb->makeTri(vb_index + 0, p1, p6, p3, uv1, uv4, uv3, tiledata->color);
-			m_vb->makeTri(vb_index + 1, p1, p3, p2, uv1, uv3, uv2, tiledata->color);
-
-			m_vb->makeQuad(vb_index + 2, p6, p1, bp1, bp6, suv1, suv2, suv3, suv4, tiledata->color);
-			m_vb->makeQuad(vb_index + 4, p1, p2, bp2, bp1, suv1, suv2, suv3, suv4, tiledata->color);
-			m_vb->makeQuad(vb_index + 6, p2, p3, bp3, bp2, suv1, suv2, suv3, suv4, tiledata->color);
-			m_vb->makeQuad(vb_index + 8, p3, p6, bp6, bp3, suv1, suv2, suv3, suv4, tiledata->color);
-			m_vb->degenTris(vb_index + 10, 6);
-			break;
-		}
-		case Tilemap::TILE_RIGHT:
-		{
-			/*
-				|\
-				| \
-				|  |
-				|  |
-				| /
-				|/
-			*/
-			m_vb->makeTri(vb_index + 0, p6, p5, p4, uv2, uv1, uv4, tiledata->color);
-			m_vb->makeTri(vb_index + 1, p6, p4, p3, uv2, uv4, uv3, tiledata->color);
-
-			m_vb->makeQuad(vb_index + 2, p4, p5, bp5, bp4, suv1, suv2, suv3, suv4, tiledata->color);
-			m_vb->makeQuad(vb_index + 4, p3, p4, bp4, bp3, suv1, suv2, suv3, suv4, tiledata->color);
-			m_vb->makeQuad(vb_index + 6, p5, p6, bp6, bp5, suv1, suv2, suv3, suv4, tiledata->color);
-			m_vb->makeQuad(vb_index + 8, p6, p3, bp3, bp6, suv1, suv2, suv3, suv4, tiledata->color);
-			m_vb->degenTris(vb_index + 10, 6);
-			break;
-		}
-		case Tilemap::TILE_TOP:
-		{
-			/*
-				 /\
-				/__\
-			*/
-			m_vb->makeTri(vb_index + 0, p1, p6, p5, uv1, uv3, uv2, tiledata->color);
-
-			m_vb->makeQuad(vb_index + 1, p6, p1, bp1, bp6, suv1, suv2, suv3, suv4, tiledata->color);
-			m_vb->makeQuad(vb_index + 3, p5, p6, bp6, bp5, suv1, suv2, suv3, suv4, tiledata->color);
-			m_vb->makeQuad(vb_index + 5, p1, p5, bp5, bp1, suv1, suv2, suv3, suv4, tiledata->color);
-			m_vb->degenTris(vb_index + 7, 9);
-			break;
-		}
-		case Tilemap::TILE_BOTTOM:
-		{
-			/* ____
-			   \  /
-				\/
-			*/
-			m_vb->makeTri(vb_index + 0, p2, p4, p3, uv1, uv3, uv2, tiledata->color);
-
-			m_vb->makeQuad(vb_index + 1, p3, p4, bp4, bp3, suv1, suv2, suv3, suv4, tiledata->color);
-			m_vb->makeQuad(vb_index + 3, p2, p3, bp3, bp2, suv1, suv2, suv3, suv4, tiledata->color);
-			m_vb->makeQuad(vb_index + 5, p4, p2, bp2, bp4, suv1, suv2, suv3, suv4, tiledata->color);
-			m_vb->degenTris(vb_index + 7, 9);
-			break;
-		}
-		case Tilemap::TILE_MID:
-		{
-			/*  ______
-				|    |
-				|____|
-			*/
-			m_vb->makeTri(vb_index + 0, p1, p5, p4, uv1, uv4, uv3, tiledata->color);
-			m_vb->makeTri(vb_index + 1, p1, p4, p2, uv1, uv3, uv2, tiledata->color);
-
-			m_vb->makeQuad(vb_index + 2, p4, p5, bp5, bp4, suv1, suv2, suv3, suv4, tiledata->color);
-			m_vb->makeQuad(vb_index + 4, p1, p2, bp2, bp1, suv1, suv2, suv3, suv4, tiledata->color);
-			m_vb->makeQuad(vb_index + 6, p2, p4, bp4, bp2, suv1, suv2, suv3, suv4, tiledata->color);
-			m_vb->makeQuad(vb_index + 8, p5, p1, bp1, bp5, suv1, suv2, suv3, suv4, tiledata->color);
-			m_vb->degenTris(vb_index + 10, 6);
-			break;
-		}
-
-		default:
-		{
-			// make degen geo
-			m_vb->degenTris(vb_index, num_tris);
-			break;
-		}
-		}
-	}
-#endif
-
-	update();
-}
-
-void GLPreview::tesselateAll()
-{
-	// TODO: handle buckets instead
-
-	/*
-	for (int j = 0; j < m_level->getTilemapHeight(); j++)
-	{
-		for (int i = 0; i < m_level->getTilemapWidth(); i++)
-		{
-			tesselateTile(i, j);
-		}
-	}
-	*/
-}
-
 // convert screen coordinates to uv coords
 glm::vec2 GLPreview::toLevelCoords(glm::vec2& point)
 {
@@ -535,34 +421,11 @@ glm::vec2 GLPreview::toLevelCoords(glm::vec2& point)
 
 	float mult = 1.0f / ((float)(width()) / (float)(LEVEL_VIS_WIDTH));
 
-	float sx = (x * mult) - m_scroll.x;
-	float sy = (y * mult) - m_scroll.y;
+	float sx = (x * mult) + m_scroll.x;
+	float sy = (y * mult) + m_scroll.y;
 
 	return glm::vec2(sx, sy);
 }
-
-
-void GLPreview::resizeTilemap(int width, int height)
-{
-	if (m_vb != nullptr)
-		delete m_vb;
-
-	m_vb = new VBO(width * height * 16);
-
-	if (m_vbback != nullptr)
-		delete m_vbback;
-
-	m_vbback = new VBO(2);
-
-	m_vbback->makeQuad(0, glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(width, 0.0f, -1.0f), glm::vec3(width, height, -1.0f), glm::vec3(0.0f, height, -1.0f),
-						  glm::vec2(0.0f, 0.0f), glm::vec2(1.0f, 0.0f), glm::vec2(1.0f, 1.0f), glm::vec2(0.0f, 1.0f), 0x00000000);
-
-	m_width = width;
-	m_height = height;
-
-	tesselateAll();
-}
-
 
 
 
@@ -609,16 +472,11 @@ void PreviewWindow::closeEvent(QCloseEvent* event)
 
 void PreviewWindow::tileUpdated(int x, int y)
 {
-	m_widget->tesselateTile(x, y);
+	m_widget->update();
 }
 
 
 void PreviewWindow::setTexture(QImage* texture)
 {
 	m_widget->setTexture(texture);
-}
-
-void PreviewWindow::resizeTilemap(int width, int height)
-{
-	m_widget->resizeTilemap(width, height);
 }
