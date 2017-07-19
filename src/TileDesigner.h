@@ -128,7 +128,7 @@ private:
 
 	PolygonDef* m_poly[2];
 
-	PolygonDef* m_poly_top_default[6];
+	PolygonDef* m_poly_top_default[10];
 	PolygonDef* m_poly_side_default;
 
 	Level* m_level;

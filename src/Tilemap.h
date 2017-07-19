@@ -19,6 +19,10 @@ public:
 		TILE_TOP = 3,
 		TILE_BOTTOM = 4,
 		TILE_MID = 5,
+		TILE_CORNER_TL = 6,
+		TILE_CORNER_TR = 7,
+		TILE_CORNER_BL = 8,
+		TILE_CORNER_BR = 9,
 	};
 
 	enum TileSide

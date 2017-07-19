@@ -940,42 +940,42 @@ bool MainWindow::edgify(std::vector<std::vector<int>>& ptlist)
 
 									switch (i)
 									{
-									case 0:		// LEFT
-									{
-										if ((tt->side_bits & Tilemap::SIDE_RIGHT) && (tile->side_bits & Tilemap::SIDE_LEFT))
-											tilecon[i] = 1;
-										break;
-									}
-									case 1:		// TOPLEFT
-									{
-										if ((tt->side_bits & Tilemap::SIDE_BOT_RIGHT) && (tile->side_bits & Tilemap::SIDE_TOP_LEFT))
-											tilecon[i] = 1;
-										break;
-									}
-									case 2:		// TOPRIGHT
-									{
-										if ((tt->side_bits & Tilemap::SIDE_BOT_LEFT) && (tile->side_bits & Tilemap::SIDE_TOP_RIGHT))
-											tilecon[i] = 1;
-										break;
-									}
-									case 3:		// RIGHT
-									{
-										if ((tt->side_bits & Tilemap::SIDE_LEFT) && (tile->side_bits & Tilemap::SIDE_RIGHT))
-											tilecon[i] = 1;
-										break;
-									}
-									case 4:		// BOTTOM RIGHT
-									{
-										if ((tt->side_bits & Tilemap::SIDE_TOP_LEFT) && (tile->side_bits & Tilemap::SIDE_BOT_RIGHT))
-											tilecon[i] = 1;
-										break;
-									}
-									case 5:		// BOTTOM LEFT
-									{
-										if ((tt->side_bits & Tilemap::SIDE_TOP_RIGHT) && (tile->side_bits & Tilemap::SIDE_BOT_LEFT))
-											tilecon[i] = 1;
-										break;
-									}
+										case 0:		// LEFT
+										{
+											if ((tt->side_bits & Tilemap::SIDE_RIGHT) && (tile->side_bits & Tilemap::SIDE_LEFT))
+												tilecon[i] = 1;
+											break;
+										}
+										case 1:		// TOPLEFT
+										{
+											if ((tt->side_bits & Tilemap::SIDE_BOT_RIGHT) && (tile->side_bits & Tilemap::SIDE_TOP_LEFT))
+												tilecon[i] = 1;
+											break;
+										}
+										case 2:		// TOPRIGHT
+										{
+											if ((tt->side_bits & Tilemap::SIDE_BOT_LEFT) && (tile->side_bits & Tilemap::SIDE_TOP_RIGHT))
+												tilecon[i] = 1;
+											break;
+										}
+										case 3:		// RIGHT
+										{
+											if ((tt->side_bits & Tilemap::SIDE_LEFT) && (tile->side_bits & Tilemap::SIDE_RIGHT))
+												tilecon[i] = 1;
+											break;
+										}
+										case 4:		// BOTTOM RIGHT
+										{
+											if ((tt->side_bits & Tilemap::SIDE_TOP_LEFT) && (tile->side_bits & Tilemap::SIDE_BOT_RIGHT))
+												tilecon[i] = 1;
+											break;
+										}
+										case 5:		// BOTTOM LEFT
+										{
+											if ((tt->side_bits & Tilemap::SIDE_TOP_RIGHT) && (tile->side_bits & Tilemap::SIDE_BOT_LEFT))
+												tilecon[i] = 1;
+											break;
+										}
 									}
 								}
 							}
@@ -1114,6 +1114,70 @@ bool MainWindow::edgify(std::vector<std::vector<int>>& ptlist)
 								// always fill mid
 								edgify_fill_point(fout, points, p[0], p[2]);
 								edgify_fill_point(fout, points, p[5], p[3]);
+								break;
+							}
+							case Tilemap::TILE_CORNER_TL:
+							{
+								// LEFT
+								if (tilecon[0] == 0)
+								{
+									edgify_fill_point(fout, points, p[0], p[5]);
+								}
+								// TOPLEFT
+								if (tilecon[1] == 0)
+								{
+									edgify_fill_point(fout, points, p[0], p[1]);
+								}
+								// always fill mid
+								edgify_fill_point(fout, points, p[5], p[1]);
+								break;
+							}
+							case Tilemap::TILE_CORNER_TR:
+							{
+								// RIGHT
+								if (tilecon[3] == 0)
+								{
+									edgify_fill_point(fout, points, p[2], p[3]);
+								}
+								// TOPRIGHT
+								if (tilecon[2] == 0)
+								{
+									edgify_fill_point(fout, points, p[1], p[2]);
+								}
+								// always fill mid
+								edgify_fill_point(fout, points, p[1], p[3]);
+								break;
+							}
+							case Tilemap::TILE_CORNER_BL:
+							{
+								// LEFT
+								if (tilecon[0] == 0)
+								{
+									edgify_fill_point(fout, points, p[0], p[5]);
+								}
+								// BOTTOM LEFT
+								if (tilecon[5] == 0)
+								{
+									edgify_fill_point(fout, points, p[4], p[5]);
+								}
+								// always fill mid
+								edgify_fill_point(fout, points, p[0], p[4]);
+								break;
+							}
+							case Tilemap::TILE_CORNER_BR:
+							{
+								// RIGHT
+								if (tilecon[3] == 0)
+								{
+									edgify_fill_point(fout, points, p[2], p[3]);
+								}
+								// BOTTOM RIGHT
+								if (tilecon[4] == 0)
+								{
+									edgify_fill_point(fout, points, p[3], p[4]);
+								}
+								// always fill mid
+								edgify_fill_point(fout, points, p[4], p[2]);
 								break;
 							}
 						}
@@ -1946,12 +2010,16 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 			// top UVs
 			switch (type)
 			{
-				case Tilemap::TILE_FULL:	num_top_points = 6; break;
-				case Tilemap::TILE_LEFT:	num_top_points = 4; break;
-				case Tilemap::TILE_RIGHT:	num_top_points = 4; break;
-				case Tilemap::TILE_TOP:		num_top_points = 3; break;
-				case Tilemap::TILE_BOTTOM:	num_top_points = 3; break;
-				case Tilemap::TILE_MID:		num_top_points = 4; break;
+				case Tilemap::TILE_FULL:		num_top_points = 6; break;
+				case Tilemap::TILE_LEFT:		num_top_points = 4; break;
+				case Tilemap::TILE_RIGHT:		num_top_points = 4; break;
+				case Tilemap::TILE_TOP:			num_top_points = 3; break;
+				case Tilemap::TILE_BOTTOM:		num_top_points = 3; break;
+				case Tilemap::TILE_MID:			num_top_points = 4; break;
+				case Tilemap::TILE_CORNER_TL:	num_top_points = 3; break;
+				case Tilemap::TILE_CORNER_TR:	num_top_points = 3; break;
+				case Tilemap::TILE_CORNER_BL:	num_top_points = 3; break;
+				case Tilemap::TILE_CORNER_BR:	num_top_points = 3; break;
 			}
 
 			for (int j = 0; j < num_top_points; j++)
@@ -2156,12 +2224,16 @@ bool MainWindow::writeBinaryProjectFile(QString& filename)
 			// top UVs
 			switch (tile->type)
 			{
-				case Tilemap::TILE_FULL:	num_top_points = 6; break;				
-				case Tilemap::TILE_LEFT:	num_top_points = 4; break;				
-				case Tilemap::TILE_RIGHT:	num_top_points = 4; break;
-				case Tilemap::TILE_TOP:		num_top_points = 3; break;				
-				case Tilemap::TILE_BOTTOM:	num_top_points = 3; break;
-				case Tilemap::TILE_MID:		num_top_points = 4; break;
+				case Tilemap::TILE_FULL:		num_top_points = 6; break;				
+				case Tilemap::TILE_LEFT:		num_top_points = 4; break;				
+				case Tilemap::TILE_RIGHT:		num_top_points = 4; break;
+				case Tilemap::TILE_TOP:			num_top_points = 3; break;				
+				case Tilemap::TILE_BOTTOM:		num_top_points = 3; break;
+				case Tilemap::TILE_MID:			num_top_points = 4; break;
+				case Tilemap::TILE_CORNER_TL:	num_top_points = 3; break;
+				case Tilemap::TILE_CORNER_TR:	num_top_points = 3; break;
+				case Tilemap::TILE_CORNER_BL:	num_top_points = 3; break;
+				case Tilemap::TILE_CORNER_BR:	num_top_points = 3; break;
 			}
 
 			for (int j = 0; j < num_top_points; j++)
@@ -2354,12 +2426,16 @@ void MainWindow::writeLevelFile(QString& filename)
 
 			switch (tile->type)
 			{
-				case Tilemap::TILE_FULL:	num_top_points = 6; break;				
-				case Tilemap::TILE_LEFT:	num_top_points = 4;	break;				
-				case Tilemap::TILE_RIGHT:	num_top_points = 4; break;
-				case Tilemap::TILE_TOP:		num_top_points = 3; break;				
-				case Tilemap::TILE_BOTTOM:	num_top_points = 3; break;
-				case Tilemap::TILE_MID:		num_top_points = 4; break;				
+				case Tilemap::TILE_FULL:		num_top_points = 6; break;				
+				case Tilemap::TILE_LEFT:		num_top_points = 4;	break;				
+				case Tilemap::TILE_RIGHT:		num_top_points = 4; break;
+				case Tilemap::TILE_TOP:			num_top_points = 3; break;				
+				case Tilemap::TILE_BOTTOM:		num_top_points = 3; break;
+				case Tilemap::TILE_MID:			num_top_points = 4; break;
+				case Tilemap::TILE_CORNER_TL:	num_top_points = 3; break;
+				case Tilemap::TILE_CORNER_TR:	num_top_points = 3; break;
+				case Tilemap::TILE_CORNER_BL:	num_top_points = 3; break;
+				case Tilemap::TILE_CORNER_BR:	num_top_points = 3; break;
 			}
 
 			for (int j = 0; j < num_top_points; j++)

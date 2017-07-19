@@ -18,6 +18,10 @@ TileDesignerWidget::TileDesignerWidget(QWidget* parent, Level* level) : QGLWidge
 	m_poly_top_default[3] = new PolygonDef(6);
 	m_poly_top_default[4] = new PolygonDef(6);
 	m_poly_top_default[5] = new PolygonDef(6);
+	m_poly_top_default[6] = new PolygonDef(6);
+	m_poly_top_default[7] = new PolygonDef(6);
+	m_poly_top_default[8] = new PolygonDef(6);
+	m_poly_top_default[9] = new PolygonDef(6);
 	m_poly_side_default = new PolygonDef(4);
 
 	float tw = 0.125f;
@@ -59,6 +63,23 @@ TileDesignerWidget::TileDesignerWidget(QWidget* parent, Level* level) : QGLWidge
 	m_poly_top_default[5]->insertPoint(glm::vec2(tx1, ty3));
 	m_poly_top_default[5]->insertPoint(glm::vec2(tx3, ty3));
 	m_poly_top_default[5]->insertPoint(glm::vec2(tx3, ty2));
+
+	m_poly_top_default[6]->insertPoint(glm::vec2(tx2, ty1));	
+	m_poly_top_default[6]->insertPoint(glm::vec2(tx1, ty2));
+	m_poly_top_default[6]->insertPoint(glm::vec2(tx1, ty3));
+
+	m_poly_top_default[7]->insertPoint(glm::vec2(tx2, ty1));
+	m_poly_top_default[7]->insertPoint(glm::vec2(tx3, ty3));
+	m_poly_top_default[7]->insertPoint(glm::vec2(tx3, ty2));
+	
+	m_poly_top_default[8]->insertPoint(glm::vec2(tx1, ty2));
+	m_poly_top_default[8]->insertPoint(glm::vec2(tx1, ty3));
+	m_poly_top_default[8]->insertPoint(glm::vec2(tx2, ty4));
+
+	m_poly_top_default[9]->insertPoint(glm::vec2(tx2, ty4));
+	m_poly_top_default[9]->insertPoint(glm::vec2(tx3, ty3));
+	m_poly_top_default[9]->insertPoint(glm::vec2(tx3, ty2));
+
 
 	m_poly_side_default->insertPoint(glm::vec2(0.5f, 0.0f));
 	m_poly_side_default->insertPoint(glm::vec2(0.5f, 0.25f));
@@ -487,6 +508,10 @@ void TileDesignerWidget::insertTile(QString& name)
 		case 3: type = Tilemap::TILE_TOP; break;
 		case 4: type = Tilemap::TILE_BOTTOM; break;
 		case 5: type = Tilemap::TILE_MID; break;
+		case 6: type = Tilemap::TILE_CORNER_TL; break;
+		case 7: type = Tilemap::TILE_CORNER_TR; break;
+		case 8: type = Tilemap::TILE_CORNER_BL; break;
+		case 9: type = Tilemap::TILE_CORNER_BR; break;
 		default: type = Tilemap::TILE_FULL; break;
 	}
 
@@ -854,6 +879,10 @@ TileDesigner::TileDesigner(QWidget* parent, Level* level) : QDockWidget("Tile De
 	m_tiletype_combo->addItem("Top", QVariant(3));
 	m_tiletype_combo->addItem("Bottom", QVariant(4));
 	m_tiletype_combo->addItem("Middle", QVariant(5));
+	m_tiletype_combo->addItem("Top-Left", QVariant(6));
+	m_tiletype_combo->addItem("Top-Right", QVariant(7));
+	m_tiletype_combo->addItem("Bottom-Left", QVariant(8));
+	m_tiletype_combo->addItem("Bottom-Right", QVariant(9));
 	m_tiletype_combo->setFocusPolicy(Qt::NoFocus);
 	connect(m_tiletype_combo, SIGNAL(currentIndexChanged(int)), m_widget, SLOT(setTileType(int)));
 

@@ -67,6 +67,10 @@ void TilesetWidget::add(int tile_id)
 			case Tilemap::TILE_TOP: numtop = 3; break;
 			case Tilemap::TILE_BOTTOM: numtop = 3; break;
 			case Tilemap::TILE_MID: numtop = 4; break;
+			case Tilemap::TILE_CORNER_TL: numtop = 3; break;
+			case Tilemap::TILE_CORNER_TR: numtop = 3; break;
+			case Tilemap::TILE_CORNER_BL: numtop = 3; break;
+			case Tilemap::TILE_CORNER_BR: numtop = 3; break;
 		}
 
 		Thumbnail::fromTileType(image, m_texture, tile->top_points, numtop, tile->side_points, 4, tile->type);
@@ -131,6 +135,10 @@ void TilesetWidget::setTexture(QImage* texture)
 				case Tilemap::TILE_TOP: numtop = 3; break;
 				case Tilemap::TILE_BOTTOM: numtop = 3; break;
 				case Tilemap::TILE_MID: numtop = 4; break;
+				case Tilemap::TILE_CORNER_TL: numtop = 3; break;
+				case Tilemap::TILE_CORNER_TR: numtop = 3; break;
+				case Tilemap::TILE_CORNER_BL: numtop = 3; break;
+				case Tilemap::TILE_CORNER_BR: numtop = 3; break;
 			}
 
 			Thumbnail::fromTileType(image, m_texture, tile->top_points, numtop, tile->side_points, 4, tile->type);

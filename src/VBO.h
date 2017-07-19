@@ -11,10 +11,10 @@ public:
 	VBO(int capacity);
 	~VBO();
 
-	void makeTri(int index, const glm::vec3& p1, const glm::vec3& p2, const glm::vec3& p3,
-							const glm::vec2& uv1, const glm::vec2& uv2, const glm::vec2& uv3, unsigned int color);
-	void makeQuad(int index, const glm::vec3& p1, const glm::vec3& p2, const glm::vec3& p3, const glm::vec3& p4,
-							 const glm::vec2& uv1, const glm::vec2& uv2, const glm::vec2& uv3, const glm::vec2& uv4, unsigned int color);
+	int makeTri(int index, const glm::vec3& p1, const glm::vec3& p2, const glm::vec3& p3,
+				const glm::vec2& uv1, const glm::vec2& uv2, const glm::vec2& uv3, unsigned int color);
+	int makeQuad(int index, const glm::vec3& p1, const glm::vec3& p2, const glm::vec3& p3, const glm::vec3& p4,
+				const glm::vec2& uv1, const glm::vec2& uv2, const glm::vec2& uv3, const glm::vec2& uv4, unsigned int color);
 	void degenTri(int index);
 	void degenTris(int index, int num);
 	static int getVertexSize();
