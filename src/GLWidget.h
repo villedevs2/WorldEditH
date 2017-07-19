@@ -109,7 +109,7 @@ private:
 	void renderEditMode(QPainter& painter);
 	void renderMoveMode(QPainter& painter);
 	void renderOtherObjects(QPainter& painter);
-	void renderTilemapExtras(QPainter& painter);
+	void renderTilemapPointer(QPainter& painter);
 	void renderEdgeData(QPainter& painter);
 	void selectObject(int object);
 	void deselectObject();

@@ -1912,7 +1912,7 @@ void GLWidget::renderOtherObjects(QPainter& painter)
 	}
 }
 
-void GLWidget::renderTilemapExtras(QPainter& painter)
+void GLWidget::renderTilemapPointer(QPainter& painter)
 {
 	QBrush brush = QBrush(QColor(224, 150, 0));
 
@@ -1942,28 +1942,135 @@ void GLWidget::renderTilemapExtras(QPainter& painter)
 		{
 			xxs += tile_width / 2;
 			xxe += tile_width / 2;
-	//		yys += m_tilemap_height / 2;
-	//		yye += m_tilemap_height / 2;
+		}
+
+		Tilemap::TileType brush_type = Tilemap::TILE_FULL;
+
+		if (m_tile_brush >= 0)
+		{
+			const Tilemap::Tile* tile = m_level->getTile(m_tile_brush);
+			brush_type = tile->type;
 		}
 
 		QPoint pts[6];
 		glm::vec2 tltl = toScreenCoords(glm::vec2(xxs, yys));
 		glm::vec2 brbr = toScreenCoords(glm::vec2(xxe, yye));
 
+
+		float txl = tltl.x;
+		float txm = tltl.x + (brbr.x - tltl.x) * 0.5f;
+		float txr = brbr.x;
+		float ty1 = tltl.y;
+		float ty2 = tltl.y + (brbr.y - tltl.y) * (15.0 / 70.0);
+		float ty3 = tltl.y + (brbr.y - tltl.y) * (35.0 / 70.0);
+		float ty4 = tltl.y + (brbr.y - tltl.y) * (50.0 / 70.0);
+		
+		/*
 		pts[0] = QPoint(tltl.x,
-			tltl.y + (brbr.y - tltl.y) * (15.0 / 70.0));
+						tltl.y + (brbr.y - tltl.y) * (15.0 / 70.0));
 		pts[1] = QPoint(tltl.x,
-			tltl.y + (brbr.y - tltl.y) * (35.0 / 70.0));
+						tltl.y + (brbr.y - tltl.y) * (35.0 / 70.0));
 		pts[2] = QPoint(tltl.x + (brbr.x - tltl.x) * 0.5,
-			tltl.y + (brbr.y - tltl.y) * (50.0 / 70.0));
+						tltl.y + (brbr.y - tltl.y) * (50.0 / 70.0));
 		pts[3] = QPoint(brbr.x,
-			tltl.y + (brbr.y - tltl.y) * (35.0 / 70.0));
+						tltl.y + (brbr.y - tltl.y) * (35.0 / 70.0));
 		pts[4] = QPoint(brbr.x,
-			tltl.y + (brbr.y - tltl.y) * (15.0 / 70.0));
+						tltl.y + (brbr.y - tltl.y) * (15.0 / 70.0));
 		pts[5] = QPoint(tltl.x + (brbr.x - tltl.x) * 0.5,
-			tltl.y);
+						tltl.y);
 
 		painter.drawPolygon(pts, 6);
+		*/
+
+		switch (brush_type)
+		{
+			case Tilemap::TILE_FULL:
+			{
+				pts[0] = QPoint(txl, ty2);
+				pts[1] = QPoint(txl, ty3);
+				pts[2] = QPoint(txm, ty4);
+				pts[3] = QPoint(txr, ty3);
+				pts[4] = QPoint(txr, ty2);
+				pts[5] = QPoint(txm, ty1);
+				painter.drawPolygon(pts, 6);
+				break;
+			}
+			case Tilemap::TILE_LEFT:
+			{
+				pts[0] = QPoint(txl, ty2);
+				pts[1] = QPoint(txl, ty3);
+				pts[2] = QPoint(txm, ty4);
+				pts[3] = QPoint(txm, ty1);
+				painter.drawPolygon(pts, 4);
+				break;
+			}
+			case Tilemap::TILE_RIGHT:
+			{
+				pts[0] = QPoint(txm, ty1);
+				pts[1] = QPoint(txm, ty4);
+				pts[2] = QPoint(txr, ty3);
+				pts[3] = QPoint(txr, ty2);
+				painter.drawPolygon(pts, 4);
+				break;
+			}
+			case Tilemap::TILE_TOP:
+			{
+				pts[0] = QPoint(txl, ty2);
+				pts[1] = QPoint(txr, ty2);
+				pts[2] = QPoint(txm, ty1);
+				painter.drawPolygon(pts, 3);
+				break;
+			}
+			case Tilemap::TILE_BOTTOM:
+			{
+				pts[0] = QPoint(txl, ty3);
+				pts[1] = QPoint(txm, ty4);
+				pts[2] = QPoint(txr, ty3);
+				painter.drawPolygon(pts, 3);
+				break;
+			}
+			case Tilemap::TILE_MID:
+			{
+				pts[0] = QPoint(txl, ty2);
+				pts[1] = QPoint(txl, ty3);
+				pts[2] = QPoint(txr, ty3);
+				pts[3] = QPoint(txr, ty2);
+				painter.drawPolygon(pts, 4);
+				break;
+			}
+			case Tilemap::TILE_CORNER_TL:
+			{
+				pts[0] = QPoint(txm, ty1);
+				pts[1] = QPoint(txl, ty2);
+				pts[2] = QPoint(txl, ty3);
+				painter.drawPolygon(pts, 3);
+				break;
+			}
+			case Tilemap::TILE_CORNER_TR:
+			{
+				pts[0] = QPoint(txm, ty1);
+				pts[1] = QPoint(txr, ty3);
+				pts[2] = QPoint(txr, ty2);
+				painter.drawPolygon(pts, 3);
+				break;
+			}
+			case Tilemap::TILE_CORNER_BL:
+			{
+				pts[0] = QPoint(txl, ty2);
+				pts[1] = QPoint(txl, ty3);
+				pts[2] = QPoint(txm, ty4);
+				painter.drawPolygon(pts, 3);
+				break;
+			}
+			case Tilemap::TILE_CORNER_BR:
+			{
+				pts[0] = QPoint(txm, ty4);
+				pts[1] = QPoint(txr, ty3);
+				pts[2] = QPoint(txr, ty2);
+				painter.drawPolygon(pts, 3);
+				break;
+			}
+		}
 	}
 }
 
@@ -2188,7 +2295,7 @@ void GLWidget::paintGL()
 
 	renderOtherObjects(painter);
 
-	renderTilemapExtras(painter);
+	renderTilemapPointer(painter);
 	renderEdgeData(painter);
 
 
