@@ -1,11 +1,11 @@
 Homestar Project Binary File Format
-v1.1 / 02.07.2017
+v1.3 / 19.07.2017
 
 Header
 ------
 
 4 bytes		| Format ID (HSPF) 0x48535046
-4 bytes		| Header version 0x10002
+4 bytes		| Header version 0x10003
 n bytes		| Texture atlas name (null-terminated)
 
 16x 4 bytes	| Customs colors (16x 24-bit RGB)
@@ -16,9 +16,8 @@ n bytes		| Object structures
 4 bytes		| Num of tiles
 n bytes		| Tile structures
 
-4 bytes		| Tilemap width
-4 bytes		| Tilemap height
-n bytes		| Tilemap data [4 bytes * width * height]
+4 bytes		| Num of buckets
+n bytes		| Buckets
 
 
 Object structure
@@ -46,3 +45,10 @@ n bytes		| Tile name (null-terminated)
 n bytes		| Top UVs 4-6x [2 floats: U, V]
 n bytes		| Side UVs 4x [2 floats: U, V]
 4 bytes		| Tile color
+
+Bucket structure
+----------------
+
+4 bytes		| Bucket X-coordinate
+4 bytes		| Bucket Y-coordinate
+64x 4 bytes	| Tile data [8x8] (16 bits: tile, 8 bits: Z)

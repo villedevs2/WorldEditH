@@ -50,7 +50,6 @@ public:
 	struct Bucket
 	{
 		unsigned int* map;
-		int vb_slot;
 		VBO* tiles;
 		VBO* preview;
 		uint64_t coverage;

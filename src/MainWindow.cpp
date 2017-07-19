@@ -1870,7 +1870,7 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 	BinaryFile input;
 
 	const unsigned int hspf_id = 0x48535046;
-	const unsigned int hspf_version = 0x10002;
+	const unsigned int hspf_version = 0x10003;
 	
 	Level::Object::Param params[Level::Object::NUM_PARAMS];
 	QString object_name = "";
@@ -1937,7 +1937,6 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 
 			object_name = QString(buf);
 
-			int objid = input.read_dword();
 			int objtype = input.read_dword();
 			int objz = input.read_dword();
 
@@ -2050,25 +2049,28 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 
 		// ----------------
 
+		// buckets
+		int num_buckets = input.read_dword();
 
-		// TODO: put to buckets
-
-		/*
-		int tilemap_width = input.read_dword();
-		int tilemap_height = input.read_dword();
-
-		emit m_glwidget->setTilemapConfig(tilemap_width, tilemap_height);
-		m_level->setTilemapSize(tilemap_width, tilemap_height);
-
-		for (int y=0; y < tilemap_height; y++)
+		for (int i = 0; i < num_buckets; i++)
 		{
-			for (int x=0; x < tilemap_width; x++)
+			int bucket_x = input.read_dword() * Tilemap::BUCKET_WIDTH;
+			int bucket_y = input.read_dword() * Tilemap::BUCKET_HEIGHT;
+
+			for (int y = 0; y < Tilemap::BUCKET_HEIGHT; y++)
 			{
-				int data = input.read_dword();
-				m_level->editTilemapRaw(x, y, data);
+				for (int x = 0; x < Tilemap::BUCKET_WIDTH; x++)
+				{
+					unsigned int data = input.read_dword();
+
+					int tile = data & Tilemap::TILE_MASK;
+					int z = (data & Tilemap::Z_MASK) >> Tilemap::Z_SHIFT;
+
+					m_level->editTilemapTile(bucket_x + x, bucket_y + y, tile);
+					m_level->editTilemapZ(bucket_x + x, bucket_y + y, z);
+				}
 			}
 		}
-		*/
 
 
 		// ------------------------
@@ -2118,7 +2120,7 @@ bool MainWindow::writeBinaryProjectFile(QString& filename)
 	BinaryFile output;
 
 	const char hspf_id[4] = { 0x48, 0x53, 0x50, 0x46 };
-	const unsigned int hspf_version = 0x10002;
+	const unsigned int hspf_version = 0x10003;
 
 	int num_objects = m_level->numObjects();
 
@@ -2167,14 +2169,14 @@ bool MainWindow::writeBinaryProjectFile(QString& filename)
 			}
 			output.write_byte(0);	// null terminator
 
-			// id
-			output.write_dword(object->getId());
-
 			// type
 			output.write_dword(object->getType());
 
 			// z
 			output.write_dword(object->getZ());
+
+			// color
+			output.write_dword(object->getColor());
 
 			// num points
 			output.write_dword(num_points);
@@ -2253,27 +2255,34 @@ bool MainWindow::writeBinaryProjectFile(QString& filename)
 			output.write_dword(tile->color);
 		}
 
-		// tilemap
+		// buckets
+		std::vector<Tilemap::Bucket*> buckets;
 
-		// tilemap width
-
-		// TODO: put to buckets
-
-		/*
-		output.write_dword(m_level->getTilemapWidth());
-
-		// tilemap height
-		output.write_dword(m_level->getTilemapHeight());
-
-		// tilemap data
-		for (int j=0; j < m_level->getTilemapHeight(); j++)
+		int total_buckets = (Tilemap::AREA_WIDTH / Tilemap::BUCKET_WIDTH) * (Tilemap::AREA_HEIGHT / Tilemap::BUCKET_HEIGHT);
+		for (int i = 0; i < total_buckets; i++)
 		{
-			for (int i=0; i < m_level->getTilemapWidth(); i++)
+			Tilemap::Bucket* b = m_level->getTileBucket(i);
+			if (b != nullptr)
 			{
-				output.write_dword(m_level->readTilemapRaw(i, j));
+				buckets.push_back(b);
 			}
 		}
-		*/
+
+		// num buckets
+		output.write_dword(buckets.size());
+
+		for (int i = 0; i < buckets.size(); i++)
+		{
+			Tilemap::Bucket* b = buckets.at(i);
+			output.write_dword(b->x);
+			output.write_dword(b->y);
+
+			for (int t = 0; t < (Tilemap::BUCKET_WIDTH * Tilemap::BUCKET_HEIGHT); t++)
+			{
+				unsigned int tiledata = b->map[t];
+				output.write_dword(tiledata);
+			}
+		}
 
 		/*
 		std::vector<std::vector<int>> ptlist;
