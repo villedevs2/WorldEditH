@@ -793,6 +793,11 @@ bool MainWindow::edgify(std::vector<std::vector<int>>& ptlist)
 		int y;
 	};
 
+	QProgressDialog progress("Edgifying...", "Cancel", 0, 5, this);
+	progress.setWindowModality(Qt::WindowModal);
+	progress.setValue(0);
+	progress.setMinimumDuration(0);
+
 	FILE *fout = fopen("edgifylog.txt", "wt");
 
 	int tm_width = Tilemap::AREA_WIDTH;
@@ -808,303 +813,323 @@ bool MainWindow::edgify(std::vector<std::vector<int>>& ptlist)
 		points[i].con2 = -1;
 	}
 
-	for (int y = 0; y < tm_height; y++)
+	// step 1
+	progress.setValue(1);
+
+	int num_buckets = (Tilemap::AREA_WIDTH / Tilemap::BUCKET_WIDTH) * (Tilemap::AREA_HEIGHT / Tilemap::BUCKET_HEIGHT);
+
+	for (int b = 0; b < num_buckets; b++)
 	{
-		for (int x = 0; x < tm_width; x++)
+		Tilemap::Bucket* bucket = m_level->getTileBucket(b);
+		if (bucket != nullptr)
 		{
-			int ti = m_level->readTilemapTile(x, y);
-			const Tilemap::Tile* tile = nullptr;
-			if (ti != Tilemap::TILE_EMPTY)
+
+			for (int y = 0; y < Tilemap::BUCKET_HEIGHT; y++)
 			{
-				tile = m_level->getTile(ti);
-
-				bool odd = (y & 1) != 0;
-
-				/*
-				coord_pair topleft;
-				coord_pair topright;
-				coord_pair left;
-				coord_pair right;
-				coord_pair botleft;
-				coord_pair botright;
-
-				left.x = x - 1;
-				left.y = y;
-				right.x = x + 1;
-				right.y = y;
-
-				if (odd)
+				for (int x = 0; x < Tilemap::BUCKET_WIDTH; x++)
 				{
-					topleft.x = x;
-					topleft.y = y - 1;
-					topright.x = x + 1;
-					topright.y = y - 1;
-					botleft.x = x;
-					botleft.y = y + 1;
-					botright.x = x + 1;
-					botright.y = y + 1;
-				}
-				else
-				{
-					topleft.x = x - 1;
-					topleft.y = y - 1;
-					topright.x = x;
-					topright.y = y - 1;
-					botleft.x = x - 1;
-					botleft.y = y + 1;
-					botright.x = x;
-					botright.y = y + 1;
-				}
-				*/
+					int ix = (bucket->x * Tilemap::BUCKET_WIDTH) + x;
+					int iy = (bucket->y * Tilemap::BUCKET_HEIGHT) + y;
 
-				int p[6];
-
-				coord_pair connection[6];
-
-				connection[0].x = x - 1;
-				connection[0].y = y;
-				connection[3].x = x + 1;
-				connection[3].y = y;
-
-				if (odd)
-				{
-					connection[1].x = x;		// top left
-					connection[1].y = y - 1;
-					connection[2].x = x + 1;	// top right
-					connection[2].y = y - 1;
-					connection[5].x = x;		// bottom left
-					connection[5].y = y + 1;
-					connection[4].x = x + 1;	// bottom right
-					connection[4].y = y + 1;
-
-					p[0] = (y * tm_width) + (x * 2) + 1;
-					p[1] = (y * tm_width) + (x * 2) + 2;
-					p[2] = (y * tm_width) + (x * 2) + 3;
-					p[3] = ((y+1) * tm_width) + (x * 2) + 3;
-					p[4] = ((y+1) * tm_width) + (x * 2) + 2;
-					p[5] = ((y+1) * tm_width) + (x * 2) + 1;
-				}
-				else
-				{
-					connection[1].x = x - 1;	// top left
-					connection[1].y = y - 1;
-					connection[2].x = x;		// top right
-					connection[2].y = y - 1;
-					connection[5].x = x - 1;	// bottom left
-					connection[5].y = y + 1;
-					connection[4].x = x;		// bottom right
-					connection[4].y = y + 1;
-
-					p[0] = (y * tm_width) + (x * 2) + 0;
-					p[1] = (y * tm_width) + (x * 2) + 1;
-					p[2] = (y * tm_width) + (x * 2) + 2;
-					p[3] = ((y + 1) * tm_width) + (x * 2) + 2;
-					p[4] = ((y + 1) * tm_width) + (x * 2) + 1;
-					p[5] = ((y + 1) * tm_width) + (x * 2) + 0;
-				}
-
-				int tilecon[6] = { 0, 0, 0, 0, 0, 0 };
-
-				for (int i = 0; i < 6; i++)
-				{
-					int tx = connection[i].x;
-					int ty = connection[i].y;
-
-					tilecon[i] = 0;
-
-					if (tx >= 0 && ty >= 0 && tx < Tilemap::AREA_WIDTH && ty < Tilemap::AREA_HEIGHT)
+					int ti = m_level->readTilemapTile(ix, iy);
+					const Tilemap::Tile* tile = nullptr;
+					if (ti != Tilemap::TILE_EMPTY)
 					{
-						int ctile = m_level->readTilemapTile(tx, ty);
-						if (ctile != Tilemap::TILE_EMPTY)
-						{
-							const Tilemap::Tile* tt = m_level->getTile(ctile);
+						tile = m_level->getTile(ti);
 
-							switch (i)
+						bool odd = (iy & 1) != 0;
+
+						/*
+						coord_pair topleft;
+						coord_pair topright;
+						coord_pair left;
+						coord_pair right;
+						coord_pair botleft;
+						coord_pair botright;
+
+						left.x = x - 1;
+						left.y = y;
+						right.x = x + 1;
+						right.y = y;
+
+						if (odd)
+						{
+							topleft.x = x;
+							topleft.y = y - 1;
+							topright.x = x + 1;
+							topright.y = y - 1;
+							botleft.x = x;
+							botleft.y = y + 1;
+							botright.x = x + 1;
+							botright.y = y + 1;
+						}
+						else
+						{
+							topleft.x = x - 1;
+							topleft.y = y - 1;
+							topright.x = x;
+							topright.y = y - 1;
+							botleft.x = x - 1;
+							botleft.y = y + 1;
+							botright.x = x;
+							botright.y = y + 1;
+						}
+						*/
+
+						int p[6];
+
+						coord_pair connection[6];
+
+						connection[0].x = ix - 1;
+						connection[0].y = iy;
+						connection[3].x = ix + 1;
+						connection[3].y = iy;
+
+						if (odd)
+						{
+							connection[1].x = ix;		// top left
+							connection[1].y = iy - 1;
+							connection[2].x = ix + 1;	// top right
+							connection[2].y = iy - 1;
+							connection[5].x = ix;		// bottom left
+							connection[5].y = iy + 1;
+							connection[4].x = ix + 1;	// bottom right
+							connection[4].y = iy + 1;
+
+							p[0] = (iy * tm_width) + (ix * 2) + 1;
+							p[1] = (iy * tm_width) + (ix * 2) + 2;
+							p[2] = (iy * tm_width) + (ix * 2) + 3;
+							p[3] = ((iy + 1) * tm_width) + (ix * 2) + 3;
+							p[4] = ((iy + 1) * tm_width) + (ix * 2) + 2;
+							p[5] = ((iy + 1) * tm_width) + (ix * 2) + 1;
+						}
+						else
+						{
+							connection[1].x = ix - 1;	// top left
+							connection[1].y = iy - 1;
+							connection[2].x = ix;		// top right
+							connection[2].y = iy - 1;
+							connection[5].x = ix - 1;	// bottom left
+							connection[5].y = iy + 1;
+							connection[4].x = ix;		// bottom right
+							connection[4].y = iy + 1;
+
+							p[0] = (iy * tm_width) + (ix * 2) + 0;
+							p[1] = (iy * tm_width) + (ix * 2) + 1;
+							p[2] = (iy * tm_width) + (ix * 2) + 2;
+							p[3] = ((iy + 1) * tm_width) + (ix * 2) + 2;
+							p[4] = ((iy + 1) * tm_width) + (ix * 2) + 1;
+							p[5] = ((iy + 1) * tm_width) + (ix * 2) + 0;
+						}
+
+						int tilecon[6] = { 0, 0, 0, 0, 0, 0 };
+
+						for (int i = 0; i < 6; i++)
+						{
+							int tx = connection[i].x;
+							int ty = connection[i].y;
+
+							tilecon[i] = 0;
+
+							if (tx >= 0 && ty >= 0 && tx < Tilemap::AREA_WIDTH && ty < Tilemap::AREA_HEIGHT)
 							{
-								case 0:		// LEFT
+								int ctile = m_level->readTilemapTile(tx, ty);
+								if (ctile != Tilemap::TILE_EMPTY)
 								{
-									if ((tt->side_bits & Tilemap::SIDE_RIGHT) && (tile->side_bits & Tilemap::SIDE_LEFT))
-										tilecon[i] = 1;
-									break;
-								}
-								case 1:		// TOPLEFT
-								{
-									if ((tt->side_bits & Tilemap::SIDE_BOT_RIGHT) && (tile->side_bits & Tilemap::SIDE_TOP_LEFT))
-										tilecon[i] = 1;
-									break;
-								}
-								case 2:		// TOPRIGHT
-								{
-									if ((tt->side_bits & Tilemap::SIDE_BOT_LEFT) && (tile->side_bits & Tilemap::SIDE_TOP_RIGHT))
-										tilecon[i] = 1;
-									break;
-								}
-								case 3:		// RIGHT
-								{
-									if ((tt->side_bits & Tilemap::SIDE_LEFT) && (tile->side_bits & Tilemap::SIDE_RIGHT))
-										tilecon[i] = 1;
-									break;
-								}
-								case 4:		// BOTTOM RIGHT
-								{
-									if ((tt->side_bits & Tilemap::SIDE_TOP_LEFT) && (tile->side_bits & Tilemap::SIDE_BOT_RIGHT))
-										tilecon[i] = 1;
-									break;
-								}
-								case 5:		// BOTTOM LEFT
-								{
-									if ((tt->side_bits & Tilemap::SIDE_TOP_RIGHT) && (tile->side_bits & Tilemap::SIDE_BOT_LEFT))
-										tilecon[i] = 1;
-									break;
+									const Tilemap::Tile* tt = m_level->getTile(ctile);
+
+									switch (i)
+									{
+									case 0:		// LEFT
+									{
+										if ((tt->side_bits & Tilemap::SIDE_RIGHT) && (tile->side_bits & Tilemap::SIDE_LEFT))
+											tilecon[i] = 1;
+										break;
+									}
+									case 1:		// TOPLEFT
+									{
+										if ((tt->side_bits & Tilemap::SIDE_BOT_RIGHT) && (tile->side_bits & Tilemap::SIDE_TOP_LEFT))
+											tilecon[i] = 1;
+										break;
+									}
+									case 2:		// TOPRIGHT
+									{
+										if ((tt->side_bits & Tilemap::SIDE_BOT_LEFT) && (tile->side_bits & Tilemap::SIDE_TOP_RIGHT))
+											tilecon[i] = 1;
+										break;
+									}
+									case 3:		// RIGHT
+									{
+										if ((tt->side_bits & Tilemap::SIDE_LEFT) && (tile->side_bits & Tilemap::SIDE_RIGHT))
+											tilecon[i] = 1;
+										break;
+									}
+									case 4:		// BOTTOM RIGHT
+									{
+										if ((tt->side_bits & Tilemap::SIDE_TOP_LEFT) && (tile->side_bits & Tilemap::SIDE_BOT_RIGHT))
+											tilecon[i] = 1;
+										break;
+									}
+									case 5:		// BOTTOM LEFT
+									{
+										if ((tt->side_bits & Tilemap::SIDE_TOP_RIGHT) && (tile->side_bits & Tilemap::SIDE_BOT_LEFT))
+											tilecon[i] = 1;
+										break;
+									}
+									}
 								}
 							}
 						}
+
+						fprintf(fout, "Tile %d, %d: L %d, TL %d, TR %d, R: %d, BR: %d, BL: %d\n", x, y, tilecon[0], tilecon[1], tilecon[2], tilecon[3], tilecon[4], tilecon[5]);
+
+						/*		p1
+							p0		p2
+							p5		p3
+								p4
+						*/
+
+						switch (tile->type)
+						{
+							case Tilemap::TILE_FULL:
+							{
+								// LEFT
+								if (tilecon[0] == 0)
+								{
+									edgify_fill_point(fout, points, p[0], p[5]);
+								}
+								// TOPLEFT
+								if (tilecon[1] == 0)
+								{
+									edgify_fill_point(fout, points, p[0], p[1]);
+								}
+								// TOPRIGHT
+								if (tilecon[2] == 0)
+								{
+									edgify_fill_point(fout, points, p[1], p[2]);
+								}
+								// RIGHT
+								if (tilecon[3] == 0)
+								{
+									edgify_fill_point(fout, points, p[2], p[3]);
+								}
+								// BOTTOM RIGHT
+								if (tilecon[4] == 0)
+								{
+									edgify_fill_point(fout, points, p[3], p[4]);
+								}
+								// BOTTOM LEFT
+								if (tilecon[5] == 0)
+								{
+									edgify_fill_point(fout, points, p[4], p[5]);
+								}
+								break;
+							}
+							case Tilemap::TILE_LEFT:
+							{
+								// LEFT
+								if (tilecon[0] == 0)
+								{
+									edgify_fill_point(fout, points, p[0], p[5]);
+								}
+								// TOPLEFT
+								if (tilecon[1] == 0)
+								{
+									edgify_fill_point(fout, points, p[0], p[1]);
+								}
+								// BOTTOM LEFT
+								if (tilecon[5] == 0)
+								{
+									edgify_fill_point(fout, points, p[4], p[5]);
+								}
+								// always fill mid
+								edgify_fill_point(fout, points, p[4], p[1]);
+								break;
+							}
+							case Tilemap::TILE_RIGHT:
+							{
+								// TOPRIGHT
+								if (tilecon[2] == 0)
+								{
+									edgify_fill_point(fout, points, p[1], p[2]);
+								}
+								// RIGHT
+								if (tilecon[3] == 0)
+								{
+									edgify_fill_point(fout, points, p[2], p[3]);
+								}
+								// BOTTOM RIGHT
+								if (tilecon[4] == 0)
+								{
+									edgify_fill_point(fout, points, p[3], p[4]);
+								}
+								// always fill mid
+								edgify_fill_point(fout, points, p[4], p[1]);
+								break;
+							}
+							case Tilemap::TILE_TOP:
+							{
+								// TOPLEFT
+								if (tilecon[1] == 0)
+								{
+									edgify_fill_point(fout, points, p[0], p[1]);
+								}
+								// TOPRIGHT
+								if (tilecon[2] == 0)
+								{
+									edgify_fill_point(fout, points, p[1], p[2]);
+								}
+								// always fill mid
+								edgify_fill_point(fout, points, p[0], p[2]);
+								break;
+							}
+							case Tilemap::TILE_BOTTOM:
+							{
+								// BOTTOM RIGHT
+								if (tilecon[4] == 0)
+								{
+									edgify_fill_point(fout, points, p[3], p[4]);
+								}
+								// BOTTOM LEFT
+								if (tilecon[5] == 0)
+								{
+									edgify_fill_point(fout, points, p[4], p[5]);
+								}
+								// always fill mid
+								edgify_fill_point(fout, points, p[5], p[3]);
+								break;
+							}
+							case Tilemap::TILE_MID:
+							{
+								// LEFT
+								if (tilecon[0] == 0)
+								{
+									edgify_fill_point(fout, points, p[0], p[5]);
+								}
+								// RIGHT
+								if (tilecon[3] == 0)
+								{
+									edgify_fill_point(fout, points, p[2], p[3]);
+								}
+								// always fill mid
+								edgify_fill_point(fout, points, p[0], p[2]);
+								edgify_fill_point(fout, points, p[5], p[3]);
+								break;
+							}
+						}
+
+						//fprintf(fout, "Tile %d, %d: tl %d, %d, tr %d, %d, bl %d, %d, br %d, %d\n", x, y, topleft.x, topleft.y, topright.x, topright.y, botleft.x, botleft.y, botright.x, botright.y);
 					}
+
 				}
-
-				fprintf(fout, "Tile %d, %d: L %d, TL %d, TR %d, R: %d, BR: %d, BL: %d\n", x, y, tilecon[0], tilecon[1], tilecon[2], tilecon[3], tilecon[4], tilecon[5]);
-
-				/*		p1
-					p0		p2
-					p5		p3
-						p4
-				*/
-
-				switch (tile->type)
-				{
-					case Tilemap::TILE_FULL:
-					{
-						// LEFT
-						if (tilecon[0] == 0)
-						{
-							edgify_fill_point(fout, points, p[0], p[5]);
-						}
-						// TOPLEFT
-						if (tilecon[1] == 0)
-						{
-							edgify_fill_point(fout, points, p[0], p[1]);
-						}
-						// TOPRIGHT
-						if (tilecon[2] == 0)
-						{
-							edgify_fill_point(fout, points, p[1], p[2]);
-						}
-						// RIGHT
-						if (tilecon[3] == 0)
-						{
-							edgify_fill_point(fout, points, p[2], p[3]);
-						}
-						// BOTTOM RIGHT
-						if (tilecon[4] == 0)
-						{
-							edgify_fill_point(fout, points, p[3], p[4]);
-						}
-						// BOTTOM LEFT
-						if (tilecon[5] == 0)
-						{
-							edgify_fill_point(fout, points, p[4], p[5]);
-						}
-						break;
-					}
-					case Tilemap::TILE_LEFT:
-					{
-						// LEFT
-						if (tilecon[0] == 0)
-						{
-							edgify_fill_point(fout, points, p[0], p[5]);
-						}
-						// TOPLEFT
-						if (tilecon[1] == 0)
-						{
-							edgify_fill_point(fout, points, p[0], p[1]);
-						}
-						// BOTTOM LEFT
-						if (tilecon[5] == 0)
-						{
-							edgify_fill_point(fout, points, p[4], p[5]);
-						}
-						// always fill mid
-						edgify_fill_point(fout, points, p[4], p[1]);
-						break;
-					}
-					case Tilemap::TILE_RIGHT:
-					{
-						// TOPRIGHT
-						if (tilecon[2] == 0)
-						{
-							edgify_fill_point(fout, points, p[1], p[2]);
-						}
-						// RIGHT
-						if (tilecon[3] == 0)
-						{
-							edgify_fill_point(fout, points, p[2], p[3]);
-						}
-						// BOTTOM RIGHT
-						if (tilecon[4] == 0)
-						{
-							edgify_fill_point(fout, points, p[3], p[4]);
-						}
-						// always fill mid
-						edgify_fill_point(fout, points, p[4], p[1]);
-						break;
-					}
-					case Tilemap::TILE_TOP:
-					{
-						// TOPLEFT
-						if (tilecon[1] == 0)
-						{
-							edgify_fill_point(fout, points, p[0], p[1]);
-						}
-						// TOPRIGHT
-						if (tilecon[2] == 0)
-						{
-							edgify_fill_point(fout, points, p[1], p[2]);
-						}
-						// always fill mid
-						edgify_fill_point(fout, points, p[0], p[2]);
-						break;
-					}
-					case Tilemap::TILE_BOTTOM:
-					{
-						// BOTTOM RIGHT
-						if (tilecon[4] == 0)
-						{
-							edgify_fill_point(fout, points, p[3], p[4]);
-						}
-						// BOTTOM LEFT
-						if (tilecon[5] == 0)
-						{
-							edgify_fill_point(fout, points, p[4], p[5]);
-						}
-						// always fill mid
-						edgify_fill_point(fout, points, p[5], p[3]);
-						break;
-					}
-					case Tilemap::TILE_MID:
-					{
-						// LEFT
-						if (tilecon[0] == 0)
-						{
-							edgify_fill_point(fout, points, p[0], p[5]);
-						}
-						// RIGHT
-						if (tilecon[3] == 0)
-						{
-							edgify_fill_point(fout, points, p[2], p[3]);
-						}
-						// always fill mid
-						edgify_fill_point(fout, points, p[0], p[2]);
-						edgify_fill_point(fout, points, p[5], p[3]);
-						break;
-					}
-				}
-
-				//fprintf(fout, "Tile %d, %d: tl %d, %d, tr %d, %d, bl %d, %d, br %d, %d\n", x, y, topleft.x, topleft.y, topright.x, topright.y, botleft.x, botleft.y, botright.x, botright.y);
 			}
-
 		}
 	}
 
+	// step 2
+	progress.setValue(2);
+
+	/*
 	for (int j = 0; j < tm_height; j++)
 	{
 		for (int i = 0; i < tm_width; i++)
@@ -1116,7 +1141,10 @@ bool MainWindow::edgify(std::vector<std::vector<int>>& ptlist)
 			}
 		}
 	}
+	*/
 
+	// step 3
+	progress.setValue(3);
 	
 
 	ptlist.clear();
@@ -1138,6 +1166,36 @@ bool MainWindow::edgify(std::vector<std::vector<int>>& ptlist)
 				break;
 			}
 		}
+		/*
+		for (int b = 0; b < num_buckets; b++)
+		{
+			Tilemap::Bucket* bucket = m_level->getTileBucket(b);
+			if (bucket != nullptr)
+			{
+				int ix = (bucket->x * Tilemap::BUCKET_WIDTH);
+				int iy = (bucket->y * Tilemap::BUCKET_HEIGHT);
+
+				for (int y = iy; y < iy + Tilemap::BUCKET_HEIGHT; y++)
+				{
+					for (int x = ix; x < ix + Tilemap::BUCKET_WIDTH; x++)
+					{
+						int pi = y * Tilemap::AREA_WIDTH + x;
+						if (points[pi].con1 >= 0 && points[pi].con2 >= 0)
+						{
+							start_found = true;
+							start_point = pi;
+							fprintf(fout, "Found a start point at %d (%d, %d)\n", pi, pi % tm_width, pi / tm_width);
+							goto end_find;
+						}
+					}
+				}
+			}
+		}
+
+		end_find:
+		*/
+
+
 
 		if (start_found)
 		{
@@ -1200,6 +1258,9 @@ bool MainWindow::edgify(std::vector<std::vector<int>>& ptlist)
 		}
 	} while (start_found);
 
+	// step 4
+	progress.setValue(4);
+
 	for (int loop = 0; loop < ptlist.size(); loop++)
 	{
 		fprintf(fout, "Loop %d: Points in loop: ", loop);
@@ -1209,6 +1270,9 @@ bool MainWindow::edgify(std::vector<std::vector<int>>& ptlist)
 		}
 		fprintf(fout, "\n");
 	}
+
+	// step 5
+	progress.setValue(5);
 
 
 
@@ -1291,10 +1355,10 @@ void MainWindow::createActions()
 	m_snapGridAction->setShortcut(Qt::Key_H);
 	connect(m_snapGridAction, SIGNAL(triggered()), this, SLOT(snapGrid()));
 
-	m_bgColorAction = new QAction(tr("Select background color"), this);
+	m_bgColorAction = new QAction(tr("Select background color..."), this);
 	connect(m_bgColorAction, SIGNAL(triggered()), this, SLOT(setBGColor()));
 
-	m_levelConfAction = new QAction(tr("Level settings"), this);
+	m_levelConfAction = new QAction(tr("Level settings..."), this);
 	connect(m_levelConfAction, SIGNAL(triggered()), this, SLOT(levelConfig()));
 
 	m_zbaseLabel = new QLabel(tr("Z Base:"));
@@ -1330,17 +1394,17 @@ void MainWindow::createActions()
 
 
 	// texture menu
-	m_loadTexAction = new QAction(tr("Load Texture"), this);
+	m_loadTexAction = new QAction(tr("Load Texture..."), this);
 	m_loadTexAction->setStatusTip(tr("Load new texture"));
 	connect(m_loadTexAction, SIGNAL(triggered()), this, SLOT(loadTexture()));
 
 
 	// prefab menu
-	m_loadPrefabsAction = new QAction(tr("Load Prefabs"), this);
+	m_loadPrefabsAction = new QAction(tr("Load Prefabs..."), this);
 	m_loadPrefabsAction->setStatusTip(tr("Load prefabs"));
 	connect(m_loadPrefabsAction, SIGNAL(triggered()), this, SLOT(loadPrefabs()));
 
-	m_savePrefabsAction = new QAction(tr("Save Prefabs"), this);
+	m_savePrefabsAction = new QAction(tr("Save Prefabs..."), this);
 	m_savePrefabsAction->setStatusTip(tr("Save prefabs"));
 	connect(m_savePrefabsAction, SIGNAL(triggered()), this, SLOT(savePrefabs()));
 
@@ -1432,7 +1496,7 @@ void MainWindow::createActions()
 
 
 	// edgify
-	m_edgify_action = new QAction(tr("Edgify"), this);
+	m_edgify_action = new QAction(tr("Edgify..."), this);
 	connect(m_edgify_action, SIGNAL(triggered()), this, SLOT(doEdgify()));
 
 	// clear edgify

@@ -736,3 +736,8 @@ Tilemap::Bucket* Level::getTileBucket(int bx, int by)
 {
 	return m_tilemap->getTileBucket(bx, by);
 }
+
+Tilemap::Bucket* Level::getTileBucket(int index)
+{
+	return m_tilemap->getTileBucket(index);
+}

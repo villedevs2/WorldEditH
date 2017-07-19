@@ -90,6 +90,7 @@ public:
 	float getTileWidth();
 	float getTileHeight();
 	Tilemap::Bucket* getTileBucket(int bx, int by);
+	Tilemap::Bucket* getTileBucket(int index);
 
 private:
 	void tesselateTile(Bucket* bucket, int bx, int by);

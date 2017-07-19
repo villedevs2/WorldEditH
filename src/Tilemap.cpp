@@ -769,3 +769,9 @@ Tilemap::Bucket* Tilemap::getTileBucket(int bx, int by)
 
 	return m_buckets[(by * (AREA_WIDTH / BUCKET_WIDTH)) + bx];
 }
+Tilemap::Bucket* Tilemap::getTileBucket(int index)
+{
+	assert(index >= 0 && index < ((AREA_WIDTH / BUCKET_WIDTH) * (AREA_HEIGHT / BUCKET_HEIGHT)));
+
+	return m_buckets[index];
+}

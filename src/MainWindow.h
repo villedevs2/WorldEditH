@@ -12,6 +12,7 @@
 #include <qkeysequence.h>
 #include <qradiobutton.h>
 #include <qcolordialog.h>
+#include <qprogressdialog.h>
 
 #include "assert.h"
 
