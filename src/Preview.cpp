@@ -206,31 +206,6 @@ void GLPreview::paintGL()
 	glDepthMask(GL_TRUE);
 	
 	
-	/*
-	vbptr = m_vb->getPointer();
-	vbsize = m_vb->getVertexSize();
-	capacity = m_vb->getCapacity();
-
-	if (capacity > 0)
-	{
-		m_level_program->enableAttributeArray(m_level_shader.position);
-		m_level_program->setAttributeArray(m_level_shader.position, (GLfloat*)vbptr, 3, vbsize);
-		m_level_program->enableAttributeArray(m_level_shader.tex_coord);
-		m_level_program->setAttributeArray(m_level_shader.tex_coord, (GLfloat*)vbptr + 3, 2, vbsize);
-		m_level_program->enableAttributeArray(m_level_shader.color);
-		m_level_program->setAttributeArray(m_level_shader.color, GL_UNSIGNED_BYTE, (GLbyte*)vbptr + 20, 4, vbsize);
-
-		glBindTexture(GL_TEXTURE_2D, m_base_tex);
-		glDrawArrays(GL_TRIANGLES, 0, capacity*3);
-
-		m_level_program->disableAttributeArray(m_level_shader.position);
-		m_level_program->disableAttributeArray(m_level_shader.tex_coord);
-		m_level_program->disableAttributeArray(m_level_shader.color);
-	}
-	*/
-
-
-	
 	glBindTexture(GL_TEXTURE_2D, m_base_tex);
 	
 	glm::vec2 tilemap_tl = toLevelCoords(glm::vec2(0, 0));
@@ -286,17 +261,6 @@ void GLPreview::paintGL()
 	painter.endNativePainting();
 
 	/*
-	painter.beginNativePainting();
-
-	// opengl scene rendering
-	// --------------------------------------------------------------------------
-	glDisable(GL_CULL_FACE);
-
-	qglClearColor(QColor(0, 64, 192));
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	painter.endNativePainting();
-	*/
 	{
 		glm::vec2 tl = toLevelCoords(glm::vec2(0, 0));
 		glm::vec2 br = toLevelCoords(glm::vec2(width(), height()));
@@ -316,6 +280,7 @@ void GLPreview::paintGL()
 		painter.drawText(8, 48, tr("TLX: %1, TLY: %2, BRX: %3, BRY: %4").arg(tl.x).arg(tl.y).arg(br.x).arg(br.y));
 		painter.drawText(8, 64, tr("SX: %1, SY: %2").arg(m_scroll.x).arg(m_scroll.y));
 	}
+	*/
 
 	painter.end();
 	doneCurrent();

@@ -171,14 +171,7 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 				vbo3d->makeTri(vbo3d_index++, p1, p5, p4, uv1, uv5, uv4, tiledata->color);
 				vbo3d->makeTri(vbo3d_index++, p1, p4, p3, uv1, uv4, uv3, tiledata->color);
 				vbo3d->makeTri(vbo3d_index++, p1, p3, p2, uv1, uv3, uv2, tiledata->color);
-				/*
-				vbo3d->makeQuad(vbo3d_index + 4, p4, p5, bp5, bp4, suv1, suv2, suv3, suv4, tiledata->color);
-				vbo3d->makeQuad(vbo3d_index + 6, p3, p4, bp4, bp3, suv1, suv2, suv3, suv4, tiledata->color);
-				vbo3d->makeQuad(vbo3d_index + 8, p5, p6, bp6, bp5, suv1, suv2, suv3, suv4, tiledata->color);
-				vbo3d->makeQuad(vbo3d_index + 10, p6, p1, bp1, bp6, suv1, suv2, suv3, suv4, tiledata->color);
-				vbo3d->makeQuad(vbo3d_index + 12, p1, p2, bp2, bp1, suv1, suv2, suv3, suv4, tiledata->color);
-				vbo3d->makeQuad(vbo3d_index + 14, p2, p3, bp3, bp2, suv1, suv2, suv3, suv4, tiledata->color);
-				*/
+
 				render_sides |= RENDER_LEFT;
 				render_sides |= RENDER_TOPLEFT;
 				render_sides |= RENDER_TOPRIGHT;
@@ -202,12 +195,7 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 
 				vbo3d->makeTri(vbo3d_index++, p1, p6, p3, uv1, uv4, uv3, tiledata->color);
 				vbo3d->makeTri(vbo3d_index++, p1, p3, p2, uv1, uv3, uv2, tiledata->color);
-				/*
-				vbo3d->makeQuad(vbo3d_index + 2, p6, p1, bp1, bp6, suv1, suv2, suv3, suv4, tiledata->color);
-				vbo3d->makeQuad(vbo3d_index + 4, p1, p2, bp2, bp1, suv1, suv2, suv3, suv4, tiledata->color);
-				vbo3d->makeQuad(vbo3d_index + 6, p2, p3, bp3, bp2, suv1, suv2, suv3, suv4, tiledata->color);
-				vbo3d->makeQuad(vbo3d_index + 8, p3, p6, bp6, bp3, suv1, suv2, suv3, suv4, tiledata->color);				
-				*/
+
 				render_sides |= RENDER_LEFT;
 				render_sides |= RENDER_TOPLEFT;
 				render_sides |= RENDER_BOTLEFT;
@@ -229,12 +217,7 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 				
 				vbo3d->makeTri(vbo3d_index++, p6, p5, p4, uv2, uv1, uv4, tiledata->color);
 				vbo3d->makeTri(vbo3d_index++, p6, p4, p3, uv2, uv4, uv3, tiledata->color);
-				/*
-				vbo3d->makeQuad(vbo3d_index + 2, p4, p5, bp5, bp4, suv1, suv2, suv3, suv4, tiledata->color);
-				vbo3d->makeQuad(vbo3d_index + 4, p3, p4, bp4, bp3, suv1, suv2, suv3, suv4, tiledata->color);
-				vbo3d->makeQuad(vbo3d_index + 6, p5, p6, bp6, bp5, suv1, suv2, suv3, suv4, tiledata->color);
-				vbo3d->makeQuad(vbo3d_index + 8, p6, p3, bp3, bp6, suv1, suv2, suv3, suv4, tiledata->color);
-				*/
+
 				render_sides |= RENDER_TOPRIGHT;
 				render_sides |= RENDER_RIGHT;
 				render_sides |= RENDER_BOTRIGHT;
@@ -250,11 +233,7 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 				vbotile->makeTri(vbotile_index + 0, tp1, tp6, tp5, uv1, uv3, uv2, tiledata->color);
 
 				vbo3d->makeTri(vbo3d_index++, p1, p6, p5, uv1, uv3, uv2, tiledata->color);
-				/*
-				vbo3d->makeQuad(vbo3d_index + 1, p6, p1, bp1, bp6, suv1, suv2, suv3, suv4, tiledata->color);
-				vbo3d->makeQuad(vbo3d_index + 3, p5, p6, bp6, bp5, suv1, suv2, suv3, suv4, tiledata->color);
-				vbo3d->makeQuad(vbo3d_index + 5, p1, p5, bp5, bp1, suv1, suv2, suv3, suv4, tiledata->color);				
-				*/
+
 				render_sides |= RENDER_TOPLEFT;
 				render_sides |= RENDER_TOPRIGHT;
 				render_sides |= RENDER_MIDTOP;
@@ -269,11 +248,7 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 				vbotile->makeTri(vbotile_index + 0, tp2, tp4, tp3, uv1, uv3, uv2, tiledata->color);
 
 				vbo3d->makeTri(vbo3d_index++, p2, p4, p3, uv1, uv3, uv2, tiledata->color);				
-				/*
-				vbo3d->makeQuad(vbo3d_index + 1, p3, p4, bp4, bp3, suv1, suv2, suv3, suv4, tiledata->color);
-				vbo3d->makeQuad(vbo3d_index + 3, p2, p3, bp3, bp2, suv1, suv2, suv3, suv4, tiledata->color);
-				vbo3d->makeQuad(vbo3d_index + 5, p4, p2, bp2, bp4, suv1, suv2, suv3, suv4, tiledata->color);
-				*/
+
 				render_sides |= RENDER_BOTLEFT;
 				render_sides |= RENDER_BOTRIGHT;
 				render_sides |= RENDER_MIDBOT;
@@ -290,12 +265,7 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 
 				vbo3d->makeTri(vbo3d_index++, p1, p5, p4, uv1, uv4, uv3, tiledata->color);
 				vbo3d->makeTri(vbo3d_index++, p1, p4, p2, uv1, uv3, uv2, tiledata->color);
-				/*
-				vbo3d->makeQuad(vbo3d_index + 2, p4, p5, bp5, bp4, suv1, suv2, suv3, suv4, tiledata->color);
-				vbo3d->makeQuad(vbo3d_index + 4, p1, p2, bp2, bp1, suv1, suv2, suv3, suv4, tiledata->color);
-				vbo3d->makeQuad(vbo3d_index + 6, p2, p4, bp4, bp2, suv1, suv2, suv3, suv4, tiledata->color);
-				vbo3d->makeQuad(vbo3d_index + 8, p5, p1, bp1, bp5, suv1, suv2, suv3, suv4, tiledata->color);				
-				*/
+
 				render_sides |= RENDER_LEFT;
 				render_sides |= RENDER_RIGHT;
 				render_sides |= RENDER_CENTER_TOP;
@@ -413,174 +383,6 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 		if (render_sides & RENDER_CORNER_BR)
 			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p5, p3, bp3, bp5, suv1, suv2, suv3, suv4, tiledata->color);
 	}
-
-
-#if 0
-	const int num_tris = 4;
-
-	assert(x >= 0 && x < AREA_WIDTH);
-	assert(y >= 0 && y < AREA_HEIGHT);
-
-	int bin = (y / BUCKET_HEIGHT) * (AREA_WIDTH / BUCKET_WIDTH) + (x / BUCKET_WIDTH);
-
-	Bucket* bucket = m_buckets[bin];
-	if (bucket != nullptr)
-	{
-		VBO* vbo = bucket->tiles;
-
-		int iy = y % BUCKET_HEIGHT;
-		int ix = x % BUCKET_WIDTH;
-
-		int tile = bucket->map[(iy * BUCKET_WIDTH) + ix] & TILE_MASK;
-
-		int vb_index = ((iy * BUCKET_WIDTH) + ix) * num_tris;
-
-		float tx1 = (float)(x)* m_tile_width;
-		float tx2 = tx1 + m_tile_width;
-		float ty1 = (float)(y) * (m_tile_height / 2);
-		float ty2 = ty1 + (m_tile_height / 2);
-
-		if (y & 1)
-		{
-			tx1 += m_tile_width / 2;
-			tx2 += m_tile_width / 2;
-		}
-
-		float z = 100.0f;
-
-		if (tile == TILE_EMPTY)
-		{
-			// make degen geo
-			for (int i = 0; i < num_tris; i++)
-			{
-				vbo->degenTri(vb_index + i);
-			}
-		}
-		else
-		{
-			Tile& tiledata = m_tiles.at(tile);
-
-			glm::vec2 uv1 = tiledata.top_points[0];
-			glm::vec2 uv2 = tiledata.top_points[1];
-			glm::vec2 uv3 = tiledata.top_points[2];
-			glm::vec2 uv4 = tiledata.top_points[3];
-			glm::vec2 uv5 = tiledata.top_points[4];
-			glm::vec2 uv6 = tiledata.top_points[5];
-
-			/*
-				 p6
-			p1         p5
-			p2         p4
-				 p3
-			*/
-
-			glm::vec3 p1 = glm::vec3(tx1, ty1 + (m_tile_height * (15.0 / 70.0)), z);
-			glm::vec3 p2 = glm::vec3(tx1, ty1 + (m_tile_height * (35.0 / 70.0)), z);
-			glm::vec3 p3 = glm::vec3(tx1 + (m_tile_width * 0.5), ty1 + (m_tile_height * (50.0 / 70.0)), z);
-			glm::vec3 p4 = glm::vec3(tx2, ty1 + (m_tile_height * (35.0 / 70.0)), z);
-			glm::vec3 p5 = glm::vec3(tx2, ty1 + (m_tile_height * (15.0 / 70.0)), z);
-			glm::vec3 p6 = glm::vec3(tx1 + (m_tile_width * 0.5), ty1, z);
-
-			switch (tiledata.type)
-			{
-				case Tilemap::TILE_FULL:
-				{
-					/*
-						   /\
-						  /  \
-						 |    |
-						 |    |
-						  \  /
-						   \/
-					*/
-					vbo->makeTri(vb_index + 0, p1, p6, p5, uv1, uv6, uv5, tiledata.color);
-					vbo->makeTri(vb_index + 1, p1, p5, p4, uv1, uv5, uv4, tiledata.color);
-					vbo->makeTri(vb_index + 2, p1, p4, p3, uv1, uv4, uv3, tiledata.color);
-					vbo->makeTri(vb_index + 3, p1, p3, p2, uv1, uv3, uv2, tiledata.color);
-					break;
-				}
-				case Tilemap::TILE_LEFT:
-				{
-					/*
-						 /|
-						/ |
-					   |  |
-					   |  |
-						\ |
-						 \|
-					*/
-					vbo->makeTri(vb_index + 0, p1, p6, p3, uv1, uv4, uv3, tiledata.color);
-					vbo->makeTri(vb_index + 1, p1, p3, p2, uv1, uv3, uv2, tiledata.color);
-					vbo->degenTri(vb_index + 2);
-					vbo->degenTri(vb_index + 3);
-					break;
-				}
-				case Tilemap::TILE_RIGHT:
-				{
-					/*
-						|\
-						| \
-						|  |
-						|  |
-						| /
-						|/
-					*/
-					vbo->makeTri(vb_index + 0, p6, p5, p4, uv2, uv1, uv4, tiledata.color);
-					vbo->makeTri(vb_index + 1, p6, p4, p3, uv2, uv4, uv3, tiledata.color);
-					vbo->degenTri(vb_index + 2);
-					vbo->degenTri(vb_index + 3);
-					break;
-				}
-				case Tilemap::TILE_TOP:
-				{
-					/*
-						/\
-					   /__\
-					*/
-					vbo->makeTri(vb_index + 0, p1, p6, p5, uv1, uv3, uv2, tiledata.color);
-					vbo->degenTri(vb_index + 1);
-					vbo->degenTri(vb_index + 2);
-					vbo->degenTri(vb_index + 3);
-					break;
-				}
-				case Tilemap::TILE_BOTTOM:
-				{
-					/* ____
-					   \  /
-						\/
-					*/
-					vbo->makeTri(vb_index + 0, p2, p4, p3, uv1, uv3, uv2, tiledata.color);
-					vbo->degenTri(vb_index + 1);
-					vbo->degenTri(vb_index + 2);
-					vbo->degenTri(vb_index + 3);
-					break;
-				}
-				case Tilemap::TILE_MID:
-				{
-					/*______
-					  |    |
-					  |____|
-					*/
-					vbo->makeTri(vb_index + 0, p1, p5, p4, uv1, uv4, uv3, tiledata.color);
-					vbo->makeTri(vb_index + 1, p1, p4, p2, uv1, uv3, uv2, tiledata.color);
-					vbo->degenTri(vb_index + 2);
-					vbo->degenTri(vb_index + 3);
-					break;
-				}
-
-				default:
-				{
-					// make degen geo
-					for (int i = 0; i < num_tris; i++)
-					{
-						vbo->degenTri(vb_index + i);
-					}
-					break;
-				}
-			}
-		}
-	}
-#endif
 }
 
 float* Tilemap::getVBO(int bx, int by)
@@ -707,40 +509,6 @@ void Tilemap::editZ(int x, int y, int z)
 		tesselateTile(m_buckets[bin], ix, iy);
 	}
 }
-
-/*
-unsigned int Tilemap::getRaw(int x, int y)
-{
-	assert(x >= 0 && x < AREA_WIDTH);
-	assert(y >= 0 && y < AREA_HEIGHT);
-
-	int bin = (y / BUCKET_HEIGHT) * (AREA_WIDTH / BUCKET_WIDTH) + (x / BUCKET_WIDTH);
-	if (m_buckets[bin] != nullptr)
-	{
-		int ix = x % BUCKET_WIDTH;
-		int iy = y % BUCKET_HEIGHT;
-		return m_buckets[bin]->map[(iy * BUCKET_WIDTH) + ix];
-	}
-	else
-	{
-		return TILE_EMPTY;
-	}
-}
-
-void Tilemap::editRaw(int x, int y, unsigned int data)
-{
-	assert(x >= 0 && x < AREA_WIDTH);
-	assert(y >= 0 && y < AREA_HEIGHT);
-
-	int bin = (y / BUCKET_HEIGHT) * (AREA_WIDTH / BUCKET_WIDTH) + (x / BUCKET_WIDTH);
-	if (m_buckets[bin] != nullptr)
-	{
-		int ix = x % BUCKET_WIDTH;
-		int iy = y % BUCKET_HEIGHT;
-		tesselateTile(m_buckets[bin], ix, iy);
-	}
-}
-*/
 
 int Tilemap::insertTile(std::string name, PolygonDef* top, PolygonDef* side, unsigned int color, Tilemap::TileType type)
 {

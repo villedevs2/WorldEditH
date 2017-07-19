@@ -2036,7 +2036,7 @@ void GLWidget::paintGL()
 
 	// opengl scene rendering
 	// --------------------------------------------------------------------------
-//	glDisable(GL_CULL_FACE);
+	//glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 
 	qglClearColor(m_bgcolor);
@@ -2286,6 +2286,7 @@ void GLWidget::paintGL()
 		}
 		case MODE_TILEMAP:
 		{
+			/*
 			glm::vec2 tl = toLevelCoords(glm::vec2(0, 0));
 			glm::vec2 br = toLevelCoords(glm::vec2(width(), height()));
 
@@ -2314,6 +2315,7 @@ void GLWidget::paintGL()
 				}
 				painter.drawText(8, 64 + ((j-ys) * 8), str);
 			}
+			*/
 
 			modetext = tr("Tilemap: X: %1, Y: %2").arg(m_tile_selx).arg(m_tile_sely);
 			break;
