@@ -1,20 +1,18 @@
 Homestar Level Format Specification
-v1.0 / 03.07.2017
+v1.3 / 20.07.2017
 
 Header
 ------
 
 4 bytes		| Format ID (HSLX) 0x48534C58
-4 bytes		| Header version (0x00010000)
+4 bytes		| Header version (0x00010003)
 n bytes		| Texture name (null-terminated)
 4 bytes		| Number of objects
 n bytes		| Objects
 4 bytes		| Number of tiles
 n bytes		| Tiles
-4 bytes		| Tilemap width
-4 bytes		| Tilemap height
-4 bytes		| Tilemap tile size (float)
-n bytes		| Tilemap data [4 bytes * width * height]
+4 bytes		| Num of buckets
+n bytes		| Buckets
 4 bytes		| Number of edges
 n bytes		| Edges
 
@@ -51,6 +49,13 @@ Tile
 4 bytes		| Tile type
 n bytes		| Top UV coords [4-6x UV-pairs]
 32 bytes	| Side UV coords [4x UV-pairs]
+
+Bucket
+------
+
+4 bytes		| Bucket X
+4 bytes		| Bucket Y
+64x 3 bytes	| Tile data, 16-bit tile, 8-bit Z
 
 Edge
 ----

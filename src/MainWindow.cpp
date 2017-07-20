@@ -2331,7 +2331,7 @@ void MainWindow::writeLevelFile(QString& filename)
 	BinaryFile output;
 
 	const char hslx_id[4] = { 0x48, 0x53, 0x4c, 0x58 };
-	const unsigned int level_version = 0x10000;
+	const unsigned int level_version = 0x10003;
 
 	int num_objects = m_level->numObjects();
 	int num_tiles = m_level->getNumTiles();
@@ -2461,7 +2461,38 @@ void MainWindow::writeLevelFile(QString& filename)
 		}
 
 		// Tilemap
-		// TODO: put to buckets
+
+		// buckets
+		std::vector<Tilemap::Bucket*> buckets;
+
+		int total_buckets = (Tilemap::AREA_WIDTH / Tilemap::BUCKET_WIDTH) * (Tilemap::AREA_HEIGHT / Tilemap::BUCKET_HEIGHT);
+		for (int i = 0; i < total_buckets; i++)
+		{
+			Tilemap::Bucket* b = m_level->getTileBucket(i);
+			if (b != nullptr)
+			{
+				buckets.push_back(b);
+			}
+		}
+
+		// num buckets
+		output.write_dword(buckets.size());
+
+		for (int i = 0; i < buckets.size(); i++)
+		{
+			Tilemap::Bucket* b = buckets.at(i);
+			output.write_dword(b->x);
+			output.write_dword(b->y);
+
+			for (int t = 0; t < (Tilemap::BUCKET_WIDTH * Tilemap::BUCKET_HEIGHT); t++)
+			{
+				int tile = b->map[t] & Tilemap::TILE_MASK;
+				int z = (b->map[t] & Tilemap::Z_MASK) >> Tilemap::Z_SHIFT;
+				output.write_word(tile);
+				output.write_byte(z);
+			}
+		}
+		
 
 		/*
 		int tm_width = m_level->getTilemapWidth();
