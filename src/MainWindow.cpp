@@ -21,7 +21,6 @@ MainWindow::MainWindow()
 	m_texedit = new TextureEdit(this, m_level);
 
 	m_objedit = new ObjectEdit(this, m_level);
-	m_objfilter = new ObjectFilter(this);
 	
 	m_tiledesigner = new TileDesigner(this, m_level);
 
@@ -93,18 +92,12 @@ MainWindow::MainWindow()
 	
 	connect(m_texedit, SIGNAL(onClose()), this, SLOT(texEditClosed()));
 	connect(m_objedit, SIGNAL(onClose()), this, SLOT(objEditClosed()));
-	connect(m_objfilter, SIGNAL(onClose()), this, SLOT(objFilterClosed()));
 	connect(m_tiledesigner, SIGNAL(onClose()),this, SLOT(tileDesignerClosed()));
 	connect(m_tileset_window, SIGNAL(onClose()), this, SLOT(tilesetWindowClosed()));
 	connect(m_preview, SIGNAL(onClose()), this, SLOT(previewClosed()));
 
 	connect(m_objedit, SIGNAL(onSetCreateType(Level::ObjectType)), m_glwidget, SLOT(setCreateType(Level::ObjectType)));
 	connect(m_objedit, SIGNAL(onSetCreateTriggerType(int)), m_glwidget, SLOT(setCreateTriggerType(int)));
-
-	connect(m_objfilter, SIGNAL(onFilterEnable(int)), this, SLOT(enableFilters(int)));
-	connect(m_objfilter, SIGNAL(onFilterDisable(int)), this, SLOT(disableFilters(int)));
-	connect(m_objfilter, SIGNAL(onDisplayEnable(int)), m_glwidget, SLOT(enableDisplays(int)));
-	connect(m_objfilter, SIGNAL(onDisplayDisable(int)), m_glwidget, SLOT(disableDisplays(int)));
 
 	connect(m_tiledesigner, SIGNAL(onInsertTile(int)), m_tileset_window, SLOT(add(int)));
 
@@ -135,9 +128,6 @@ MainWindow::MainWindow()
 	// object editor positioning
 	m_objedit->move(QPoint(width() + 120, 100));
 
-	// object filter positioning
-	m_objfilter->move(QPoint(width() - 300, 100));
-
 	// object designer positioning
 	m_tiledesigner->move(QPoint(width() - 600, 230));
 
@@ -157,11 +147,6 @@ MainWindow::MainWindow()
 	m_objedit_open = true;
 	m_toggle_objedit->setChecked(true);
 	m_objedit->setHidden(false);
-
-	// obj filter shown by default
-	m_objfilter_open = true;
-	m_toggle_objfilter->setChecked(true);
-	m_objfilter->setHidden(false);
 
 	// tile designer hidden by default
 	m_tiledesigner_open = false;
@@ -202,11 +187,6 @@ MainWindow::MainWindow()
 	// zoom settings
 	m_zoomLevelCombo->setCurrentIndex(3);
 	emit m_glwidget->setZoomLevel(3);
-
-
-	// filter setting
-	emit m_objfilter->setFilters(0xff);
-	emit m_objfilter->setDisplays(0xff);
 
 
 	// default type
@@ -553,28 +533,6 @@ void MainWindow::objEditClosed()
 	m_toggle_objedit->setChecked(false);
 }
 
-void MainWindow::toggleObjFilter()
-{
-	if (m_objfilter_open)
-	{
-		emit m_objfilter->setHidden(true);
-		m_objfilter_open = false;
-		m_toggle_objfilter->setChecked(false);
-	}
-	else
-	{
-		emit m_objfilter->setHidden(false);
-		m_objfilter_open = true;
-		m_toggle_objfilter->setChecked(true);
-	}
-}
-
-void MainWindow::objFilterClosed()
-{
-	m_objfilter_open = false;
-	m_toggle_objfilter->setChecked(false);
-}
-
 void MainWindow::toggleTileDesigner()
 {
 	if (m_tiledesigner_open)
@@ -688,18 +646,6 @@ void MainWindow::snapGrid()
 		m_snap_grid = true;
 
 	m_glwidget->setSnapGrid(m_snap_grid);
-}
-
-void MainWindow::enableFilters(int filter)
-{
-	emit m_objbrowser->enableFilter(filter);
-	emit m_glwidget->enableFilter(filter);
-}
-
-void MainWindow::disableFilters(int filter)
-{
-	emit m_objbrowser->disableFilter(filter);
-	emit m_glwidget->disableFilter(filter);
 }
 
 void MainWindow::setDefType(int type)
@@ -1532,10 +1478,6 @@ void MainWindow::createActions()
 	m_toggle_objedit->setCheckable(true);
 	connect(m_toggle_objedit, SIGNAL(triggered()), this, SLOT(toggleObjEdit()));
 
-	m_toggle_objfilter = new QAction(QIcon("objfilter.png"), tr("Toggle Object Filter"), this);
-	m_toggle_objfilter->setCheckable(true);
-	connect(m_toggle_objfilter, SIGNAL(triggered()), this, SLOT(toggleObjFilter()));
-
 	m_toggle_tiledesigner = new QAction(QIcon("objfilter.png"), tr("Toggle Tile Designer"), this);
 	m_toggle_tiledesigner->setCheckable(true);
 	connect(m_toggle_tiledesigner, SIGNAL(triggered()), this, SLOT(toggleTileDesigner()));
@@ -1691,7 +1633,6 @@ void MainWindow::createToolbars()
 	m_editor_toolbar = addToolBar("Editors");
 	m_editor_toolbar->addAction(m_toggle_texedit);
 	m_editor_toolbar->addAction(m_toggle_objedit);
-	m_editor_toolbar->addAction(m_toggle_objfilter);
 	m_editor_toolbar->addAction(m_toggle_tiledesigner);
 	m_editor_toolbar->addAction(m_toggle_tileset_window);
 	m_editor_toolbar->addAction(m_toggle_preview);

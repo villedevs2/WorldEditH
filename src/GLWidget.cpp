@@ -57,9 +57,6 @@ GLWidget::GLWidget(QWidget *parent, Level* level)
 	m_tile_sely = -1;
 	m_tile_basez = 0.0f;
 
-	m_filter = 0;
-	m_display_filter = 0;
-
 	m_tile_brush = -1;
 
 	m_create_poly_color = 0xffffffff;
@@ -288,32 +285,6 @@ void GLWidget::setCreateTriggerType(int type)
 	m_create_trigger_type = type;
 }
 
-void GLWidget::enableFilter(int filter)
-{
-	if (filter != m_filter)
-		deselectObject();
-
-	m_filter |= filter;
-}
-
-void GLWidget::disableFilter(int filter)
-{
-	if (filter != m_filter)
-		deselectObject();
-
-	m_filter &= ~filter;
-}
-
-void GLWidget::enableDisplays(int filter)
-{
-	m_display_filter |= filter;
-}
-
-void GLWidget::disableDisplays(int filter)
-{
-	m_display_filter &= ~filter;
-}
-
 void GLWidget::setBGColor(QColor color)
 {
 	m_bgcolor = color;
@@ -444,16 +415,6 @@ float GLWidget::makeScalingScale(float scale)
 float GLWidget::makeRotationAngle(float angle)
 {
 	return angle * 500.0f * M_PI / 180.0f;
-}
-
-
-// returns true if the object passes the filtering (= enabled)
-bool GLWidget::filterObject(Level::Object* obj)
-{
-	if (m_filter & (1 << (obj->getType()-1)))
-		return true;
-	else
-		return false;
 }
 
 
@@ -771,7 +732,7 @@ void GLWidget::mouseReleaseEvent(QMouseEvent* event)
 					{
 						Level::Object* obj = m_level->getObject(i);
 						
-						if (obj->pointInside(mouse_p, 0.25f) && filterObject(obj))
+						if (obj->pointInside(mouse_p, 0.25f))
 						{
 							// show the editing polygon if we have an object
 							selectObject(i);
@@ -872,7 +833,7 @@ void GLWidget::mouseReleaseEvent(QMouseEvent* event)
 					{
 						Level::Object* obj = m_level->getObject(i);
 
-						if (obj->pointInside(mouse_p, 0.25f) && filterObject(obj))
+						if (obj->pointInside(mouse_p, 0.25f))
 						{
 							selection.push_back(i);
 						}
@@ -975,7 +936,7 @@ void GLWidget::mousePressEvent(QMouseEvent* event)
 					glm::vec2 mouse_p = toLevelCoords(glm::vec2(mouse_x, mouse_y));
 					Level::Object* obj = m_level->getObject(m_selected_object);
 						
-					if (obj->pointInside(mouse_p, 0.25f) && filterObject(obj))
+					if (obj->pointInside(mouse_p, 0.25f))
 					{
 						m_drag_point = mouse_p;
 
@@ -1334,7 +1295,39 @@ void GLWidget::keyReleaseEvent(QKeyEvent* event)
 
 	if (key == Qt::Key_Home)
 	{
-		m_scroll = glm::vec2(0.0f, 0.0f);
+		if (event->modifiers() & Qt::ControlModifier)		// CTRL + HOME = center to a player start point
+		{
+			// find a player start object
+			int num_objects = m_level->numObjects();
+			for (int i = 0; i < num_objects; i++)
+			{
+				Level::Object* obj = m_level->getObject(i);
+				if (obj->getType() == Level::OBJECT_TYPE_TRIGGER)
+				{
+					Level::Object::Param param = obj->getParam(0);
+					std::string trig_name = m_level->getTriggerName(param.i);
+					if (trig_name == "Player start point")
+					{
+						glm::vec2 bmin = obj->getBoundingMin();
+						glm::vec2 bmax = obj->getBoundingMax();
+						glm::vec2 center = bmin + ((bmax - bmin) * 0.5f);
+
+						glm::vec2 tl = toLevelCoords(glm::vec2(0.0f, 0.0f));
+						glm::vec2 br = toLevelCoords(glm::vec2(width(), height()));
+
+						float screen_width = br.x - tl.x;
+						float screen_height = br.y - tl.y;
+
+						m_scroll = -glm::vec2(center.x - (screen_width / 2), center.y - (screen_height / 2));
+					}
+				}
+			}
+		}
+		else
+		{
+			// HOME = center to origin
+			m_scroll = glm::vec2(0.0f, 0.0f);
+		}
 	}
 
 	update();
@@ -1791,7 +1784,7 @@ void GLWidget::renderOtherObjects(QPainter& painter)
 		glm::vec2 objmin = obj->getBoundingMin();
 		glm::vec2 objmax = obj->getBoundingMax();
 
-		bool render = m_display_filter & (1 << (type-1));
+		bool render = true;
 
 		if (objmax.x > tl.x &&
 			objmax.y > tl.y &&
@@ -2255,13 +2248,7 @@ void GLWidget::paintGL()
 		float* static_geo = m_level->getVBO(vbo);
 		int num_static_verts = m_level->numVBOVerts(vbo);
 
-		bool render = false;
-		switch (vbo)
-		{
-			case Level::VBO_DESTRUCTIBLE:	render = m_display_filter & (1 << (Level::OBJECT_TYPE_DESTRUCTIBLE - 1)); break;
-			case Level::VBO_MOVER:			render = m_display_filter & (1 << (Level::OBJECT_TYPE_MOVER - 1)); break;
-			case Level::VBO_ENEMY:			render = m_display_filter & (1 << (Level::OBJECT_TYPE_ENEMY - 1)); break;
-		}
+		bool render = true;
 
 		if (render && num_static_verts > 0)
 		{

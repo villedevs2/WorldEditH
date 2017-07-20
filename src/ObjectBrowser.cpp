@@ -6,7 +6,6 @@ ObjectBrowser::ObjectBrowser(QWidget* parent, Level* level) : QListWidget(parent
 	connect(this, SIGNAL(itemChanged(QListWidgetItem*)), this, SLOT(itemDataChanged(QListWidgetItem*)));
 
 	m_level = level;
-	m_filter = 0;
 
 	setItemDelegate(new ObjectBrowserDelegate(this));
 }
@@ -69,13 +68,6 @@ void ObjectBrowser::add(int object_id)
 	item->setData(Qt::UserRole + 2, (int)type);
 	item->setFlags(item->flags() | Qt::ItemIsEditable);
 
-	// filter
-	Qt::ItemFlags flags = item->flags();
-	if ((1 << (type - 1)) & m_filter)
-		item->setFlags(flags | Qt::ItemIsEnabled);
-	else
-		item->setFlags(flags & ~Qt::ItemIsEnabled);
-
 	addItem(item);
 }
 
@@ -133,37 +125,4 @@ void ObjectBrowser::select(int object_id)
 void ObjectBrowser::deselect()
 {
 	setCurrentRow(-1);
-}
-
-void ObjectBrowser::filterItems()
-{
-	QList<QListWidgetItem*> list = findItems("*", Qt::MatchWildcard);
-	QListIterator<QListWidgetItem*> i(list);
-
-	while (i.hasNext())
-	{		
-		QListWidgetItem* obj = i.next();
-		int type = obj->data(Qt::UserRole + 2).toInt();
-
-		Qt::ItemFlags flags = obj->flags();
-
-		if ((1 << (type - 1)) & m_filter)
-			obj->setFlags(flags | Qt::ItemIsEnabled);
-		else
-			obj->setFlags(flags & ~Qt::ItemIsEnabled);
-	};
-}
-
-void ObjectBrowser::enableFilter(int filter)
-{
-	m_filter |= filter;
-
-	filterItems();
-}
-
-void ObjectBrowser::disableFilter(int filter)
-{
-	m_filter &= ~filter;
-
-	filterItems();
 }

@@ -79,10 +79,6 @@ public slots:
 	void setCreateType(Level::ObjectType type);
 	void setCreateTriggerType(int type);
 	void setZoomLevel(int zoom);
-	void enableFilter(int filter);
-	void disableFilter(int filter);
-	void enableDisplays(int filter);
-	void disableDisplays(int filter);
 	void setBGColor(QColor color);
 	void setTileBrush(int tile);
 	void setObjectColor(QColor color);
@@ -119,7 +115,6 @@ private:
 	glm::vec2 snapToGrid(glm::vec2 point);
 	float makeScalingScale(float scale);
 	float makeRotationAngle(float angle);
-	bool filterObject(Level::Object* obj);
 	void updateTileDrawLocation(const glm::vec2& mouse_lp);
 	void tilemapDraw();
 	void tilemapZDraw();
@@ -189,10 +184,6 @@ private:
 
 	// zoom stuff
 	int m_zoom_level;
-
-	// filter stuff
-	int m_filter;
-	int m_display_filter;
 
 	bool m_tilemap_painting;
 	int m_tile_brush;		// currently selected "brush"

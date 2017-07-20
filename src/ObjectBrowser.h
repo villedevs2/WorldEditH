@@ -89,12 +89,7 @@ public slots:
 	void deselect();
 	void itemSelectionChanged(QListWidgetItem* current, QListWidgetItem* previous);
 	void itemDataChanged(QListWidgetItem* item);
-	void enableFilter(int filter);
-	void disableFilter(int filter);
 
 private:
-	void filterItems();
-
 	Level* m_level;
-	int m_filter;
 };

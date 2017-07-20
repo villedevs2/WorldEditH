@@ -79,9 +79,6 @@
     <ClCompile Include="src\ObjectEdit.cpp">
       <Filter>Source Files\src</Filter>
     </ClCompile>
-    <ClCompile Include="src\ObjectFilter.cpp">
-      <Filter>Source Files\src</Filter>
-    </ClCompile>
     <ClCompile Include="src\PolygonDef.cpp">
       <Filter>Source Files\src</Filter>
     </ClCompile>
@@ -134,12 +131,6 @@
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_ObjectEdit.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_ObjectFilter.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_ObjectFilter.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_TextureEdit.cpp">
@@ -211,9 +202,6 @@
       <Filter>Header Files\src</Filter>
     </CustomBuild>
     <CustomBuild Include="src\ObjectEdit.h">
-      <Filter>Header Files\src</Filter>
-    </CustomBuild>
-    <CustomBuild Include="src\ObjectFilter.h">
       <Filter>Header Files\src</Filter>
     </CustomBuild>
     <CustomBuild Include="src\TextureEdit.h">
