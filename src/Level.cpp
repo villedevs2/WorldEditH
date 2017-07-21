@@ -699,6 +699,12 @@ int Level::insertTile(std::string name, PolygonDef* top, PolygonDef* side, unsig
 	return m_tilemap->insertTile(name, top, side, color, type);
 }
 
+int Level::replaceTile(int index, std::string name, PolygonDef* top, PolygonDef* side, unsigned int color, Tilemap::TileType type)
+{
+	setModified();
+	return m_tilemap->replaceTile(index, name, top, side, color, type);
+}
+
 void Level::removeTile(int id)
 {
 	bool removed = m_tilemap->removeTile(id);

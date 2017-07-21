@@ -100,8 +100,10 @@ MainWindow::MainWindow()
 	connect(m_objedit, SIGNAL(onSetCreateTriggerType(int)), m_glwidget, SLOT(setCreateTriggerType(int)));
 
 	connect(m_tiledesigner, SIGNAL(onInsertTile(int)), m_tileset_window, SLOT(add(int)));
+	connect(m_tiledesigner, SIGNAL(onReplaceTile(int)), m_tileset_window, SLOT(replace(int)));
 
 	connect(m_tileset_window, SIGNAL(onSelectTile(int)), m_glwidget, SLOT(setTileBrush(int)));
+	connect(m_tileset_window, SIGNAL(onSelectTile(int)), m_tiledesigner, SLOT(tileSelected(int)));
 	connect(m_glwidget, SIGNAL(onTileUpdate(int, int)), m_preview, SLOT(tileUpdated(int, int)));
 
 	// zoom shortcuts

@@ -84,6 +84,7 @@ public:
 	void edit(int x, int y, int tile);
 	void editZ(int x, int y, int z);
 	int insertTile(std::string name, PolygonDef* top, PolygonDef* side, unsigned int color, Tilemap::TileType type);
+	int replaceTile(int index, std::string name, PolygonDef* top, PolygonDef* side, unsigned int color, Tilemap::TileType type);
 	bool removeTile(int id);
 	void removeTiles();
 	int getNumTiles();
@@ -99,6 +100,8 @@ private:
 	void tesselateTile(Bucket* bucket, int bx, int by);
 	void allocBucket(int bin);
 	void deallocBucket(int bin);
+	int getSideBits(Tilemap::TileType type);
+	void tesselateAllByTile(int tile);
 
 	float m_tile_width;
 	float m_tile_height;

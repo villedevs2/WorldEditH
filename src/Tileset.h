@@ -94,6 +94,7 @@ public slots:
 	void reset();
 	void add(int tile_id);
 	void remove(int tile_id);
+	void replace(int tile_id);
 	void setTexture(QImage* texture);
 
 protected:
@@ -122,6 +123,7 @@ public slots:
 	void reset();
 	void add(int tile_id);
 	void remove(int tile_id);
+	void replace(int tile_id);
 	void setTexture(QImage* texture);
 	void itemSelectionChanged(QListWidgetItem* current, QListWidgetItem* previous);
 

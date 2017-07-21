@@ -522,6 +522,85 @@ void Tilemap::editZ(int x, int y, int z)
 	}
 }
 
+int Tilemap::getSideBits(Tilemap::TileType type)
+{
+	int bits = 0;
+
+	switch (type)
+	{
+		case TILE_FULL:
+		{
+			bits |= SIDE_LEFT;
+			bits |= SIDE_TOP_LEFT;
+			bits |= SIDE_TOP_RIGHT;
+			bits |= SIDE_RIGHT;
+			bits |= SIDE_BOT_RIGHT;
+			bits |= SIDE_BOT_LEFT;
+			break;
+		}
+		case TILE_LEFT:
+		{
+			bits |= SIDE_LEFT;
+			bits |= SIDE_TOP_LEFT;
+			bits |= SIDE_BOT_LEFT;
+			bits |= SIDE_MID;
+			break;
+		}
+		case TILE_RIGHT:
+		{
+			bits |= SIDE_RIGHT;
+			bits |= SIDE_TOP_RIGHT;
+			bits |= SIDE_BOT_RIGHT;
+			bits |= SIDE_MID;
+			break;
+		}
+		case TILE_TOP:
+		{
+			bits |= SIDE_TOP_RIGHT;
+			bits |= SIDE_TOP_LEFT;
+			break;
+		}
+		case TILE_BOTTOM:
+		{
+			bits |= SIDE_BOT_RIGHT;
+			bits |= SIDE_BOT_LEFT;
+			break;
+		}
+		case TILE_MID:
+		{
+			bits |= SIDE_LEFT;
+			bits |= SIDE_RIGHT;
+			break;
+		}
+		case TILE_CORNER_TL:
+		{
+			bits |= SIDE_LEFT;
+			bits |= SIDE_TOP_LEFT;
+			break;
+		}
+		case TILE_CORNER_TR:
+		{
+			bits |= SIDE_RIGHT;
+			bits |= SIDE_TOP_RIGHT;
+			break;
+		}
+		case TILE_CORNER_BL:
+		{
+			bits |= SIDE_LEFT;
+			bits |= SIDE_BOT_LEFT;
+			break;
+		}
+		case TILE_CORNER_BR:
+		{
+			bits |= SIDE_RIGHT;
+			bits |= SIDE_BOT_RIGHT;
+			break;
+		}
+	}
+
+	return bits;
+}
+
 int Tilemap::insertTile(std::string name, PolygonDef* top, PolygonDef* side, unsigned int color, Tilemap::TileType type)
 {
 	Tile tile;
@@ -537,80 +616,7 @@ int Tilemap::insertTile(std::string name, PolygonDef* top, PolygonDef* side, uns
 	     p3
 	*/
 
-	tile.side_bits = 0;
-
-	switch (type)
-	{
-		case TILE_FULL:
-		{
-			tile.side_bits |= SIDE_LEFT;
-			tile.side_bits |= SIDE_TOP_LEFT;
-			tile.side_bits |= SIDE_TOP_RIGHT;
-			tile.side_bits |= SIDE_RIGHT;
-			tile.side_bits |= SIDE_BOT_RIGHT;
-			tile.side_bits |= SIDE_BOT_LEFT;
-			break;
-		}
-		case TILE_LEFT:
-		{
-			tile.side_bits |= SIDE_LEFT;
-			tile.side_bits |= SIDE_TOP_LEFT;
-			tile.side_bits |= SIDE_BOT_LEFT;
-			tile.side_bits |= SIDE_MID;
-			break;
-		}
-		case TILE_RIGHT:
-		{
-			tile.side_bits |= SIDE_RIGHT;
-			tile.side_bits |= SIDE_TOP_RIGHT;
-			tile.side_bits |= SIDE_BOT_RIGHT;
-			tile.side_bits |= SIDE_MID;
-			break;
-		}
-		case TILE_TOP:
-		{
-			tile.side_bits |= SIDE_TOP_RIGHT;
-			tile.side_bits |= SIDE_TOP_LEFT;
-			break;
-		}
-		case TILE_BOTTOM:
-		{
-			tile.side_bits |= SIDE_BOT_RIGHT;
-			tile.side_bits |= SIDE_BOT_LEFT;
-			break;
-		}
-		case TILE_MID:
-		{
-			tile.side_bits |= SIDE_LEFT;
-			tile.side_bits |= SIDE_RIGHT;
-			break;
-		}
-		case TILE_CORNER_TL:
-		{
-			tile.side_bits |= SIDE_LEFT;
-			tile.side_bits |= SIDE_TOP_LEFT;
-			break;
-		}
-		case TILE_CORNER_TR:
-		{
-			tile.side_bits |= SIDE_RIGHT;
-			tile.side_bits |= SIDE_TOP_RIGHT;
-			break;
-		}
-		case TILE_CORNER_BL:
-		{
-			tile.side_bits |= SIDE_LEFT;
-			tile.side_bits |= SIDE_BOT_LEFT;
-			break;
-		}
-		case TILE_CORNER_BR:
-		{
-			tile.side_bits |= SIDE_RIGHT;
-			tile.side_bits |= SIDE_BOT_RIGHT;
-			break;
-		}
-	}
-
+	tile.side_bits = getSideBits(type);
 
 	for (int i = 0; i < side->getNumPoints(); i++)
 	{
@@ -625,6 +631,30 @@ int Tilemap::insertTile(std::string name, PolygonDef* top, PolygonDef* side, uns
 
 	m_tiles.push_back(tile);
 	return tile.id;
+}
+
+int Tilemap::replaceTile(int index, std::string name, PolygonDef* top, PolygonDef* side, unsigned int color, Tilemap::TileType type)
+{
+	Tile* tile = &m_tiles.at(index);
+	for (int i = 0; i < top->getNumPoints(); i++)
+	{
+		tile->top_points[i] = top->getPoint(i);
+	}
+
+	tile->side_bits = getSideBits(type);
+
+	for (int i = 0; i < side->getNumPoints(); i++)
+	{
+		tile->side_points[i] = side->getPoint(i);
+	}
+	tile->name = name;
+
+	tile->color = color;
+	tile->type = type;
+
+	tesselateAllByTile(index);
+
+	return tile->id;
 }
 
 bool Tilemap::removeTile(int id)
@@ -732,9 +762,32 @@ Tilemap::Bucket* Tilemap::getTileBucket(int bx, int by)
 
 	return m_buckets[(by * (AREA_WIDTH / BUCKET_WIDTH)) + bx];
 }
+
 Tilemap::Bucket* Tilemap::getTileBucket(int index)
 {
 	assert(index >= 0 && index < ((AREA_WIDTH / BUCKET_WIDTH) * (AREA_HEIGHT / BUCKET_HEIGHT)));
 
 	return m_buckets[index];
+}
+
+void Tilemap::tesselateAllByTile(int tile)
+{
+	int total_buckets = (AREA_WIDTH / BUCKET_WIDTH) * (AREA_HEIGHT / BUCKET_HEIGHT);
+	for (int b = 0; b < total_buckets; b++)
+	{
+		if (m_buckets[b] != nullptr)
+		{
+			for (int y = 0; y < BUCKET_HEIGHT; y++)
+			{
+				for (int x = 0; x < BUCKET_WIDTH; x++)
+				{
+					int ctile = m_buckets[b]->map[y * BUCKET_WIDTH + x] & TILE_MASK;
+					if (ctile == tile)
+					{
+						tesselateTile(m_buckets[b], x, y);
+					}
+				}
+			}
+		}
+	}
 }

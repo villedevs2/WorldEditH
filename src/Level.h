@@ -130,6 +130,7 @@ public:
 	float* getTilemapVBO(int bx, int by);
 	int numTilemapTris(int bx, int by);
 	int insertTile(std::string name, PolygonDef* top, PolygonDef* side, unsigned int color, Tilemap::TileType type);
+	int replaceTile(int index, std::string name, PolygonDef* top, PolygonDef* side, unsigned int color, Tilemap::TileType type);
 	void removeTile(int id);
 	void removeTiles();
 	int getNumTiles();

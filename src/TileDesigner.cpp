@@ -522,6 +522,32 @@ void TileDesignerWidget::insertTile(QString& name)
 	update();
 }
 
+void TileDesignerWidget::replaceTile(QString& name, int index)
+{
+	Tilemap::TileType type;
+
+	switch (m_current_tile_type)
+	{
+		case 0:	type = Tilemap::TILE_FULL; break;
+		case 1: type = Tilemap::TILE_LEFT; break;
+		case 2: type = Tilemap::TILE_RIGHT; break;
+		case 3: type = Tilemap::TILE_TOP; break;
+		case 4: type = Tilemap::TILE_BOTTOM; break;
+		case 5: type = Tilemap::TILE_MID; break;
+		case 6: type = Tilemap::TILE_CORNER_TL; break;
+		case 7: type = Tilemap::TILE_CORNER_TR; break;
+		case 8: type = Tilemap::TILE_CORNER_BL; break;
+		case 9: type = Tilemap::TILE_CORNER_BR; break;
+		default: type = Tilemap::TILE_FULL; break;
+	}
+
+	int id = m_level->replaceTile(index, name.toStdString(), m_poly[0], m_poly[1], m_color, type);
+	emit onReplaceTile(id);
+
+	resetObject(POLY_TOP | POLY_SIDE);
+	update();
+}
+
 void TileDesignerWidget::mouseReleaseEvent(QMouseEvent* event)
 {
 	QPoint point = this->mapFromGlobal(event->globalPos());
@@ -815,7 +841,6 @@ void TileDesignerWidget::setColor(QColor color)
 
 
 
-
 const float TileDesigner::GRID_SIZE[TileDesigner::NUM_GRID_SIZES] = 
 {
 	0.00390625f,
@@ -846,6 +871,7 @@ TileDesigner::TileDesigner(QWidget* parent, Level* level) : QDockWidget("Tile De
 	setFocusPolicy(Qt::ClickFocus);
 
 	connect(m_widget, SIGNAL(onInsertTile(int)), this, SIGNAL(onInsertTile(int)));
+	connect(m_widget, SIGNAL(onReplaceTile(int)), this, SIGNAL(onReplaceTile(int)));
 
 
 	// edit tools
@@ -956,6 +982,10 @@ TileDesigner::TileDesigner(QWidget* parent, Level* level) : QDockWidget("Tile De
 	m_inserttile_button->setFocusPolicy(Qt::NoFocus);
 	connect(m_inserttile_button, SIGNAL(clicked()), this, SLOT(insertTile()));
 
+	m_replacetile_button = new QPushButton(tr("Replace Tile"), this);
+	m_replacetile_button->setFocusPolicy(Qt::NoFocus);
+	connect(m_replacetile_button, SIGNAL(clicked()), this, SLOT(replaceTile()));
+
 	m_color_button = new QPushButton("", this);
 	m_color_button->setFocusPolicy(Qt::NoFocus);
 	m_color_button->setStyleSheet(tr("background-color: #%1%2%3").arg(m_object_color.red(), 2, 16, QChar('0')).arg(m_object_color.green(), 2, 16, QChar('0')).arg(m_object_color.blue(), 2, 16, QChar('0')));
@@ -1004,6 +1034,7 @@ TileDesigner::TileDesigner(QWidget* parent, Level* level) : QDockWidget("Tile De
 	m_control_toolbar = new QToolBar(m_window);
 	m_control_toolbar->addWidget(m_reset_button);
 	m_control_toolbar->addWidget(m_inserttile_button);
+	m_control_toolbar->addWidget(m_replacetile_button);
 	m_window->addToolBar(m_control_toolbar);
 
 	connect(m_zoom_box, SIGNAL(currentIndexChanged(int)), m_widget, SLOT(setZoom(int)));
@@ -1034,6 +1065,12 @@ TileDesigner::TileDesigner(QWidget* parent, Level* level) : QDockWidget("Tile De
 	m_widget->setMode(TileDesignerWidget::MODE_MOVE);
 
 
+	// replace tile grayed by default
+	m_replacetile_button->setDisabled(true);
+
+	m_selected_tile = -1;
+
+
 	m_gridsize_combo->setCurrentIndex(3);
 	m_widget->setGrid(3);
 }
@@ -1060,6 +1097,26 @@ void TileDesigner::insertTile()
 	if (ok && !name.isEmpty())
 	{
 		m_widget->insertTile(name);
+	}
+}
+
+void TileDesigner::replaceTile()
+{
+	QMessageBox box;
+	box.setText("Replace existing tile.");
+	box.setInformativeText("Do you want to replace existing tile?");
+	box.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+	box.setDefaultButton(QMessageBox::Ok);
+	int ret = box.exec();
+
+	if (ret == QMessageBox::Ok)
+	{
+		bool ok;
+		QString name = QInputDialog::getText(this, tr("Enter tile name"), tr("Name:"), QLineEdit::Normal, "", &ok);
+		if (ok && !name.isEmpty())
+		{
+			m_widget->replaceTile(name, m_selected_tile);
+		}
 	}
 }
 
@@ -1106,5 +1163,19 @@ void TileDesigner::chooseColor()
 		m_color_button->setStyleSheet(tr("background-color: #%1%2%3").arg(result.red(), 2, 16, QChar('0')).arg(result.green(), 2, 16, QChar('0')).arg(result.blue(), 2, 16, QChar('0')));
 
 		m_object_color = result;
+	}
+}
+
+void TileDesigner::tileSelected(int tile)
+{
+	m_selected_tile = tile;
+
+	if (tile >= 0)
+	{
+		m_replacetile_button->setDisabled(false);
+	}
+	else
+	{
+		m_replacetile_button->setDisabled(true);
 	}
 }

@@ -84,6 +84,48 @@ void TilesetWidget::add(int tile_id)
 	}
 }
 
+void TilesetWidget::replace(int tile_id)
+{
+	QList<QListWidgetItem*> list = findItems("*", Qt::MatchWildcard);
+	QListIterator<QListWidgetItem*> i(list);
+
+	while (i.hasNext())
+	{
+		QListWidgetItem* obj = i.next();
+		int id = obj->data(Qt::UserRole + 2).toInt();
+
+		if (tile_id == id)
+		{
+			QImage* image = obj->data(Qt::UserRole + 1).value<QImage*>();
+
+			const Tilemap::Tile* tile = m_level->getTileById(tile_id);
+			assert(tile != nullptr);
+
+			int numtop = 0;
+			switch (tile->type)
+			{
+				case Tilemap::TILE_FULL: numtop = 6; break;
+				case Tilemap::TILE_LEFT: numtop = 4; break;
+				case Tilemap::TILE_RIGHT: numtop = 4; break;
+				case Tilemap::TILE_TOP: numtop = 3; break;
+				case Tilemap::TILE_BOTTOM: numtop = 3; break;
+				case Tilemap::TILE_MID: numtop = 4; break;
+				case Tilemap::TILE_CORNER_TL: numtop = 3; break;
+				case Tilemap::TILE_CORNER_TR: numtop = 3; break;
+				case Tilemap::TILE_CORNER_BL: numtop = 3; break;
+				case Tilemap::TILE_CORNER_BR: numtop = 3; break;
+			}
+
+			Thumbnail::fromTileType(image, m_texture, tile->top_points, numtop, tile->side_points, 4, tile->type);
+
+			obj->setData(Qt::DisplayRole, QString(tile->name.c_str()));
+			// image and tile_id stay as is
+
+			return;
+		}
+	};
+}
+
 void TilesetWidget::remove(int tile_id)
 {
 	QList<QListWidgetItem*> list = findItems("*", Qt::MatchWildcard);
@@ -204,6 +246,11 @@ void TilesetWindow::add(int tile_id)
 void TilesetWindow::remove(int tile_id)
 {
 	m_widget->remove(tile_id);
+}
+
+void TilesetWindow::replace(int tile_id)
+{
+	m_widget->replace(tile_id);
 }
 
 void TilesetWindow::setTexture(QImage* texture)

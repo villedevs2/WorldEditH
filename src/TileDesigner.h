@@ -47,6 +47,7 @@ public:
 
 signals:
 	void onInsertTile(int tile_id);
+	void onReplaceTile(int tile_id);
 
 public slots:
 	void setScale(int scale);
@@ -56,6 +57,7 @@ public slots:
 	void enableSnapGrid(bool enable);
 	void resetObject(int objects);
 	void insertTile(QString& name);
+	void replaceTile(QString& name, int index);
 	void setColor(QColor color);
 	void setTileType(int type);
 
@@ -178,15 +180,18 @@ protected:
 signals:
 	void onClose();
 	void onInsertTile(int tile_id);
+	void onReplaceTile(int tile_id);
 
 public slots:
 	void setMoveMode();
 	void reset();
 	void insertTile();
+	void replaceTile();
 	void toggleGrid();
 	void snapGrid();
 	void setGridSize(int size);
 	void chooseColor();
+	void tileSelected(int tile);
 
 private:
 	QMainWindow* m_window;	
@@ -225,6 +230,7 @@ private:
 	QActionGroup* m_controlgroup;
 	QPushButton* m_reset_button;
 	QPushButton* m_inserttile_button;
+	QPushButton* m_replacetile_button;
 	
 	QWidget* m_color_widget;
 	QLabel* m_color_label;
@@ -233,4 +239,6 @@ private:
 	Level* m_level;
 
 	QColor m_object_color;
+
+	int m_selected_tile;
 };
