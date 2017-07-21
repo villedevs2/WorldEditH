@@ -45,6 +45,25 @@ public:
 		int id;
 		Tilemap::TileType type;
 		int side_bits;
+
+		int numTopPoints()
+		{
+			int numtop = 0;
+			switch (type)
+			{
+				case Tilemap::TILE_FULL: numtop = 6; break;
+				case Tilemap::TILE_LEFT: numtop = 4; break;
+				case Tilemap::TILE_RIGHT: numtop = 4; break;
+				case Tilemap::TILE_TOP: numtop = 3; break;
+				case Tilemap::TILE_BOTTOM: numtop = 3; break;
+				case Tilemap::TILE_MID: numtop = 4; break;
+				case Tilemap::TILE_CORNER_TL: numtop = 3; break;
+				case Tilemap::TILE_CORNER_TR: numtop = 3; break;
+				case Tilemap::TILE_CORNER_BL: numtop = 3; break;
+				case Tilemap::TILE_CORNER_BR: numtop = 3; break;
+			}
+			return numtop;
+		}
 	};
 
 	struct Bucket
@@ -88,8 +107,8 @@ public:
 	bool removeTile(int id);
 	void removeTiles();
 	int getNumTiles();
-	const Tilemap::Tile* getTile(int index);
-	const Tilemap::Tile* getTileById(int id);
+	Tilemap::Tile* getTile(int index);
+	Tilemap::Tile* getTileById(int id);
 	int getTileIndexById(int id);
 	float getTileWidth();
 	float getTileHeight();

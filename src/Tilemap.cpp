@@ -683,14 +683,14 @@ int Tilemap::getNumTiles()
 	return m_tiles.size();
 }
 
-const Tilemap::Tile* Tilemap::getTile(int index)
+Tilemap::Tile* Tilemap::getTile(int index)
 {
 	assert(index >= 0 && index < m_tiles.size());
 
 	return &m_tiles.at(index);
 }
 
-const Tilemap::Tile* Tilemap::getTileById(int id)
+Tilemap::Tile* Tilemap::getTileById(int id)
 {
 	int num_tiles = m_tiles.size();
 	for (int i=0; i < num_tiles; i++)

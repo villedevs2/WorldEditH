@@ -723,12 +723,12 @@ int Level::getNumTiles()
 	return m_tilemap->getNumTiles();
 }
 
-const Tilemap::Tile* Level::getTile(int index)
+Tilemap::Tile* Level::getTile(int index)
 {
 	return m_tilemap->getTile(index);
 }
 
-const Tilemap::Tile* Level::getTileById(int id)
+Tilemap::Tile* Level::getTileById(int id)
 {
 	return m_tilemap->getTileById(id);
 }

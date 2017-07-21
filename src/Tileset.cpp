@@ -51,27 +51,14 @@ void TilesetWidget::reset()
 
 void TilesetWidget::add(int tile_id)
 {
-	const Tilemap::Tile* tile = m_level->getTileById(tile_id);
+	Tilemap::Tile* tile = m_level->getTileById(tile_id);
 	assert(tile != NULL);
 
 	if (tile != nullptr)
 	{
 		QImage* image = new QImage(TILESET_THUMB_W, TILESET_THUMB_H, QImage::Format_ARGB32);
 
-		int numtop = 0;
-		switch (tile->type)
-		{
-			case Tilemap::TILE_FULL: numtop = 6; break;
-			case Tilemap::TILE_LEFT: numtop = 4; break;
-			case Tilemap::TILE_RIGHT: numtop = 4; break;
-			case Tilemap::TILE_TOP: numtop = 3; break;
-			case Tilemap::TILE_BOTTOM: numtop = 3; break;
-			case Tilemap::TILE_MID: numtop = 4; break;
-			case Tilemap::TILE_CORNER_TL: numtop = 3; break;
-			case Tilemap::TILE_CORNER_TR: numtop = 3; break;
-			case Tilemap::TILE_CORNER_BL: numtop = 3; break;
-			case Tilemap::TILE_CORNER_BR: numtop = 3; break;
-		}
+		int numtop = tile->numTopPoints();
 
 		Thumbnail::fromTileType(image, m_texture, tile->top_points, numtop, tile->side_points, 4, tile->type);
 
@@ -98,23 +85,10 @@ void TilesetWidget::replace(int tile_id)
 		{
 			QImage* image = obj->data(Qt::UserRole + 1).value<QImage*>();
 
-			const Tilemap::Tile* tile = m_level->getTileById(tile_id);
+			Tilemap::Tile* tile = m_level->getTileById(tile_id);
 			assert(tile != nullptr);
 
-			int numtop = 0;
-			switch (tile->type)
-			{
-				case Tilemap::TILE_FULL: numtop = 6; break;
-				case Tilemap::TILE_LEFT: numtop = 4; break;
-				case Tilemap::TILE_RIGHT: numtop = 4; break;
-				case Tilemap::TILE_TOP: numtop = 3; break;
-				case Tilemap::TILE_BOTTOM: numtop = 3; break;
-				case Tilemap::TILE_MID: numtop = 4; break;
-				case Tilemap::TILE_CORNER_TL: numtop = 3; break;
-				case Tilemap::TILE_CORNER_TR: numtop = 3; break;
-				case Tilemap::TILE_CORNER_BL: numtop = 3; break;
-				case Tilemap::TILE_CORNER_BR: numtop = 3; break;
-			}
+			int numtop = tile->numTopPoints();
 
 			Thumbnail::fromTileType(image, m_texture, tile->top_points, numtop, tile->side_points, 4, tile->type);
 
@@ -165,23 +139,10 @@ void TilesetWidget::setTexture(QImage* texture)
 		QImage* image = obj->data(Qt::UserRole + 1).value<QImage*>();
 		int id = obj->data(Qt::UserRole + 2).toInt();
 		
-		const Tilemap::Tile* tile = m_level->getTileById(id);
+		Tilemap::Tile* tile = m_level->getTileById(id);
 		if (tile != nullptr)
 		{
-			int numtop = 0;
-			switch (tile->type)
-			{
-				case Tilemap::TILE_FULL: numtop = 6; break;
-				case Tilemap::TILE_LEFT: numtop = 4; break;
-				case Tilemap::TILE_RIGHT: numtop = 4; break;
-				case Tilemap::TILE_TOP: numtop = 3; break;
-				case Tilemap::TILE_BOTTOM: numtop = 3; break;
-				case Tilemap::TILE_MID: numtop = 4; break;
-				case Tilemap::TILE_CORNER_TL: numtop = 3; break;
-				case Tilemap::TILE_CORNER_TR: numtop = 3; break;
-				case Tilemap::TILE_CORNER_BL: numtop = 3; break;
-				case Tilemap::TILE_CORNER_BR: numtop = 3; break;
-			}
+			int numtop = tile->numTopPoints();
 
 			Thumbnail::fromTileType(image, m_texture, tile->top_points, numtop, tile->side_points, 4, tile->type);
 		}
