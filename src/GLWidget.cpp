@@ -477,6 +477,9 @@ void GLWidget::updateTileDrawLocation(const glm::vec2& mouse_lp)
 	float tx2 = (float)(Tilemap::AREA_WIDTH) * tile_width;
 	float ty2 = (float)(Tilemap::AREA_HEIGHT) * (tile_height / 2);
 
+	int prev_x = m_tile_selx;
+	int prev_y = m_tile_sely;
+
 	if (mouse_lp.x >= tx1 && mouse_lp.x < tx2 &&
 		mouse_lp.y >= ty1 && mouse_lp.y < ty2)
 	{
@@ -573,6 +576,9 @@ void GLWidget::updateTileDrawLocation(const glm::vec2& mouse_lp)
 		m_tile_selx = -1;
 		m_tile_sely = -1;
 	}
+
+	if (prev_x != m_tile_selx || prev_y != m_tile_sely)
+		emit onTileSelect(m_tile_selx, m_tile_sely);
 }
 
 

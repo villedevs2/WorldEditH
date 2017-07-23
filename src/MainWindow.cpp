@@ -106,6 +106,8 @@ MainWindow::MainWindow()
 	connect(m_tileset_window, SIGNAL(onSelectTile(int)), m_tiledesigner, SLOT(tileSelected(int)));
 	connect(m_glwidget, SIGNAL(onTileUpdate(int, int)), m_preview, SLOT(tileUpdated(int, int)));
 
+	connect(m_glwidget, SIGNAL(onTileSelect(int, int)), m_preview, SLOT(tileSelected(int, int)));
+
 	// zoom shortcuts
 	m_zoomin_shortcut = new QShortcut(QKeySequence(Qt::Key_Plus), this);
 	m_zoomout_shortcut = new QShortcut(QKeySequence(Qt::Key_Minus), this);

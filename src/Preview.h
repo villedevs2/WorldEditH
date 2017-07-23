@@ -23,6 +23,7 @@ public:
 	~GLPreview();
 
 	void setTexture(QImage* texture);
+	void selectTile(int x, int y);
 
 protected:
 	void paintEvent(QPaintEvent* event);
@@ -64,6 +65,10 @@ private:
 	Shader m_level_shader;
 
 	VBO* m_vbback;
+	VBO* m_selector;
+
+	int m_selected_tile_x;
+	int m_selected_tile_y;
 
 
 	bool m_panning;
@@ -92,6 +97,7 @@ signals:
 
 public slots:
 	void tileUpdated(int x, int y);
+	void tileSelected(int x, int y);
 
 private:
 	QMainWindow* m_window;

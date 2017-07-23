@@ -11,6 +11,7 @@ GLPreview::GLPreview(QWidget* parent, Level* level) : QGLWidget(QGLFormat(QGL::S
 	m_scroll_saved = m_scroll;
 
 	m_vbback = new VBO(2);
+	m_selector = new VBO(16);
 
 	glm::vec3 p1(0.0f, 0.0, 0.0f);
 	glm::vec3 p2(Tilemap::AREA_WIDTH, 0.0f, 0.0f);
@@ -18,6 +19,9 @@ GLPreview::GLPreview(QWidget* parent, Level* level) : QGLWidget(QGLFormat(QGL::S
 	glm::vec3 p4(0.0f, Tilemap::AREA_HEIGHT, 0.0f);
 
 	m_vbback->makeQuad(0, p1, p2, p3, p4, glm::vec2(0.0f, 0.0f), glm::vec2(1.0f, 0.0f), glm::vec2(1.0f, 1.0f), glm::vec2(0.0f, 1.0f), 0xff404040);
+
+	m_selected_tile_x = -1;
+	m_selected_tile_y = -1;
 }
 
 GLPreview::~GLPreview()
@@ -258,6 +262,25 @@ void GLPreview::paintGL()
 	
 	glDisable(GL_DEPTH_TEST);	// depth must disabled, or QPainter stuff won't be visible
 
+	if (m_selected_tile_x >= 0 && m_selected_tile_y >= 0)
+	{
+		float* geo = (float*)m_selector->getPointer();
+		int vbsize = m_selector->getVertexSize();
+
+		m_level_program->enableAttributeArray(m_level_shader.position);
+		m_level_program->setAttributeArray(m_level_shader.position, (GLfloat*)geo, 3, vbsize);
+		m_level_program->enableAttributeArray(m_level_shader.tex_coord);
+		m_level_program->setAttributeArray(m_level_shader.tex_coord, (GLfloat*)geo + 3, 2, vbsize);
+		m_level_program->enableAttributeArray(m_level_shader.color);
+		m_level_program->setAttributeArray(m_level_shader.color, GL_UNSIGNED_BYTE, (GLbyte*)geo + 20, 4, vbsize);
+
+		glDrawArrays(GL_TRIANGLES, 0, 16 * 3);
+
+		m_level_program->disableAttributeArray(m_level_shader.position);
+		m_level_program->disableAttributeArray(m_level_shader.tex_coord);
+		m_level_program->disableAttributeArray(m_level_shader.color);
+	}
+
 	painter.endNativePainting();
 
 	/*
@@ -281,6 +304,9 @@ void GLPreview::paintGL()
 		painter.drawText(8, 64, tr("SX: %1, SY: %2").arg(m_scroll.x).arg(m_scroll.y));
 	}
 	*/
+
+	painter.setPen(QColor(255, 255, 0));
+	painter.drawText(8, 32, tr("X: %1, Y: %2").arg(m_selected_tile_x).arg(m_selected_tile_y));
 
 	painter.end();
 	doneCurrent();
@@ -392,6 +418,70 @@ glm::vec2 GLPreview::toLevelCoords(glm::vec2& point)
 	return glm::vec2(sx, sy);
 }
 
+void GLPreview::selectTile(int x, int y)
+{
+	m_selected_tile_x = x;
+	m_selected_tile_y = y;
+
+	if (x >= 0 && y >= 0)
+	{
+		const float tile_width = m_level->getTileWidth();
+		const float tile_height = m_level->getTileHeight();
+
+		float tx1 = (float)(x)* tile_width;
+		float tx2 = tx1 + tile_width;
+		float ty1 = (float)(y) * (tile_height / 2);
+		float ty2 = ty1 + (tile_height / 2);
+
+		if (y & 1)
+		{
+			tx1 += tile_width / 2;
+			tx2 += tile_width / 2;
+		}
+
+		float z = 10.0f;
+		if (m_level->readTilemapTile(x, y) != Tilemap::TILE_EMPTY)
+		{
+			z = m_level->readTilemapZ(x, y);
+		}
+
+		z *= 0.1f;
+
+		glm::vec3 p1 = glm::vec3(tx1, ty1 + (tile_height * (15.0 / 70.0)), 0.0f);
+		glm::vec3 p2 = glm::vec3(tx1, ty1 + (tile_height * (35.0 / 70.0)), 0.0f);
+		glm::vec3 p3 = glm::vec3(tx1 + (tile_width * 0.5), ty1 + (tile_height * (50.0 / 70.0)), 0.0f);
+		glm::vec3 p4 = glm::vec3(tx2, ty1 + (tile_height * (35.0 / 70.0)), 0.0f);
+		glm::vec3 p5 = glm::vec3(tx2, ty1 + (tile_height * (15.0 / 70.0)), 0.0f);
+		glm::vec3 p6 = glm::vec3(tx1 + (tile_width * 0.5), ty1, 0.0f);
+
+		glm::vec3 tp1 = glm::vec3(p1.x, p1.y, z);
+		glm::vec3 tp2 = glm::vec3(p2.x, p2.y, z);
+		glm::vec3 tp3 = glm::vec3(p3.x, p3.y, z);
+		glm::vec3 tp4 = glm::vec3(p4.x, p4.y, z);
+		glm::vec3 tp5 = glm::vec3(p5.x, p5.y, z);
+		glm::vec3 tp6 = glm::vec3(p6.x, p6.y, z);
+
+		glm::vec2 uv(0.0f, 0.0f);
+
+		unsigned int color = 0x7fcfaf00;
+		unsigned int color2 = 0x7faf8f00;
+		unsigned int color3 = 0x7f8f6f00;
+
+		m_selector->makeTri(12, tp1, tp6, tp5, uv, uv, uv, color);
+		m_selector->makeTri(13, tp1, tp5, tp4, uv, uv, uv, color);
+		m_selector->makeTri(14, tp1, tp4, tp3, uv, uv, uv, color);
+		m_selector->makeTri(15, tp1, tp3, tp2, uv, uv, uv, color);
+
+		m_selector->makeQuad(0, tp1, tp2, p2, p1, uv, uv, uv, uv, color2);
+		m_selector->makeQuad(2, tp6, tp1, p1, p6, uv, uv, uv, uv, color3);
+		m_selector->makeQuad(4, tp5, tp6, p6, p5, uv, uv, uv, uv, color2);
+		m_selector->makeQuad(6, tp4, tp5, p5, p4, uv, uv, uv, uv, color3);
+		m_selector->makeQuad(8, tp3, tp4, p4, p3, uv, uv, uv, uv, color2);
+		m_selector->makeQuad(10, tp2, tp3, p3, p2, uv, uv, uv, uv, color3);
+	}
+	update();
+}
+
 
 
 
@@ -444,4 +534,9 @@ void PreviewWindow::tileUpdated(int x, int y)
 void PreviewWindow::setTexture(QImage* texture)
 {
 	m_widget->setTexture(texture);
+}
+
+void PreviewWindow::tileSelected(int x, int y)
+{
+	m_widget->selectTile(x, y);
 }
