@@ -14,6 +14,7 @@
 #include <qmessagebox.h>
 #include <qcolordialog.h>
 #include <qglshaderprogram.h>
+#include <qspinbox.h>
 
 #include <glm.hpp>
 #include <gtx/rotate_vector.hpp>
@@ -24,6 +25,8 @@
 class TileDesignerWidget : public QGLWidget
 {
 	Q_OBJECT
+
+	friend class TileDesigner;
 
 public:
 	enum OperationMode
@@ -48,9 +51,9 @@ public:
 signals:
 	void onInsertTile(int tile_id);
 	void onReplaceTile(int tile_id);
+	void onSelectPoly(int poly);
 
 public slots:
-	void setScale(int scale);
 	void setZoom(int zoom);
 	void setGrid(int grid);
 	void enableShowGrid(bool enable);
@@ -60,6 +63,8 @@ public slots:
 	void replaceTile(QString& name, int index);
 	void setColor(QColor color);
 	void setTileType(int type);
+	void setScale(double scale);
+	void setRotate(int angle);
 
 protected:
 	void paintEvent(QPaintEvent* event);
@@ -67,6 +72,7 @@ protected:
 	void mousePressEvent(QMouseEvent* event);
 	void keyReleaseEvent(QKeyEvent* event);
 	void mouseMoveEvent(QMouseEvent* event);
+	void transformPoly(PolygonDef* def, PolygonDef* srcdef, glm::vec2& pos, float rot, float scale);
 
 	void initializeGL();
 	void paintGL();
@@ -151,6 +157,10 @@ private:
 
 	OperationMode m_mode;
 
+	glm::vec2 m_position[2];
+	float m_angle[2];
+	float m_scale[2];
+
 	bool m_snap_grid;
 	bool m_show_grid;
 	int m_grid_size;
@@ -192,6 +202,9 @@ public slots:
 	void setGridSize(int size);
 	void chooseColor();
 	void tileSelected(int tile);
+	void setScale(double scale);
+	void setRotate(int angle);
+	void polySelected(int poly);
 
 private:
 	QMainWindow* m_window;	
@@ -219,6 +232,14 @@ private:
 	QWidget* m_zoomlevel_widget;
 	QLabel* m_zoomlevel_label;
 	QComboBox* m_zoom_box;
+
+	QWidget* m_rotate_widget;
+	QLabel* m_rotate_label;
+	QSpinBox* m_rotate_spin;
+
+	QWidget* m_scale_widget;
+	QLabel* m_scale_label;
+	QDoubleSpinBox* m_scale_spin;
 
 	QActionGroup* m_gridgroup;
 	QAction* m_togglegrid_action;

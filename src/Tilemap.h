@@ -121,6 +121,7 @@ private:
 	void deallocBucket(int bin);
 	int getSideBits(Tilemap::TileType type);
 	void tesselateAllByTile(int tile);
+	unsigned int getTileColor(unsigned int basecolor, float lum);
 
 	float m_tile_width;
 	float m_tile_height;

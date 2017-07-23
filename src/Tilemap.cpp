@@ -52,6 +52,23 @@ float Tilemap::getTileHeight()
 	return m_tile_height;
 }
 
+unsigned int Tilemap::getTileColor(unsigned int basecolor, float lum)
+{
+	int r = (basecolor >> 16) & 0xff;
+	int g = (basecolor >> 8) & 0xff;
+	int b = basecolor & 0xff;
+
+	r = (float)(r) * lum;
+	g = (float)(g) * lum;
+	b = (float)(b) * lum;
+
+	if (r > 255) r = 255;
+	if (g > 255) g = 255;
+	if (b > 255) b = 255;
+
+	return (basecolor & 0xff000000) | (r << 16) | (g << 8) | (b);
+}
+
 void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 {
 	assert(bx >= 0 && bx < BUCKET_WIDTH);
@@ -146,6 +163,20 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 			RENDER_CENTER_TOP = 0x4000,
 			RENDER_CENTER_BOT = 0x8000,
 		};
+
+		const float lum_topleft = 1.0f;
+		const float lum_left = 0.8f;
+		const float lum_topright = 0.6f;
+		const float lum_right = 0.4f;
+		const float lum_botleft = 0.4f;
+		const float lum_botright = 0.2f;
+		const float lum_up = 0.9f;
+		const float lum_down = 0.3f;
+
+
+
+
+
 
 		int render_sides = 0;
 
@@ -360,37 +391,37 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 		}
 
 		if (render_sides & RENDER_LEFT)		
-			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p1, p2, bp2, bp1, suv1, suv2, suv3, suv4, tiledata->color);		
+			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p1, p2, bp2, bp1, suv1, suv2, suv3, suv4, getTileColor(tiledata->color, lum_left));		
 		if (render_sides & RENDER_TOPLEFT)		
-			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p6, p1, bp1, bp6, suv1, suv2, suv3, suv4, tiledata->color);
+			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p6, p1, bp1, bp6, suv1, suv2, suv3, suv4, getTileColor(tiledata->color, lum_topleft));
 		if (render_sides & RENDER_TOPRIGHT)
-			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p5, p6, bp6, bp5, suv1, suv2, suv3, suv4, tiledata->color);
+			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p5, p6, bp6, bp5, suv1, suv2, suv3, suv4, getTileColor(tiledata->color, lum_topright));
 		if (render_sides & RENDER_RIGHT)
-			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p4, p5, bp5, bp4, suv1, suv2, suv3, suv4, tiledata->color);
+			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p4, p5, bp5, bp4, suv1, suv2, suv3, suv4, getTileColor(tiledata->color, lum_right));
 		if (render_sides & RENDER_BOTRIGHT)
-			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p3, p4, bp4, bp3, suv1, suv2, suv3, suv4, tiledata->color);
+			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p3, p4, bp4, bp3, suv1, suv2, suv3, suv4, getTileColor(tiledata->color, lum_botright));
 		if (render_sides & RENDER_BOTLEFT)
-			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p2, p3, bp3, bp2, suv1, suv2, suv3, suv4, tiledata->color);
+			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p2, p3, bp3, bp2, suv1, suv2, suv3, suv4, getTileColor(tiledata->color, lum_botleft));
 		if (render_sides & RENDER_SIDELEFT)
-			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p3, p6, bp6, bp3, suv1, suv2, suv3, suv4, tiledata->color);
+			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p3, p6, bp6, bp3, suv1, suv2, suv3, suv4, getTileColor(tiledata->color, lum_right));
 		if (render_sides & RENDER_SIDERIGHT)
-			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p6, p3, bp3, bp6, suv1, suv2, suv3, suv4, tiledata->color);
+			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p6, p3, bp3, bp6, suv1, suv2, suv3, suv4, getTileColor(tiledata->color, lum_left));
 		if (render_sides & RENDER_MIDTOP)
-			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p1, p5, bp5, bp1, suv1, suv2, suv3, suv4, tiledata->color);
+			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p1, p5, bp5, bp1, suv1, suv2, suv3, suv4, getTileColor(tiledata->color, lum_down));
 		if (render_sides & RENDER_MIDBOT)
-			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p4, p2, bp2, bp4, suv1, suv2, suv3, suv4, tiledata->color);
+			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p4, p2, bp2, bp4, suv1, suv2, suv3, suv4, getTileColor(tiledata->color, lum_up));
 		if (render_sides & RENDER_CENTER_TOP)
-			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p5, p1, bp1, bp5, suv1, suv2, suv3, suv4, tiledata->color);
+			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p5, p1, bp1, bp5, suv1, suv2, suv3, suv4, getTileColor(tiledata->color, lum_up));
 		if (render_sides & RENDER_CENTER_BOT)
-			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p2, p4, bp4, bp2, suv1, suv2, suv3, suv4, tiledata->color);
+			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p2, p4, bp4, bp2, suv1, suv2, suv3, suv4, getTileColor(tiledata->color, lum_down));
 		if (render_sides & RENDER_CORNER_TL)
-			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p2, p6, bp6, bp2, suv1, suv2, suv3, suv4, tiledata->color);
+			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p2, p6, bp6, bp2, suv1, suv2, suv3, suv4, getTileColor(tiledata->color, lum_botright));
 		if (render_sides & RENDER_CORNER_TR)
-			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p6, p4, bp4, bp6, suv1, suv2, suv3, suv4, tiledata->color);
+			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p6, p4, bp4, bp6, suv1, suv2, suv3, suv4, getTileColor(tiledata->color, lum_botleft));
 		if (render_sides & RENDER_CORNER_BL)
-			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p3, p1, bp1, bp3, suv1, suv2, suv3, suv4, tiledata->color);
+			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p3, p1, bp1, bp3, suv1, suv2, suv3, suv4, getTileColor(tiledata->color, lum_topright));
 		if (render_sides & RENDER_CORNER_BR)
-			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p5, p3, bp3, bp5, suv1, suv2, suv3, suv4, tiledata->color);
+			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p5, p3, bp3, bp5, suv1, suv2, suv3, suv4, getTileColor(tiledata->color, lum_topleft));
 
 		if (vbo3d_index < 16)
 			vbo3d->degenTris(vbo3d_index, 16 - vbo3d_index);

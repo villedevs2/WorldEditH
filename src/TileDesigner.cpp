@@ -81,10 +81,10 @@ TileDesignerWidget::TileDesignerWidget(QWidget* parent, Level* level) : QGLWidge
 	m_poly_top_default[9]->insertPoint(glm::vec2(tx3, ty2));
 
 
-	m_poly_side_default->insertPoint(glm::vec2(0.5f, 0.0f));
-	m_poly_side_default->insertPoint(glm::vec2(0.5f, 0.25f));
-	m_poly_side_default->insertPoint(glm::vec2(0.625f, 0.25f));
-	m_poly_side_default->insertPoint(glm::vec2(0.625f, 0.0f));
+	m_poly_side_default->insertPoint(glm::vec2(0.0f, 0.0f));
+	m_poly_side_default->insertPoint(glm::vec2(0.0f, 0.25f));
+	m_poly_side_default->insertPoint(glm::vec2(0.125f, 0.25f));
+	m_poly_side_default->insertPoint(glm::vec2(0.125f, 0.0f));
 
 	m_zoom = 1.0f;
 	m_scroll = glm::vec2(0.0f, 0.0f);
@@ -110,13 +110,27 @@ TileDesignerWidget::TileDesignerWidget(QWidget* parent, Level* level) : QGLWidge
 	m_show_grid = false;
 	m_snap_grid = false;
 
-	m_object_color = QColor(0, 0, 0, 255);
+	m_object_color = QColor(128, 128, 128, 255);
 
 	m_poly[0]->copy(m_poly_top_default[0]);
 	m_poly[1]->copy(m_poly_side_default);
 
 	m_selected_poly = -1;
+	emit onSelectPoly(m_selected_poly);
 	m_current_tile_type = 0;
+
+	/*
+	m_position[0] = glm::vec2(0.0f, 0.0f);
+	m_position[1] = glm::vec2(0.5f, 0.0f);
+
+	m_angle[0] = 0.0f;
+	m_angle[1] = 0.0f;
+
+	m_scale[0] = 1.0f;
+	m_scale[1] = 1.0f;
+	*/
+
+	resetObject(POLY_TOP | POLY_SIDE);
 }
 
 TileDesignerWidget::~TileDesignerWidget()
@@ -226,10 +240,10 @@ void TileDesignerWidget::initializeGL()
 	m_level_shader.vp_matrix = m_level_program->uniformLocation("m_vp_matrix");
 	m_level_shader.rot_matrix = m_level_program->uniformLocation("m_rot_matrix");
 
-	m_vbo[0].pos = glm::vec3(0.0f, 0.0f, 0.0f);		m_vbo[0].uv = glm::vec2(0.0f, 0.0f);		m_vbo[0].color = 0xffffffff;
-	m_vbo[1].pos = glm::vec3(0.0f, 1.0f, 0.0f);		m_vbo[1].uv = glm::vec2(0.0f, 1.0f);		m_vbo[1].color = 0xffffffff;
-	m_vbo[2].pos = glm::vec3(1.0f, 1.0f, 0.0f);		m_vbo[2].uv = glm::vec2(1.0f, 1.0f);		m_vbo[2].color = 0xffffffff;
-	m_vbo[3].pos = glm::vec3(1.0f, 0.0f, 0.0f);		m_vbo[3].uv = glm::vec2(1.0f, 0.0f);		m_vbo[3].color = 0xffffffff;
+	m_vbo[0].pos = glm::vec3(0.0f, 0.0f, 0.0f);		m_vbo[0].uv = glm::vec2(0.0f, 0.0f);		m_vbo[0].color = m_object_color.rgb();
+	m_vbo[1].pos = glm::vec3(0.0f, 1.0f, 0.0f);		m_vbo[1].uv = glm::vec2(0.0f, 1.0f);		m_vbo[1].color = m_object_color.rgb();
+	m_vbo[2].pos = glm::vec3(1.0f, 1.0f, 0.0f);		m_vbo[2].uv = glm::vec2(1.0f, 1.0f);		m_vbo[2].color = m_object_color.rgb();
+	m_vbo[3].pos = glm::vec3(1.0f, 0.0f, 0.0f);		m_vbo[3].uv = glm::vec2(1.0f, 0.0f);		m_vbo[3].color = m_object_color.rgb();
 }
 
 void TileDesignerWidget::paintGL()
@@ -433,10 +447,6 @@ glm::vec2 TileDesignerWidget::snapToGrid(glm::vec2& point)
 	return glm::vec2(x, y);
 }
 
-void TileDesignerWidget::setScale(int scale)
-{
-}
-
 void TileDesignerWidget::setZoom(int zoom)
 {
 	assert(zoom >= 0 && zoom < TileDesigner::NUM_ZOOM_LEVELS);
@@ -470,12 +480,9 @@ void TileDesignerWidget::enableSnapGrid(bool enable)
 
 void TileDesignerWidget::setTileType(int type)
 {
-	m_poly[0]->copy(m_poly_top_default[type]);
-	m_poly[1]->copy(m_poly_side_default);
-
 	m_current_tile_type = type;
 
-	m_selected_poly = -1;
+	resetObject(POLY_TOP | POLY_SIDE);
 
 	update();
 }
@@ -492,6 +499,19 @@ void TileDesignerWidget::resetObject(int objects)
 	}
 
 	m_selected_poly = -1;
+	emit onSelectPoly(m_selected_poly);
+
+	m_position[0] = glm::vec2(0.0f, 0.0f);
+	m_position[1] = glm::vec2(0.5f, 0.0f);
+
+	m_angle[0] = 0.0f;
+	m_angle[1] = 0.0f;
+
+	m_scale[0] = 1.0f;
+	m_scale[1] = 1.0f;
+
+	transformPoly(m_poly[0], m_poly_top_default[m_current_tile_type], m_position[0], m_angle[0], m_scale[0]);
+	transformPoly(m_poly[1], m_poly_side_default, m_position[1], m_angle[1], m_scale[1]);
 
 	update();
 }
@@ -576,16 +596,25 @@ void TileDesignerWidget::mouseReleaseEvent(QMouseEvent* event)
 						p = snapToGrid(p);
 
 					glm::vec2 delta = p - m_move_reference;
-
+					/*
 					int num_points = m_poly[m_selected_poly]->getNumPoints();
 					for (int i = 0; i < num_points; i++)
 					{
 						glm::vec2 v = m_poly[m_selected_poly]->getPoint(i);
 						m_poly[m_selected_poly]->edit(i, v + delta);
 					}
+					*/
+					if (m_selected_poly == 0)
+					{
+						m_position[0] += delta;
+						transformPoly(m_poly[0], m_poly_top_default[m_current_tile_type], m_position[0], m_angle[0], m_scale[0]);
+					}
+					else if (m_selected_poly == 1)
+					{
+						m_position[1] += delta;
+						transformPoly(m_poly[1], m_poly_side_default, m_position[1], m_angle[1], m_scale[1]);
+					}
 				}
-
-				m_selected_poly = -1;
 
 				m_move_dragging = false;
 				break;
@@ -625,6 +654,8 @@ void TileDesignerWidget::mousePressEvent(QMouseEvent* event)
 					if (m_snap_grid)
 						mp = snapToGrid(mp);
 
+					m_selected_poly = -1;
+
 					for (int i = 0; i < 2; i++)
 					{
 						bool inside = m_poly[i]->isPointInside(mp);
@@ -636,6 +667,8 @@ void TileDesignerWidget::mousePressEvent(QMouseEvent* event)
 							break;
 						}
 					}
+
+					emit onSelectPoly(m_selected_poly);
 				}
 				
 				break;
@@ -834,9 +867,59 @@ void TileDesignerWidget::setColor(QColor color)
 	m_vbo[1].color = cc;
 	m_vbo[2].color = cc;
 	m_vbo[3].color = cc;
+
+	update();
 }
 
+void TileDesignerWidget::setScale(double scale)
+{
+	if (m_selected_poly == 0)
+	{
+		m_scale[0] = scale;
+		transformPoly(m_poly[0], m_poly_top_default[m_current_tile_type], m_position[0], m_angle[0], m_scale[0]);
+	}
+	else if (m_selected_poly == 1)
+	{
+		m_scale[1] = scale;
+		transformPoly(m_poly[1], m_poly_side_default, m_position[1], m_angle[1], m_scale[1]);
+	}
+	update();
+}
 
+void TileDesignerWidget::setRotate(int angle)
+{
+	if (m_selected_poly == 0)
+	{
+		m_angle[0] = angle;
+		transformPoly(m_poly[0], m_poly_top_default[m_current_tile_type], m_position[0], m_angle[0], m_scale[0]);
+	}
+	else if (m_selected_poly == 1)
+	{
+		m_angle[1] = angle;
+		transformPoly(m_poly[1], m_poly_side_default, m_position[1], m_angle[1], m_scale[1]);
+	}
+	update();
+}
+
+void TileDesignerWidget::transformPoly(PolygonDef* def, PolygonDef* srcdef, glm::vec2& pos, float rot, float scale)
+{
+	float minx, maxx, miny, maxy;
+	srcdef->calculateBounds(&minx, &maxx, &miny, &maxy);
+
+	glm::vec2 center = glm::vec2(minx + (maxx - miny) * 0.5f, miny + (maxy - miny) * 0.5f) + pos;
+	def->reset();
+
+	int num_points = srcdef->getNumPoints();
+	for (int i = 0; i < num_points; i++)
+	{
+		glm::vec2 pp = srcdef->getPoint(i) + pos;
+		glm::vec2 dp = (pp - center);
+		glm::vec2 tp = glm::rotate(dp, (float)(rot)) + center;
+		pp = center + ((tp - center) * scale);
+
+		def->insertPoint(pp);
+	}
+}
 
 
 
@@ -872,6 +955,9 @@ TileDesigner::TileDesigner(QWidget* parent, Level* level) : QDockWidget("Tile De
 
 	connect(m_widget, SIGNAL(onInsertTile(int)), this, SIGNAL(onInsertTile(int)));
 	connect(m_widget, SIGNAL(onReplaceTile(int)), this, SIGNAL(onReplaceTile(int)));
+
+	m_object_color = QColor(128, 128, 128, 255);
+	m_widget->setColor(m_object_color);
 
 
 	// edit tools
@@ -945,6 +1031,44 @@ TileDesigner::TileDesigner(QWidget* parent, Level* level) : QDockWidget("Tile De
 	m_zoomlevel_widget->setLayout(zoomlevel_layout);
 
 
+	// rotate
+	m_rotate_label = new QLabel("Rotate:");
+	m_rotate_label->setMinimumWidth(30);
+	m_rotate_spin = new QSpinBox();
+	m_rotate_spin->setRange(0, 360);
+	m_rotate_spin->setSingleStep(10);
+	m_rotate_spin->setValue(0);
+	QBoxLayout* rotate_layout = new QBoxLayout(QBoxLayout::LeftToRight);
+	rotate_layout->setSpacing(2);
+	rotate_layout->setMargin(1);
+	rotate_layout->addWidget(m_rotate_label);
+	rotate_layout->addWidget(m_rotate_spin);
+	m_rotate_widget = new QWidget;
+	m_rotate_widget->setMaximumHeight(30);
+	m_rotate_widget->setLayout(rotate_layout);
+
+	connect(m_rotate_spin, SIGNAL(valueChanged(int)), this, SLOT(setRotate(int)));
+
+
+	// scale
+	m_scale_label = new QLabel("Scale:");
+	m_scale_label->setMinimumWidth(30);
+	m_scale_spin = new QDoubleSpinBox();
+	m_scale_spin->setRange(0.01, 100.0);
+	m_scale_spin->setSingleStep(0.1);
+	m_scale_spin->setValue(1.0);
+	QBoxLayout* scale_layout = new QBoxLayout(QBoxLayout::LeftToRight);
+	scale_layout->setSpacing(2);
+	scale_layout->setMargin(1);
+	scale_layout->addWidget(m_scale_label);
+	scale_layout->addWidget(m_scale_spin);
+	m_scale_widget = new QWidget;
+	m_scale_widget->setMaximumHeight(30);
+	m_scale_widget->setLayout(scale_layout);
+
+	connect(m_scale_spin, SIGNAL(valueChanged(double)), this, SLOT(setScale(double)));
+
+
 	// grid tools
 	m_togglegrid_action = new QAction(QIcon("grid.png"), tr("Enable Grid"), this);
 	m_togglegrid_action->setCheckable(true);
@@ -1014,6 +1138,8 @@ TileDesigner::TileDesigner(QWidget* parent, Level* level) : QDockWidget("Tile De
 	m_window->addToolBar(m_edit_toolbar);
 
 	m_tile_toolbar = new QToolBar(m_window);
+	m_tile_toolbar->addWidget(m_rotate_widget);
+	m_tile_toolbar->addWidget(m_scale_widget);
 	m_tile_toolbar->addWidget(m_tiletype_widget);
 	m_window->addToolBar(m_tile_toolbar);
 
@@ -1073,6 +1199,12 @@ TileDesigner::TileDesigner(QWidget* parent, Level* level) : QDockWidget("Tile De
 
 	m_gridsize_combo->setCurrentIndex(3);
 	m_widget->setGrid(3);
+
+
+	m_rotate_widget->setDisabled(true);
+	m_scale_widget->setDisabled(true);
+
+	connect(m_widget, SIGNAL(onSelectPoly(int)), this, SLOT(polySelected(int)));
 }
 
 TileDesigner::~TileDesigner()
@@ -1087,6 +1219,9 @@ void TileDesigner::setMoveMode()
 void TileDesigner::reset()
 {
 	m_widget->resetObject(TileDesignerWidget::POLY_TOP | TileDesignerWidget::POLY_SIDE);
+
+	m_rotate_spin->setValue(0);
+	m_scale_spin->setValue(1.0);
 }
 
 void TileDesigner::insertTile()
@@ -1177,5 +1312,41 @@ void TileDesigner::tileSelected(int tile)
 	else
 	{
 		m_replacetile_button->setDisabled(true);
+	}
+}
+
+
+void TileDesigner::setScale(double scale)
+{
+	emit m_widget->setScale(scale);
+}
+
+void TileDesigner::setRotate(int angle)
+{
+	emit m_widget->setRotate(angle);
+}
+
+void TileDesigner::polySelected(int poly)
+{
+	if (poly == 0)
+	{
+		m_rotate_widget->setDisabled(false);
+		m_scale_widget->setDisabled(false);
+
+		m_rotate_spin->setValue(m_widget->m_angle[0]);
+		m_scale_spin->setValue(m_widget->m_scale[0]);
+	}
+	else if (poly == 1)
+	{
+		m_rotate_widget->setDisabled(false);
+		m_scale_widget->setDisabled(false);
+
+		m_rotate_spin->setValue(m_widget->m_angle[1]);
+		m_scale_spin->setValue(m_widget->m_scale[1]);
+	}
+	else
+	{
+		m_rotate_widget->setDisabled(true);
+		m_scale_widget->setDisabled(true);
 	}
 }
