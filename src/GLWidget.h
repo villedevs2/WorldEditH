@@ -6,6 +6,7 @@
 
 #include <glm.hpp>
 #include <gtx/rotate_vector.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include "PolygonDef.h"
 #include "Level.h"
@@ -141,8 +142,10 @@ private:
 
 	QGLShaderProgram* m_level_program;
 	QGLShaderProgram* m_grid_program;
+	QGLShaderProgram* m_3d_program;
 	Shader m_level_shader;
 	Shader m_grid_shader;
+	Shader m_3d_shader;
 
 	OperationMode m_opmode;
 

@@ -1439,6 +1439,8 @@ void GLWidget::initializeGL()
 	QString level_fs_file = loadShader("level_fs.glsl");
 	QString grid_vs_file = loadShader("grid_vs.glsl");
 	QString grid_fs_file = loadShader("grid_fs.glsl");
+	QString hs_vs_file = loadShader("homestar_vs.glsl");
+	QString hs_fs_file = loadShader("homestar_fs.glsl");
 
 	m_level_program = new QGLShaderProgram(this);
 	m_level_program->addShaderFromSourceCode(QGLShader::Vertex, level_vs_file);
@@ -1471,6 +1473,20 @@ void GLWidget::initializeGL()
 	m_grid_shader.scale			= m_grid_program->uniformLocation("v_scale");
 	m_grid_shader.vp_matrix		= m_grid_program->uniformLocation("m_vp_matrix");
 	m_grid_shader.rot_matrix	= m_grid_program->uniformLocation("m_rot_matrix");
+
+
+	m_3d_program = new QGLShaderProgram(this);
+	m_3d_program->addShaderFromSourceCode(QGLShader::Vertex, hs_vs_file);
+	m_3d_program->addShaderFromSourceCode(QGLShader::Fragment, hs_fs_file);
+	m_3d_program->link();
+
+	error = m_3d_program->log();
+	errors = error.toStdString();
+
+	m_3d_shader.position = m_3d_program->attributeLocation("a_position");
+	m_3d_shader.tex_coord = m_3d_program->attributeLocation("a_texcoord");
+	m_3d_shader.color = m_3d_program->attributeLocation("a_color");
+	m_3d_shader.vp_matrix = m_3d_program->uniformLocation("m_vp_matrix");
 }
 
 
@@ -2196,6 +2212,7 @@ void GLWidget::paintGL()
 
 
 	// tilemap
+	/*
 	{
 		glBindTexture(GL_TEXTURE_2D, m_base_tex);
 
@@ -2247,7 +2264,7 @@ void GLWidget::paintGL()
 			}
 		}
 	}
-
+	*/
 
 	for (int vbo = 0; vbo < Level::NUM_VBOS; vbo++)
 	{
@@ -2273,6 +2290,99 @@ void GLWidget::paintGL()
 			m_level_program->disableAttributeArray(m_level_shader.color);
 		}
 	}
+
+	// 3d tilemap
+	{
+		glDisable(GL_CULL_FACE);
+
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_ALPHA_TEST);
+
+		float aspect = (float)(width()) / (float)(height());
+		float halfw = (float)((LEVEL_VIS_WIDTH) / 2);
+		float halfh = halfw / aspect;
+
+		const double fov = 60.0;
+
+		float size = 0.01f * (float)tan((fov * M_PI / 180.0) / 2);
+
+		float camera_distance = ((float)(LEVEL_VIS_WIDTH) / 2) / tan((fov * M_PI / 180.0) / 2);
+
+		glm::vec2 cam_pos = -m_scroll + glm::vec2(halfw, halfh);
+
+
+		glm::vec3 pos = glm::vec3(cam_pos.x, cam_pos.y + 0.0f, camera_distance);
+		glm::vec3 eye = glm::vec3(cam_pos.x, cam_pos.y, 0.0f);
+
+		glm::mat4 camera_proj_matrix = glm::frustum<float>(-size, size, size / aspect, -size / aspect, 0.01f, 100.0f);
+		glm::mat4 camera_view_matrix = glm::lookAt(pos, eye, glm::vec3(0.0f, 1.0f, 0.0));
+		glm::mat4 camera_vp_matrix = camera_proj_matrix * camera_view_matrix;
+
+
+		QMatrix4x4 vp_mat = QMatrix4x4(glm::value_ptr(camera_vp_matrix));
+
+		m_3d_program->bind();
+
+		m_3d_program->setUniformValue(m_3d_shader.vp_matrix, vp_mat);
+
+		glEnable(GL_DEPTH_TEST);
+		glDepthMask(GL_TRUE);
+
+
+		glBindTexture(GL_TEXTURE_2D, m_base_tex);
+
+		glm::vec2 tilemap_tl = toLevelCoords(glm::vec2(0, 0));
+		glm::vec2 tilemap_br = toLevelCoords(glm::vec2(width(), height()));
+
+		tilemap_tl.x *= m_level->getTileWidth();
+		tilemap_tl.y *= m_level->getTileHeight();
+		tilemap_br.x *= m_level->getTileWidth();
+		tilemap_br.y *= m_level->getTileHeight();
+
+		int xs = (int)(floor(tilemap_tl.x / Tilemap::BUCKET_WIDTH));
+		int ys = (int)(floor(tilemap_tl.y / Tilemap::BUCKET_HEIGHT));
+		int xe = (int)(ceil(tilemap_br.x / Tilemap::BUCKET_WIDTH));
+		int ye = (int)(ceil(tilemap_br.y / Tilemap::BUCKET_HEIGHT));
+
+		if (xs < 0)
+			xs = 0;
+		if (ys < 0)
+			ys = 0;
+		if (xe >(Tilemap::AREA_WIDTH / Tilemap::BUCKET_WIDTH))
+			xe = Tilemap::AREA_WIDTH / Tilemap::BUCKET_WIDTH;
+		if (ye >(Tilemap::AREA_HEIGHT / Tilemap::BUCKET_HEIGHT))
+			ye = Tilemap::AREA_HEIGHT / Tilemap::BUCKET_HEIGHT;
+
+		for (int j = ys; j < ye; j++)
+		{
+			for (int i = xs; i < xe; i++)
+			{
+				const Tilemap::Bucket* bucket = m_level->getTileBucket(i, j);
+				if (bucket != nullptr)
+				{
+					float* geo = (float*)bucket->preview->getPointer();
+					int vbsize = bucket->preview->getVertexSize();
+
+					m_3d_program->enableAttributeArray(m_3d_shader.position);
+					m_3d_program->setAttributeArray(m_3d_shader.position, (GLfloat*)geo, 3, vbsize);
+					m_3d_program->enableAttributeArray(m_3d_shader.tex_coord);
+					m_3d_program->setAttributeArray(m_3d_shader.tex_coord, (GLfloat*)geo + 3, 2, vbsize);
+					m_3d_program->enableAttributeArray(m_3d_shader.color);
+					m_3d_program->setAttributeArray(m_3d_shader.color, GL_UNSIGNED_BYTE, (GLbyte*)geo + 20, 4, vbsize);
+
+					glDrawArrays(GL_TRIANGLES, 0, Tilemap::BUCKET_WIDTH*Tilemap::BUCKET_HEIGHT * 16 * 3);
+
+					m_3d_program->disableAttributeArray(m_3d_shader.position);
+					m_3d_program->disableAttributeArray(m_3d_shader.tex_coord);
+					m_3d_program->disableAttributeArray(m_3d_shader.color);
+				}
+			}
+		}
+	}
+
+
+
 
 
 	glDisable(GL_DEPTH_TEST);
