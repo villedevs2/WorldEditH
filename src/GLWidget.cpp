@@ -2304,18 +2304,20 @@ void GLWidget::paintGL()
 		float halfh = halfw / aspect;
 
 		const double fov = 60.0;
+		const double near_plane = 0.01;
+		const double far_plane = 100.0;
 
-		float size = 0.01f * (float)tan((fov * M_PI / 180.0) / 2);
+		float size = near_plane * (float)tan((fov * M_PI / 180.0) / 2);
 
 		float camera_distance = ((float)(LEVEL_VIS_WIDTH) / 2) / tan((fov * M_PI / 180.0) / 2);
 
 		glm::vec2 cam_pos = -m_scroll + glm::vec2(halfw, halfh);
 
 
-		glm::vec3 pos = glm::vec3(cam_pos.x, cam_pos.y + 0.0f, camera_distance);
+		glm::vec3 pos = glm::vec3(cam_pos.x, cam_pos.y, camera_distance);
 		glm::vec3 eye = glm::vec3(cam_pos.x, cam_pos.y, 0.0f);
 
-		glm::mat4 camera_proj_matrix = glm::frustum<float>(-size, size, size / aspect, -size / aspect, 0.01f, 100.0f);
+		glm::mat4 camera_proj_matrix = glm::frustum<float>(-size, size, size / aspect, -size / aspect, near_plane, far_plane);
 		glm::mat4 camera_view_matrix = glm::lookAt(pos, eye, glm::vec3(0.0f, 1.0f, 0.0));
 		glm::mat4 camera_vp_matrix = camera_proj_matrix * camera_view_matrix;
 
