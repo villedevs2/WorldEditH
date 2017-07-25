@@ -1279,6 +1279,57 @@ void MainWindow::clearEdgify()
 	m_glwidget->setEdgeData(ptlist);
 }
 
+void MainWindow::doStats()
+{
+	int total_buckets = (Tilemap::AREA_WIDTH / Tilemap::BUCKET_WIDTH) * (Tilemap::AREA_HEIGHT / Tilemap::BUCKET_HEIGHT);
+	int num_buckets = 0;
+	int used_tiles = 0;
+	int raw_polys = 0;
+	for (int i = 0; i < total_buckets; i++)
+	{
+		Tilemap::Bucket* bucket = m_level->getTileBucket(i);
+		if (bucket != nullptr)
+		{
+			num_buckets++;
+
+			for (int bit = 0; bit < 64; bit++)
+			{
+				if (bucket->coverage & ((uint64_t)(1) << bit))
+					used_tiles++;
+			}
+
+			for (int tt = 0; tt < 64; tt++)
+			{
+				int ctile = bucket->map[tt] & Tilemap::TILE_MASK;
+				if (ctile != Tilemap::TILE_EMPTY)
+				{
+					int z = (bucket->map[tt] & Tilemap::Z_MASK) >> Tilemap::Z_SHIFT;
+					if (z > 0)
+					{
+						raw_polys += 16;
+					}
+					else
+					{
+						raw_polys += 4;
+					}
+				}
+			}
+		}
+	}
+
+	QString stats = "";
+	stats += tr("Allocated buckets: %1\n").arg(num_buckets);
+	stats += tr("Used tiles: %1\n").arg(used_tiles);
+	stats += tr("Raw polys: %1\n").arg(raw_polys);
+
+	QMessageBox box;
+	box.setText("Statistics.");
+	box.setInformativeText(stats);
+	box.setStandardButtons(QMessageBox::Ok);
+	box.setDefaultButton(QMessageBox::Ok);
+	int ret = box.exec();
+}
+
 
 void MainWindow::createActions()
 {
@@ -1473,6 +1524,11 @@ void MainWindow::createActions()
 	connect(m_clear_edgify_action, SIGNAL(triggered()), this, SLOT(clearEdgify()));
 
 
+	// stats
+	m_stats_action = new QAction(tr("Statistics..."), this);
+	connect(m_stats_action, SIGNAL(triggered()), this, SLOT(doStats()));
+
+
 	// zoom
 	m_zoomLevelCombo = new QComboBox();
 	for (int i=0; i < GLWidget::NUM_ZOOM_LEVELS; i++)
@@ -1556,6 +1612,7 @@ void MainWindow::createMenus()
 	m_editMenu->addSeparator();
 	m_editMenu->addAction(m_edgify_action);
 	m_editMenu->addAction(m_clear_edgify_action);
+	m_editMenu->addAction(m_stats_action);
 
 	// texture menu
 	m_textureMenu = menuBar()->addMenu(tr("&Texture"));

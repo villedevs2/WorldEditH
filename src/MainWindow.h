@@ -119,6 +119,8 @@ private:
 	QAction* m_edgify_action;
 	QAction* m_clear_edgify_action;
 
+	QAction* m_stats_action;
+
 	QString m_open_file;
 	QString m_texture_file;
 
@@ -225,4 +227,5 @@ private slots:
 	void clearEdgify();
 
 	void zbaseChanged(int);
+	void doStats();
 };
