@@ -1,4 +1,3 @@
 <RCC>
-    <qresource prefix="WorldEditH">
-    </qresource>
+    <qresource prefix="/WorldEditH"/>
 </RCC>
