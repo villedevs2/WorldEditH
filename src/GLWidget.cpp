@@ -2300,7 +2300,7 @@ void GLWidget::paintGL()
 		glEnable(GL_ALPHA_TEST);
 
 		float aspect = (float)(width()) / (float)(height());
-		float halfw = (float)((LEVEL_VIS_WIDTH) / 2);
+		float halfw = (float)((LEVEL_VIS_WIDTH / GLWidget::ZOOM_LEVELS[m_zoom_level]) / 2);
 		float halfh = halfw / aspect;
 
 		const double fov = 60.0;
@@ -2309,7 +2309,7 @@ void GLWidget::paintGL()
 
 		float size = near_plane * (float)tan((fov * M_PI / 180.0) / 2);
 
-		float camera_distance = ((float)(LEVEL_VIS_WIDTH) / 2) / tan((fov * M_PI / 180.0) / 2);
+		float camera_distance = ((float)(LEVEL_VIS_WIDTH / GLWidget::ZOOM_LEVELS[m_zoom_level]) / 2) / tan((fov * M_PI / 180.0) / 2);
 
 		glm::vec2 cam_pos = -m_scroll + glm::vec2(halfw, halfh);
 

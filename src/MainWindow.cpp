@@ -23,8 +23,6 @@ MainWindow::MainWindow()
 	m_objedit = new ObjectEdit(this, m_level);
 	
 	m_tiledesigner = new TileDesigner(this, m_level);
-
-	m_preview = new PreviewWindow(this, m_level);
 	
 
 	m_visbox_conf = new VisboxConf(this);
@@ -94,7 +92,6 @@ MainWindow::MainWindow()
 	connect(m_objedit, SIGNAL(onClose()), this, SLOT(objEditClosed()));
 	connect(m_tiledesigner, SIGNAL(onClose()),this, SLOT(tileDesignerClosed()));
 	connect(m_tileset_window, SIGNAL(onClose()), this, SLOT(tilesetWindowClosed()));
-	connect(m_preview, SIGNAL(onClose()), this, SLOT(previewClosed()));
 
 	connect(m_objedit, SIGNAL(onSetCreateType(Level::ObjectType)), m_glwidget, SLOT(setCreateType(Level::ObjectType)));
 	connect(m_objedit, SIGNAL(onSetCreateTriggerType(int)), m_glwidget, SLOT(setCreateTriggerType(int)));
@@ -104,9 +101,6 @@ MainWindow::MainWindow()
 
 	connect(m_tileset_window, SIGNAL(onSelectTile(int)), m_glwidget, SLOT(setTileBrush(int)));
 	connect(m_tileset_window, SIGNAL(onSelectTile(int)), m_tiledesigner, SLOT(tileSelected(int)));
-	connect(m_glwidget, SIGNAL(onTileUpdate(int, int)), m_preview, SLOT(tileUpdated(int, int)));
-
-	connect(m_glwidget, SIGNAL(onTileSelect(int, int)), m_preview, SLOT(tileSelected(int, int)));
 
 	// zoom shortcuts
 	m_zoomin_shortcut = new QShortcut(QKeySequence(Qt::Key_Plus), this);
@@ -138,9 +132,6 @@ MainWindow::MainWindow()
 	// tileset window positioning
 	m_tileset_window->move(QPoint(width() + 850, 600));
 
-	// preview window positioning
-	m_preview->move(QPoint(width() + 250, 100));
-
 
 	// tex edit hidden by default
 	m_texedit_open = false;
@@ -161,11 +152,6 @@ MainWindow::MainWindow()
 	m_tileset_window_open = false;
 	m_toggle_tileset_window->setChecked(false);
 	m_tileset_window->setHidden(true);
-
-	// preview shown by default
-	m_preview_open = true;
-	m_toggle_preview->setChecked(true);
-	m_preview->setHidden(false);
 
 	
 	// grid settings
@@ -581,28 +567,6 @@ void MainWindow::tilesetWindowClosed()
 	m_toggle_tileset_window->setChecked(false);
 }
 
-void MainWindow::togglePreview()
-{
-	if (m_preview_open)
-	{
-		emit m_preview->setHidden(true);
-		m_preview_open = false;
-		m_toggle_preview->setChecked(false);
-	}
-	else
-	{
-		emit m_preview->setHidden(false);
-		m_preview_open = true;
-		m_toggle_preview->setChecked(true);
-	}
-}
-
-void MainWindow::previewClosed()
-{
-	m_preview_open = false;
-	m_toggle_preview->setChecked(false);
-}
-
 void MainWindow::toggleVisbox()
 {
 	if (m_enable_visbox)
@@ -667,7 +631,6 @@ void MainWindow::changeTexture(QString path)
 	m_texedit->setTexture(m_texture);
 	m_tiledesigner->setTexture(m_texture);
 	m_tileset_window->setTexture(m_texture);
-	m_preview->setTexture(m_texture);
 }
 
 
@@ -1490,10 +1453,6 @@ void MainWindow::createActions()
 	m_toggle_tileset_window->setCheckable(true);
 	connect(m_toggle_tileset_window, SIGNAL(triggered()), this, SLOT(toggleTilesetWindow()));
 
-	m_toggle_preview = new QAction(QIcon("3d.png"), tr("Toggle Preview"), this);
-	m_toggle_preview->setCheckable(true);
-	connect(m_toggle_preview, SIGNAL(triggered()), this, SLOT(togglePreview()));
-
 
 	// visbox
 	m_toggle_visbox = new QAction(QIcon("visbox.png"), tr("Toggle Visualization Box"), this);
@@ -1639,7 +1598,6 @@ void MainWindow::createToolbars()
 	m_editor_toolbar->addAction(m_toggle_objedit);
 	m_editor_toolbar->addAction(m_toggle_tiledesigner);
 	m_editor_toolbar->addAction(m_toggle_tileset_window);
-	m_editor_toolbar->addAction(m_toggle_preview);
 
 	m_visbox_toolbar = addToolBar("Visualization Box");
 	m_visbox_toolbar->addAction(m_toggle_visbox);
