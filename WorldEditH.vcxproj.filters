@@ -255,4 +255,36 @@
   <ItemGroup>
     <Image Include="welogo2_64.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="grid_fs.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="grid_vs.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="homestar_fs.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="homestar_vs.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="level_fs.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="level_vs.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="selflum_fs.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="selflum_vs.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="reflect_fs.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="reflect_vs.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+  </ItemGroup>
 </Project>

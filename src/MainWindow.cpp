@@ -631,6 +631,16 @@ void MainWindow::changeTexture(QString path)
 	m_texedit->setTexture(m_texture);
 	m_tiledesigner->setTexture(m_texture);
 	m_tileset_window->setTexture(m_texture);
+
+	QImage* textures[6];
+	textures[0] = m_texture;
+	textures[1] = m_texture;
+	textures[2] = m_texture;
+	textures[3] = m_texture;
+	textures[4] = m_texture;
+	textures[5] = m_texture;
+
+	m_glwidget->loadEnvTexture(textures);
 }
 
 

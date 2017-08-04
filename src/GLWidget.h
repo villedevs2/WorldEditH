@@ -37,6 +37,8 @@ public:
 		int color;
 		int vp_matrix;
 		int rot_matrix;
+		int v_matrix;
+		int normal;
 	};
 
 	static const int NUM_GRID_SIZES = 6;
@@ -53,6 +55,7 @@ public:
 	glm::vec2 toScreenCoords(glm::vec2 point);
 	glm::vec2 toLevelCoords(glm::vec2 point);
 	void loadTexture(QImage* texture);
+	void loadEnvTexture(QImage** textures);
 	void enableGrid(bool enable);
 	void setSnapGrid(bool enable);
 	void reset();
@@ -133,6 +136,7 @@ private:
 	GLuint m_shader;
 
 	GLuint m_base_tex;
+	GLuint m_env_tex;
 
 	float m_viewport_width;
 	float m_viewport_height;
@@ -143,9 +147,13 @@ private:
 	QGLShaderProgram* m_level_program;
 	QGLShaderProgram* m_grid_program;
 	QGLShaderProgram* m_3d_program;
+	QGLShaderProgram* m_selflum_program;
+	QGLShaderProgram* m_reflect_program;
 	Shader m_level_shader;
 	Shader m_grid_shader;
 	Shader m_3d_shader;
+	Shader m_selflum_shader;
+	Shader m_reflect_shader;
 
 	OperationMode m_opmode;
 

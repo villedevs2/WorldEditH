@@ -1433,6 +1433,74 @@ void GLWidget::loadTexture(QImage* texture)
 	doneCurrent();
 }
 
+void GLWidget::loadEnvTexture(QImage** textures)
+{
+	static GLenum cube_faces[6] =
+	{
+		GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+		GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+		GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+		GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+		GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
+		GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
+	};
+
+	makeCurrent();
+
+	if (glIsTexture(m_env_tex))
+		glDeleteTextures(1, &m_env_tex);
+	glGenTextures(1, &m_env_tex);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_env_tex);
+
+	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	for (int tex = 0; tex < 6; tex++)
+	{
+		int width = textures[tex]->width();
+		int height = textures[tex]->height();
+
+		char *pixels = new char[width * height * 3];
+
+		int index = 0;
+		for (int j = 0; j < height; j++)
+		{
+			QRgb *scan = (QRgb*)textures[tex]->scanLine(j);
+
+			for (int i = 0; i < width; i++)
+			{
+				int r = qRed(scan[i]);
+				int g = qGreen(scan[i]);
+				int b = qBlue(scan[i]);
+
+				switch (tex)
+				{
+				case 0: r = 255; g = 0; b = 0; break;
+				case 1: r = 255; g = 255; b = 0; break;
+				case 2: r = 0; g = 255; b = 0; break;
+				case 3: r = 0; g = 0; b = 255; break;
+				case 4: r = 0; g = 255; b = 255; break;
+				case 5: r = 255; g = 0; b = 255; break;
+				}
+
+				pixels[index + 0] = r;
+				pixels[index + 1] = g;
+				pixels[index + 2] = b;
+
+				index += 3;
+			}
+		}
+
+		glTexImage2D(cube_faces[tex], 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+
+		delete[] pixels;
+	}
+
+	doneCurrent();
+}
+
 void GLWidget::initializeGL()
 {
 	QString level_vs_file = loadShader("level_vs.glsl");
@@ -1441,6 +1509,10 @@ void GLWidget::initializeGL()
 	QString grid_fs_file = loadShader("grid_fs.glsl");
 	QString hs_vs_file = loadShader("homestar_vs.glsl");
 	QString hs_fs_file = loadShader("homestar_fs.glsl");
+	QString selflum_vs_file = loadShader("selflum_vs.glsl");
+	QString selflum_fs_file = loadShader("selflum_fs.glsl");
+	QString reflect_vs_file = loadShader("reflect_vs.glsl");
+	QString reflect_fs_file = loadShader("reflect_fs.glsl");
 
 	m_level_program = new QGLShaderProgram(this);
 	m_level_program->addShaderFromSourceCode(QGLShader::Vertex, level_vs_file);
@@ -1487,6 +1559,37 @@ void GLWidget::initializeGL()
 	m_3d_shader.tex_coord = m_3d_program->attributeLocation("a_texcoord");
 	m_3d_shader.color = m_3d_program->attributeLocation("a_color");
 	m_3d_shader.vp_matrix = m_3d_program->uniformLocation("m_vp_matrix");
+
+
+	m_selflum_program = new QGLShaderProgram(this);
+	m_selflum_program->addShaderFromSourceCode(QGLShader::Vertex, selflum_vs_file);
+	m_selflum_program->addShaderFromSourceCode(QGLShader::Fragment, selflum_fs_file);
+	m_selflum_program->link();
+
+	error = m_selflum_program->log();
+	errors = error.toStdString();
+
+	m_selflum_shader.position = m_selflum_program->attributeLocation("a_position");
+	m_selflum_shader.tex_coord = m_selflum_program->attributeLocation("a_texcoord");
+	m_selflum_shader.normal = m_selflum_program->attributeLocation("a_normal");
+	m_selflum_shader.color = m_selflum_program->attributeLocation("a_color");
+	m_selflum_shader.vp_matrix = m_selflum_program->uniformLocation("m_vp_matrix");
+
+
+	m_reflect_program = new QGLShaderProgram(this);
+	m_reflect_program->addShaderFromSourceCode(QGLShader::Vertex, reflect_vs_file);
+	m_reflect_program->addShaderFromSourceCode(QGLShader::Fragment, reflect_fs_file);
+	m_reflect_program->link();
+
+	error = m_reflect_program->log();
+	errors = error.toStdString();
+
+	m_reflect_shader.position = m_reflect_program->attributeLocation("a_position");
+	m_reflect_shader.tex_coord = m_reflect_program->attributeLocation("a_texcoord");
+	m_reflect_shader.normal = m_reflect_program->attributeLocation("a_normal");
+	m_reflect_shader.color = m_reflect_program->attributeLocation("a_color");
+	m_reflect_shader.vp_matrix = m_reflect_program->uniformLocation("m_vp_matrix");
+	m_reflect_shader.v_matrix = m_reflect_program->uniformLocation("m_v_matrix");
 }
 
 
@@ -2323,16 +2426,19 @@ void GLWidget::paintGL()
 
 
 		QMatrix4x4 vp_mat = QMatrix4x4(glm::value_ptr(camera_vp_matrix));
+		QMatrix4x4 v_mat = QMatrix4x4(glm::value_ptr(camera_view_matrix));
 
-		m_3d_program->bind();
+		m_reflect_program->bind();
 
-		m_3d_program->setUniformValue(m_3d_shader.vp_matrix, vp_mat);
+		m_reflect_program->setUniformValue(m_reflect_shader.vp_matrix, vp_mat);
+		m_reflect_program->setUniformValue(m_reflect_shader.v_matrix, v_mat);
 
 		glEnable(GL_DEPTH_TEST);
 		glDepthMask(GL_TRUE);
 
 
 		glBindTexture(GL_TEXTURE_2D, m_base_tex);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, m_env_tex);
 
 		glm::vec2 tilemap_tl = toLevelCoords(glm::vec2(0, 0));
 		glm::vec2 tilemap_br = toLevelCoords(glm::vec2(width(), height()));
@@ -2366,18 +2472,21 @@ void GLWidget::paintGL()
 					float* geo = (float*)bucket->preview->getPointer();
 					int vbsize = bucket->preview->getVertexSize();
 
-					m_3d_program->enableAttributeArray(m_3d_shader.position);
-					m_3d_program->setAttributeArray(m_3d_shader.position, (GLfloat*)geo, 3, vbsize);
-					m_3d_program->enableAttributeArray(m_3d_shader.tex_coord);
-					m_3d_program->setAttributeArray(m_3d_shader.tex_coord, (GLfloat*)geo + 3, 2, vbsize);
-					m_3d_program->enableAttributeArray(m_3d_shader.color);
-					m_3d_program->setAttributeArray(m_3d_shader.color, GL_UNSIGNED_BYTE, (GLbyte*)geo + 20, 4, vbsize);
+					m_reflect_program->enableAttributeArray(m_reflect_shader.position);
+					m_reflect_program->setAttributeArray(m_reflect_shader.position, (GLfloat*)geo, 3, vbsize);
+					m_reflect_program->enableAttributeArray(m_reflect_shader.tex_coord);
+					m_reflect_program->setAttributeArray(m_reflect_shader.tex_coord, (GLfloat*)geo + 3, 2, vbsize);
+					m_reflect_program->enableAttributeArray(m_reflect_shader.normal);
+					m_reflect_program->setAttributeArray(m_reflect_shader.normal, (GLfloat*)geo + 5, 3, vbsize);
+					m_reflect_program->enableAttributeArray(m_reflect_shader.color);
+					m_reflect_program->setAttributeArray(m_reflect_shader.color, GL_UNSIGNED_BYTE, (GLbyte*)geo + 32, 4, vbsize);
 
 					glDrawArrays(GL_TRIANGLES, 0, Tilemap::BUCKET_WIDTH*Tilemap::BUCKET_HEIGHT * 16 * 3);
 
-					m_3d_program->disableAttributeArray(m_3d_shader.position);
-					m_3d_program->disableAttributeArray(m_3d_shader.tex_coord);
-					m_3d_program->disableAttributeArray(m_3d_shader.color);
+					m_reflect_program->disableAttributeArray(m_reflect_shader.position);
+					m_reflect_program->disableAttributeArray(m_reflect_shader.tex_coord);
+					m_reflect_program->disableAttributeArray(m_reflect_shader.normal);
+					m_reflect_program->disableAttributeArray(m_reflect_shader.color);
 				}
 			}
 		}

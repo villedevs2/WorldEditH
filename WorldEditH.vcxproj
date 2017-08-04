@@ -334,6 +334,18 @@
   <ItemGroup>
     <Image Include="welogo2_64.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="grid_fs.glsl" />
+    <None Include="grid_vs.glsl" />
+    <None Include="homestar_fs.glsl" />
+    <None Include="homestar_vs.glsl" />
+    <None Include="level_fs.glsl" />
+    <None Include="level_vs.glsl" />
+    <None Include="reflect_fs.glsl" />
+    <None Include="reflect_vs.glsl" />
+    <None Include="selflum_fs.glsl" />
+    <None Include="selflum_vs.glsl" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -82,8 +82,8 @@ TileDesignerWidget::TileDesignerWidget(QWidget* parent, Level* level) : QGLWidge
 
 
 	m_poly_side_default->insertPoint(glm::vec2(0.0f, 0.0f));
-	m_poly_side_default->insertPoint(glm::vec2(0.0f, 0.25f));
-	m_poly_side_default->insertPoint(glm::vec2(0.125f, 0.25f));
+	m_poly_side_default->insertPoint(glm::vec2(0.0f, 0.125f));
+	m_poly_side_default->insertPoint(glm::vec2(0.125f, 0.125f));
 	m_poly_side_default->insertPoint(glm::vec2(0.125f, 0.0f));
 
 	m_zoom = 1.0f;

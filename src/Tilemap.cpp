@@ -117,6 +117,31 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 		glm::vec2 suv4 = tiledata->side_points[3];
 
 		/*
+		glm::vec3 uva1 = glm::vec3(0.0f, 0.0f + (15.0 / 50.0), 1.0f);
+		glm::vec3 uva2 = glm::vec3(0.0f, 0.0f + (35.0 / 50.0), 1.0f);
+		glm::vec3 uva3 = glm::vec3(0.5f, 1.0f, 1.0f);
+		glm::vec3 uva4 = glm::vec3(1.0f, 0.0f + (35.0 / 50.0), 1.0f);
+		glm::vec3 uva5 = glm::vec3(1.0f, 0.0f + (15.0 / 50.0), 1.0f);
+		glm::vec3 uva6 = glm::vec3(0.5f, 0.0f, 1.0f);
+		*/		
+
+		glm::vec3 uva1 = glm::vec3(-1.0f, -0.4f, 0.0f);
+		glm::vec3 uva2 = glm::vec3(-1.0f,  0.4f, 0.0f);
+		glm::vec3 uva3 = glm::vec3( 0.0f,  1.0f, 0.0f);
+		glm::vec3 uva4 = glm::vec3( 1.0f,  0.4f, 0.0f);
+		glm::vec3 uva5 = glm::vec3( 1.0f, -0.4f, 0.0f);
+		glm::vec3 uva6 = glm::vec3( 0.0f, -1.0f, 0.0f);
+
+		glm::vec3 uvab1 = glm::vec3(uva1.x, uva1.y, 0.5f);
+		glm::vec3 uvab2 = glm::vec3(uva2.x, uva2.y, 0.5f);
+		glm::vec3 uvab3 = glm::vec3(uva3.x, uva3.y, 0.5f);
+		glm::vec3 uvab4 = glm::vec3(uva4.x, uva4.y, 0.5f);
+		glm::vec3 uvab5 = glm::vec3(uva5.x, uva5.y, 0.5f);
+		glm::vec3 uvab6 = glm::vec3(uva6.x, uva6.y, 0.5f);
+
+
+
+		/*
 		         p6
 		    p1         p5
 		    p2         p4
@@ -143,6 +168,95 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 		glm::vec3 tp4 = glm::vec3(tx2, ty1 + (m_tile_height * (35.0 / 70.0)), 100.0f);
 		glm::vec3 tp5 = glm::vec3(tx2, ty1 + (m_tile_height * (15.0 / 70.0)), 100.0f);
 		glm::vec3 tp6 = glm::vec3(tx1 + (m_tile_width * 0.5), ty1, 100.0f);
+
+		glm::vec3 top_norm(0.0f, 0.0f, 1.0f);
+
+		VBO::Vertex tv1(p1, uv1, top_norm, tiledata->color);
+		VBO::Vertex tv2(p2, uv2, top_norm, tiledata->color);
+		VBO::Vertex tv3(p3, uv3, top_norm, tiledata->color);
+		VBO::Vertex tv4(p4, uv4, top_norm, tiledata->color);
+		VBO::Vertex tv5(p5, uv5, top_norm, tiledata->color);
+		VBO::Vertex tv6(p6, uv6, top_norm, tiledata->color);
+
+		VBO::Vertex left_v1(p1, suv1, glm::vec3(), tiledata->color);
+		VBO::Vertex left_v2(p2, suv2, glm::vec3(), tiledata->color);
+		VBO::Vertex left_v3(bp2, suv3, glm::vec3(), tiledata->color);
+		VBO::Vertex left_v4(bp1, suv4, glm::vec3(), tiledata->color);
+
+		VBO::Vertex topleft_v1(p6, suv1, glm::vec3(), tiledata->color);
+		VBO::Vertex topleft_v2(p1, suv2, glm::vec3(), tiledata->color);
+		VBO::Vertex topleft_v3(bp1, suv3, glm::vec3(), tiledata->color);
+		VBO::Vertex topleft_v4(bp6, suv4, glm::vec3(), tiledata->color);
+
+		VBO::Vertex topright_v1(p5, suv1, glm::vec3(), tiledata->color);
+		VBO::Vertex topright_v2(p6, suv2, glm::vec3(), tiledata->color);
+		VBO::Vertex topright_v3(bp6, suv3, glm::vec3(), tiledata->color);
+		VBO::Vertex topright_v4(bp5, suv4, glm::vec3(), tiledata->color);
+
+		VBO::Vertex right_v1(p4, suv1, glm::vec3(), tiledata->color);
+		VBO::Vertex right_v2(p5, suv2, glm::vec3(), tiledata->color);
+		VBO::Vertex right_v3(bp5, suv3, glm::vec3(), tiledata->color);
+		VBO::Vertex right_v4(bp4, suv4, glm::vec3(), tiledata->color);
+
+		VBO::Vertex botright_v1(p3, suv1, glm::vec3(), tiledata->color);
+		VBO::Vertex botright_v2(p4, suv2, glm::vec3(), tiledata->color);
+		VBO::Vertex botright_v3(bp4, suv3, glm::vec3(), tiledata->color);
+		VBO::Vertex botright_v4(bp3, suv4, glm::vec3(), tiledata->color);
+
+		VBO::Vertex botleft_v1(p2, suv1, glm::vec3(), tiledata->color);
+		VBO::Vertex botleft_v2(p3, suv2, glm::vec3(), tiledata->color);
+		VBO::Vertex botleft_v3(bp3, suv3, glm::vec3(), tiledata->color);
+		VBO::Vertex botleft_v4(bp2, suv4, glm::vec3(), tiledata->color);
+
+		VBO::Vertex sideleft_v1(p3, suv1, glm::vec3(), tiledata->color);
+		VBO::Vertex sideleft_v2(p6, suv2, glm::vec3(), tiledata->color);
+		VBO::Vertex sideleft_v3(bp6, suv3, glm::vec3(), tiledata->color);
+		VBO::Vertex sideleft_v4(bp3, suv4, glm::vec3(), tiledata->color);
+
+		VBO::Vertex sideright_v1(p6, suv1, glm::vec3(), tiledata->color);
+		VBO::Vertex sideright_v2(p3, suv2, glm::vec3(), tiledata->color);
+		VBO::Vertex sideright_v3(bp3, suv3, glm::vec3(), tiledata->color);
+		VBO::Vertex sideright_v4(bp6, suv4, glm::vec3(), tiledata->color);
+
+		VBO::Vertex midtop_v1(p1, suv1, glm::vec3(), tiledata->color);
+		VBO::Vertex midtop_v2(p5, suv2, glm::vec3(), tiledata->color);
+		VBO::Vertex midtop_v3(bp5, suv3, glm::vec3(), tiledata->color);
+		VBO::Vertex midtop_v4(bp1, suv4, glm::vec3(), tiledata->color);
+
+		VBO::Vertex midbot_v1(p4, suv1, glm::vec3(), tiledata->color);
+		VBO::Vertex midbot_v2(p2, suv2, glm::vec3(), tiledata->color);
+		VBO::Vertex midbot_v3(bp2, suv3, glm::vec3(), tiledata->color);
+		VBO::Vertex midbot_v4(bp4, suv4, glm::vec3(), tiledata->color);
+
+		VBO::Vertex centtop_v1(p5, suv1, glm::vec3(), tiledata->color);
+		VBO::Vertex centtop_v2(p1, suv2, glm::vec3(), tiledata->color);
+		VBO::Vertex centtop_v3(bp1, suv3, glm::vec3(), tiledata->color);
+		VBO::Vertex centtop_v4(bp5, suv4, glm::vec3(), tiledata->color);
+
+		VBO::Vertex centbot_v1(p2, suv1, glm::vec3(), tiledata->color);
+		VBO::Vertex centbot_v2(p4, suv2, glm::vec3(), tiledata->color);
+		VBO::Vertex centbot_v3(bp4, suv3, glm::vec3(), tiledata->color);
+		VBO::Vertex centbot_v4(bp2, suv4, glm::vec3(), tiledata->color);
+
+		VBO::Vertex corntl_v1(p2, suv1, glm::vec3(), tiledata->color);
+		VBO::Vertex corntl_v2(p6, suv2, glm::vec3(), tiledata->color);
+		VBO::Vertex corntl_v3(bp6, suv3, glm::vec3(), tiledata->color);
+		VBO::Vertex corntl_v4(bp2, suv4, glm::vec3(), tiledata->color);
+
+		VBO::Vertex corntr_v1(p6, suv1, glm::vec3(), tiledata->color);
+		VBO::Vertex corntr_v2(p4, suv2, glm::vec3(), tiledata->color);
+		VBO::Vertex corntr_v3(bp4, suv3, glm::vec3(), tiledata->color);
+		VBO::Vertex corntr_v4(bp6, suv4, glm::vec3(), tiledata->color);
+
+		VBO::Vertex cornbl_v1(p3, suv1, glm::vec3(), tiledata->color);
+		VBO::Vertex cornbl_v2(p1, suv2, glm::vec3(), tiledata->color);
+		VBO::Vertex cornbl_v3(bp1, suv3, glm::vec3(), tiledata->color);
+		VBO::Vertex cornbl_v4(bp3, suv4, glm::vec3(), tiledata->color);
+
+		VBO::Vertex cornbr_v1(p5, suv1, glm::vec3(), tiledata->color);
+		VBO::Vertex cornbr_v2(p3, suv2, glm::vec3(), tiledata->color);
+		VBO::Vertex cornbr_v3(bp3, suv3, glm::vec3(), tiledata->color);
+		VBO::Vertex cornbr_v4(bp5, suv4, glm::vec3(), tiledata->color);
 
 		enum
 		{
@@ -193,15 +307,20 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 					  \/
 				*/
 
-				vbotile->makeTri(vbotile_index + 0, tp1, tp6, tp5, uv1, uv6, uv5, tiledata->color);
-				vbotile->makeTri(vbotile_index + 1, tp1, tp5, tp4, uv1, uv5, uv4, tiledata->color);
-				vbotile->makeTri(vbotile_index + 2, tp1, tp4, tp3, uv1, uv4, uv3, tiledata->color);
-				vbotile->makeTri(vbotile_index + 3, tp1, tp3, tp2, uv1, uv3, uv2, tiledata->color);
+	//			vbotile->makeTri(vbotile_index + 0, tp1, tp6, tp5, uv1, uv6, uv5, tiledata->color);
+	//			vbotile->makeTri(vbotile_index + 1, tp1, tp5, tp4, uv1, uv5, uv4, tiledata->color);
+	//			vbotile->makeTri(vbotile_index + 2, tp1, tp4, tp3, uv1, uv4, uv3, tiledata->color);
+	//			vbotile->makeTri(vbotile_index + 3, tp1, tp3, tp2, uv1, uv3, uv2, tiledata->color);
 
-				vbo3d->makeTri(vbo3d_index++, p1, p6, p5, uv1, uv6, uv5, tiledata->color);
-				vbo3d->makeTri(vbo3d_index++, p1, p5, p4, uv1, uv5, uv4, tiledata->color);
-				vbo3d->makeTri(vbo3d_index++, p1, p4, p3, uv1, uv4, uv3, tiledata->color);
-				vbo3d->makeTri(vbo3d_index++, p1, p3, p2, uv1, uv3, uv2, tiledata->color);
+	//			vbo3d->makeTri(vbo3d_index++, p1, p6, p5, uv1, uv6, uv5, uva1, uva6, uva5, tiledata->color);
+	//			vbo3d->makeTri(vbo3d_index++, p1, p5, p4, uv1, uv5, uv4, uva1, uva5, uva4, tiledata->color);
+	//			vbo3d->makeTri(vbo3d_index++, p1, p4, p3, uv1, uv4, uv3, uva1, uva4, uva3, tiledata->color);
+	//			vbo3d->makeTri(vbo3d_index++, p1, p3, p2, uv1, uv3, uv2, uva1, uva3, uva2, tiledata->color);
+
+				vbo3d->makeTri(vbo3d_index++, tv1, tv6, tv5);
+				vbo3d->makeTri(vbo3d_index++, tv1, tv5, tv4);
+				vbo3d->makeTri(vbo3d_index++, tv1, tv4, tv3);
+				vbo3d->makeTri(vbo3d_index++, tv1, tv3, tv2);
 
 				render_sides |= RENDER_LEFT;
 				render_sides |= RENDER_TOPLEFT;
@@ -221,12 +340,15 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 				     \ |
 				      \|
 				*/
-				vbotile->makeTri(vbotile_index + 0, tp1, tp6, tp3, uv1, uv4, uv3, tiledata->color);
-				vbotile->makeTri(vbotile_index + 1, tp1, tp3, tp2, uv1, uv3, uv2, tiledata->color);
-				vbotile->degenTris(vbotile_index + 2, 2);
+	//			vbotile->makeTri(vbotile_index + 0, tp1, tp6, tp3, uv1, uv4, uv3, tiledata->color);
+	//			vbotile->makeTri(vbotile_index + 1, tp1, tp3, tp2, uv1, uv3, uv2, tiledata->color);
+	//			vbotile->degenTris(vbotile_index + 2, 2);
 
-				vbo3d->makeTri(vbo3d_index++, p1, p6, p3, uv1, uv4, uv3, tiledata->color);
-				vbo3d->makeTri(vbo3d_index++, p1, p3, p2, uv1, uv3, uv2, tiledata->color);
+	//			vbo3d->makeTri(vbo3d_index++, p1, p6, p3, uv1, uv4, uv3, tiledata->color);
+	//			vbo3d->makeTri(vbo3d_index++, p1, p3, p2, uv1, uv3, uv2, tiledata->color);
+
+				vbo3d->makeTri(vbo3d_index++, tv1, tv6, tv3);
+				vbo3d->makeTri(vbo3d_index++, tv1, tv3, tv2);
 
 				render_sides |= RENDER_LEFT;
 				render_sides |= RENDER_TOPLEFT;
@@ -244,12 +366,15 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 				    | /
 				    |/
 				*/
-				vbotile->makeTri(vbotile_index + 0, tp6, tp5, tp4, uv2, uv1, uv4, tiledata->color);
-				vbotile->makeTri(vbotile_index + 1, tp6, tp4, tp3, uv2, uv4, uv3, tiledata->color);
-				vbotile->degenTris(vbotile_index + 2, 2);
+	//			vbotile->makeTri(vbotile_index + 0, tp6, tp5, tp4, uv2, uv1, uv4, tiledata->color);
+	//			vbotile->makeTri(vbotile_index + 1, tp6, tp4, tp3, uv2, uv4, uv3, tiledata->color);
+	//			vbotile->degenTris(vbotile_index + 2, 2);
 				
-				vbo3d->makeTri(vbo3d_index++, p6, p5, p4, uv2, uv1, uv4, tiledata->color);
-				vbo3d->makeTri(vbo3d_index++, p6, p4, p3, uv2, uv4, uv3, tiledata->color);
+	//			vbo3d->makeTri(vbo3d_index++, p6, p5, p4, uv2, uv1, uv4, tiledata->color);
+	//			vbo3d->makeTri(vbo3d_index++, p6, p4, p3, uv2, uv4, uv3, tiledata->color);
+
+				vbo3d->makeTri(vbo3d_index++, tv6, tv5, tv4);
+				vbo3d->makeTri(vbo3d_index++, tv6, tv4, tv3);
 
 				render_sides |= RENDER_TOPRIGHT;
 				render_sides |= RENDER_RIGHT;
@@ -263,10 +388,12 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 				     /\
 				    /__\
 				*/
-				vbotile->makeTri(vbotile_index + 0, tp1, tp6, tp5, uv1, uv3, uv2, tiledata->color);
-				vbotile->degenTris(vbotile_index + 1, 3);
+	//			vbotile->makeTri(vbotile_index + 0, tp1, tp6, tp5, uv1, uv3, uv2, tiledata->color);
+	//			vbotile->degenTris(vbotile_index + 1, 3);
 
-				vbo3d->makeTri(vbo3d_index++, p1, p6, p5, uv1, uv3, uv2, tiledata->color);
+	//			vbo3d->makeTri(vbo3d_index++, p1, p6, p5, uv1, uv3, uv2, tiledata->color);
+
+				vbo3d->makeTri(vbo3d_index++, tv1, tv6, tv5);
 
 				render_sides |= RENDER_TOPLEFT;
 				render_sides |= RENDER_TOPRIGHT;
@@ -279,10 +406,12 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 				    \  /
 				     \/
 				*/
-				vbotile->makeTri(vbotile_index + 0, tp2, tp4, tp3, uv1, uv3, uv2, tiledata->color);
-				vbotile->degenTris(vbotile_index + 1, 3);
+	//			vbotile->makeTri(vbotile_index + 0, tp2, tp4, tp3, uv1, uv3, uv2, tiledata->color);
+	//			vbotile->degenTris(vbotile_index + 1, 3);
 
-				vbo3d->makeTri(vbo3d_index++, p2, p4, p3, uv1, uv3, uv2, tiledata->color);				
+	//			vbo3d->makeTri(vbo3d_index++, p2, p4, p3, uv1, uv3, uv2, tiledata->color);				
+
+				vbo3d->makeTri(vbo3d_index++, tv2, tv4, tv3);
 
 				render_sides |= RENDER_BOTLEFT;
 				render_sides |= RENDER_BOTRIGHT;
@@ -295,12 +424,15 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 				    |    |
 				    |____|
 				*/
-				vbotile->makeTri(vbotile_index + 0, tp1, tp5, tp4, uv1, uv4, uv3, tiledata->color);
-				vbotile->makeTri(vbotile_index + 1, tp1, tp4, tp2, uv1, uv3, uv2, tiledata->color);
-				vbotile->degenTris(vbotile_index + 2, 2);
+	//			vbotile->makeTri(vbotile_index + 0, tp1, tp5, tp4, uv1, uv4, uv3, tiledata->color);
+	//			vbotile->makeTri(vbotile_index + 1, tp1, tp4, tp2, uv1, uv3, uv2, tiledata->color);
+	//			vbotile->degenTris(vbotile_index + 2, 2);
 
-				vbo3d->makeTri(vbo3d_index++, p1, p5, p4, uv1, uv4, uv3, tiledata->color);
-				vbo3d->makeTri(vbo3d_index++, p1, p4, p2, uv1, uv3, uv2, tiledata->color);
+	//			vbo3d->makeTri(vbo3d_index++, p1, p5, p4, uv1, uv4, uv3, tiledata->color);
+	//			vbo3d->makeTri(vbo3d_index++, p1, p4, p2, uv1, uv3, uv2, tiledata->color);
+
+				vbo3d->makeTri(vbo3d_index++, tv1, tv5, tv4);
+				vbo3d->makeTri(vbo3d_index++, tv1, tv4, tv2);
 
 				render_sides |= RENDER_LEFT;
 				render_sides |= RENDER_RIGHT;
@@ -316,10 +448,12 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 				    | . 
 				    |.  				   
 				*/
-				vbotile->makeTri(vbotile_index + 0, tp1, tp6, tp2, uv1, uv2, uv3, tiledata->color);
-				vbotile->degenTris(vbotile_index + 1, 3);
+	//			vbotile->makeTri(vbotile_index + 0, tp1, tp6, tp2, uv1, uv2, uv3, tiledata->color);
+	//			vbotile->degenTris(vbotile_index + 1, 3);
 
-				vbo3d->makeTri(vbo3d_index++, p1, p6, p2, uv1, uv2, uv3, tiledata->color);
+	//			vbo3d->makeTri(vbo3d_index++, p1, p6, p2, uv1, uv2, uv3, tiledata->color);
+
+				vbo3d->makeTri(vbo3d_index++, tv1, tv6, tv2);
 
 				render_sides |= RENDER_LEFT;
 				render_sides |= RENDER_TOPLEFT;
@@ -334,10 +468,12 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 				     . |
 				      .|				      
 				*/
-				vbotile->makeTri(vbotile_index + 0, tp6, tp5, tp4, uv1, uv2, uv3, tiledata->color);
-				vbotile->degenTris(vbotile_index + 1, 3);
+	//			vbotile->makeTri(vbotile_index + 0, tp6, tp5, tp4, uv1, uv2, uv3, tiledata->color);
+	//			vbotile->degenTris(vbotile_index + 1, 3);
 
-				vbo3d->makeTri(vbo3d_index++, p6, p5, p4, uv1, uv2, uv3, tiledata->color);
+	//			vbo3d->makeTri(vbo3d_index++, p6, p5, p4, uv1, uv2, uv3, tiledata->color);
+
+				vbo3d->makeTri(vbo3d_index++, tv6, tv5, tv4);
 
 				render_sides |= RENDER_TOPRIGHT;
 				render_sides |= RENDER_RIGHT;
@@ -352,10 +488,12 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 				     \ .
 				      \.
 				*/
-				vbotile->makeTri(vbotile_index + 0, tp1, tp3, tp2, uv1, uv2, uv3, tiledata->color);
-				vbotile->degenTris(vbotile_index + 1, 3);
+	//			vbotile->makeTri(vbotile_index + 0, tp1, tp3, tp2, uv1, uv2, uv3, tiledata->color);
+	//			vbotile->degenTris(vbotile_index + 1, 3);
 
-				vbo3d->makeTri(vbo3d_index++, p1, p3, p2, uv1, uv2, uv3, tiledata->color);
+	//			vbo3d->makeTri(vbo3d_index++, p1, p3, p2, uv1, uv2, uv3, tiledata->color);
+
+				vbo3d->makeTri(vbo3d_index++, tv1, tv3, tv2);
 
 				render_sides |= RENDER_LEFT;
 				render_sides |= RENDER_BOTLEFT;
@@ -370,10 +508,12 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 				    . /
 				    ./
 				*/
-				vbotile->makeTri(vbotile_index + 0, tp3, tp5, tp4, uv1, uv2, uv3, tiledata->color);
-				vbotile->degenTris(vbotile_index + 1, 3);
+	//			vbotile->makeTri(vbotile_index + 0, tp3, tp5, tp4, uv1, uv2, uv3, tiledata->color);
+	//			vbotile->degenTris(vbotile_index + 1, 3);
 
-				vbo3d->makeTri(vbo3d_index++, p3, p5, p4, uv1, uv2, uv3, tiledata->color);
+	//			vbo3d->makeTri(vbo3d_index++, p3, p5, p4, uv1, uv2, uv3, tiledata->color);
+
+				vbo3d->makeTri(vbo3d_index++, tv3, tv5, tv4);
 
 				render_sides |= RENDER_RIGHT;
 				render_sides |= RENDER_BOTRIGHT;
@@ -391,37 +531,37 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 		}
 
 		if (render_sides & RENDER_LEFT)		
-			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p1, p2, bp2, bp1, suv1, suv2, suv3, suv4, getTileColor(tiledata->color, lum_left));		
+			vbo3d_index += vbo3d->makeQuadPolyNorm(vbo3d_index, left_v1, left_v2, left_v3, left_v4);		
 		if (render_sides & RENDER_TOPLEFT)		
-			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p6, p1, bp1, bp6, suv1, suv2, suv3, suv4, getTileColor(tiledata->color, lum_topleft));
+			vbo3d_index += vbo3d->makeQuadPolyNorm(vbo3d_index, topleft_v1, topleft_v2, topleft_v3, topleft_v4);
 		if (render_sides & RENDER_TOPRIGHT)
-			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p5, p6, bp6, bp5, suv1, suv2, suv3, suv4, getTileColor(tiledata->color, lum_topright));
+			vbo3d_index += vbo3d->makeQuadPolyNorm(vbo3d_index, topright_v1, topright_v2, topright_v3, topright_v4);
 		if (render_sides & RENDER_RIGHT)
-			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p4, p5, bp5, bp4, suv1, suv2, suv3, suv4, getTileColor(tiledata->color, lum_right));
+			vbo3d_index += vbo3d->makeQuadPolyNorm(vbo3d_index, right_v1, right_v2, right_v3, right_v4);
 		if (render_sides & RENDER_BOTRIGHT)
-			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p3, p4, bp4, bp3, suv1, suv2, suv3, suv4, getTileColor(tiledata->color, lum_botright));
+			vbo3d_index += vbo3d->makeQuadPolyNorm(vbo3d_index, botright_v1, botright_v2, botright_v3, botright_v4);
 		if (render_sides & RENDER_BOTLEFT)
-			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p2, p3, bp3, bp2, suv1, suv2, suv3, suv4, getTileColor(tiledata->color, lum_botleft));
+			vbo3d_index += vbo3d->makeQuadPolyNorm(vbo3d_index, botleft_v1, botleft_v2, botleft_v3, botleft_v4);
 		if (render_sides & RENDER_SIDELEFT)
-			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p3, p6, bp6, bp3, suv1, suv2, suv3, suv4, getTileColor(tiledata->color, lum_right));
+			vbo3d_index += vbo3d->makeQuadPolyNorm(vbo3d_index, sideleft_v1, sideleft_v2, sideleft_v3, sideleft_v4);
 		if (render_sides & RENDER_SIDERIGHT)
-			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p6, p3, bp3, bp6, suv1, suv2, suv3, suv4, getTileColor(tiledata->color, lum_left));
+			vbo3d_index += vbo3d->makeQuadPolyNorm(vbo3d_index, sideright_v1, sideright_v2, sideright_v3, sideright_v4);
 		if (render_sides & RENDER_MIDTOP)
-			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p1, p5, bp5, bp1, suv1, suv2, suv3, suv4, getTileColor(tiledata->color, lum_down));
+			vbo3d_index += vbo3d->makeQuadPolyNorm(vbo3d_index, midtop_v1, midtop_v2, midtop_v3, midtop_v4);
 		if (render_sides & RENDER_MIDBOT)
-			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p4, p2, bp2, bp4, suv1, suv2, suv3, suv4, getTileColor(tiledata->color, lum_up));
+			vbo3d_index += vbo3d->makeQuadPolyNorm(vbo3d_index, midbot_v1, midbot_v2, midbot_v3, midbot_v4);
 		if (render_sides & RENDER_CENTER_TOP)
-			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p5, p1, bp1, bp5, suv1, suv2, suv3, suv4, getTileColor(tiledata->color, lum_up));
+			vbo3d_index += vbo3d->makeQuadPolyNorm(vbo3d_index, centtop_v1, centtop_v2, centtop_v3, centtop_v4);
 		if (render_sides & RENDER_CENTER_BOT)
-			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p2, p4, bp4, bp2, suv1, suv2, suv3, suv4, getTileColor(tiledata->color, lum_down));
+			vbo3d_index += vbo3d->makeQuadPolyNorm(vbo3d_index, centbot_v1, centbot_v2, centbot_v3, centbot_v4);
 		if (render_sides & RENDER_CORNER_TL)
-			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p2, p6, bp6, bp2, suv1, suv2, suv3, suv4, getTileColor(tiledata->color, lum_botright));
+			vbo3d_index += vbo3d->makeQuadPolyNorm(vbo3d_index, corntl_v1, corntl_v2, corntl_v3, corntl_v4);
 		if (render_sides & RENDER_CORNER_TR)
-			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p6, p4, bp4, bp6, suv1, suv2, suv3, suv4, getTileColor(tiledata->color, lum_botleft));
+			vbo3d_index += vbo3d->makeQuadPolyNorm(vbo3d_index, corntr_v1, corntr_v2, corntr_v3, corntr_v4);
 		if (render_sides & RENDER_CORNER_BL)
-			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p3, p1, bp1, bp3, suv1, suv2, suv3, suv4, getTileColor(tiledata->color, lum_topright));
+			vbo3d_index += vbo3d->makeQuadPolyNorm(vbo3d_index, cornbl_v1, cornbl_v2, cornbl_v3, cornbl_v4);
 		if (render_sides & RENDER_CORNER_BR)
-			vbo3d_index += vbo3d->makeQuad(vbo3d_index, p5, p3, bp3, bp5, suv1, suv2, suv3, suv4, getTileColor(tiledata->color, lum_topleft));
+			vbo3d_index += vbo3d->makeQuadPolyNorm(vbo3d_index, cornbr_v1, cornbr_v2, cornbr_v3, cornbr_v4);
 
 		if (vbo3d_index < 16)
 			vbo3d->degenTris(vbo3d_index, 16 - vbo3d_index);
