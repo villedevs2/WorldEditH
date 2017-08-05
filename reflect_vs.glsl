@@ -5,12 +5,14 @@ varying vec3			v_eyedir;
 varying vec3			v_normal;
 varying vec4			v_color;
 varying vec3			v_light;
+varying vec3			v_reflection;
 attribute vec3			a_position;
 attribute vec2			a_texcoord;
 attribute vec3			a_normal;
 attribute vec4			a_color;
 uniform mat4			m_vp_matrix;
 uniform mat4			m_v_matrix;
+uniform vec3			v_camera_pos;
 
 void main()
 {
@@ -20,6 +22,9 @@ void main()
 	//gl_Position = vec4(pos.x, pos.y, 0.0, 1.0);
 
 	vec4 vertex = vec4(a_position, 1.0);
+
+	vec3 refl = reflect(a_position - v_camera_pos, normalize(a_normal));
+	v_reflection = vec3(refl.x, -refl.yz);
 
 	gl_Position = vertex * m_vp_matrix;
 

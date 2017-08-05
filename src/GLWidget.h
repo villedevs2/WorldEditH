@@ -39,6 +39,7 @@ public:
 		int rot_matrix;
 		int v_matrix;
 		int normal;
+		int cam_pos;
 	};
 
 	static const int NUM_GRID_SIZES = 6;

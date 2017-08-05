@@ -1474,7 +1474,7 @@ void GLWidget::loadEnvTexture(QImage** textures)
 				int r = qRed(scan[i]);
 				int g = qGreen(scan[i]);
 				int b = qBlue(scan[i]);
-
+				/*
 				switch (tex)
 				{
 				case 0: r = 255; g = 0; b = 0; break;
@@ -1484,6 +1484,7 @@ void GLWidget::loadEnvTexture(QImage** textures)
 				case 4: r = 0; g = 255; b = 255; break;
 				case 5: r = 255; g = 0; b = 255; break;
 				}
+				*/
 
 				pixels[index + 0] = r;
 				pixels[index + 1] = g;
@@ -1590,6 +1591,7 @@ void GLWidget::initializeGL()
 	m_reflect_shader.color = m_reflect_program->attributeLocation("a_color");
 	m_reflect_shader.vp_matrix = m_reflect_program->uniformLocation("m_vp_matrix");
 	m_reflect_shader.v_matrix = m_reflect_program->uniformLocation("m_v_matrix");
+	m_reflect_shader.cam_pos = m_reflect_program->uniformLocation("v_camera_pos");
 }
 
 
@@ -2432,6 +2434,8 @@ void GLWidget::paintGL()
 
 		m_reflect_program->setUniformValue(m_reflect_shader.vp_matrix, vp_mat);
 		m_reflect_program->setUniformValue(m_reflect_shader.v_matrix, v_mat);
+
+		m_reflect_program->setUniformValue(m_reflect_shader.cam_pos, QVector3D(pos.x, pos.y, pos.z));
 
 		glEnable(GL_DEPTH_TEST);
 		glDepthMask(GL_TRUE);

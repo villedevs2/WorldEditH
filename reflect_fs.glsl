@@ -7,6 +7,7 @@ varying vec3			v_normal;
 varying vec3			v_eyedir;
 varying vec4			v_color;
 varying vec3			v_light;
+varying vec3			v_reflection;
 uniform sampler2D		s_color_texture;
 uniform samplerCube		s_env_texture;
 
@@ -25,12 +26,13 @@ void main()
 	//gl_FragColor = texture2D(s_color_texture, v_texcoord);
 
 	float col = clamp(dot(-v_light, v_normal), 0.0, 1.0);
+	gl_FragColor = (vec4(col, col, col, 1) + ambient) * textureCube(s_env_texture, v_reflection);
 
-	//vec3 refl = normalize(reflect(normalize(v_eyedir), normalize(v_normal)));
+	//vec3 refl = normalize(reflect(normalize(-v_eyedir), normalize(v_normal)));
 	//gl_FragColor = textureCube(s_env_texture, refl);	
 	
 	//gl_FragColor = textureCube(s_env_texture, v_eyedir);
-	gl_FragColor = vec4(1.0, v_eyedir.x, v_eyedir.y, 1);
+	//gl_FragColor = vec4(1.0, v_eyedir.x * 0.1, v_eyedir.y * 0.1, 1);
 
 	//gl_FragColor = (vec4(col, col, col, 1) + ambient) * texture2D(s_color_texture, v_texcoord);
 }
