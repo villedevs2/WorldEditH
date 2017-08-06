@@ -1840,7 +1840,7 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 	BinaryFile input;
 
 	const unsigned int hspf_id = 0x48535046;
-	const unsigned int hspf_version = 0x10003;
+	const unsigned int hspf_version = 0x10004;
 	
 	Level::Object::Param params[Level::Object::NUM_PARAMS];
 	QString object_name = "";
@@ -2010,7 +2010,11 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 
 			unsigned int tile_color = input.read_dword();
 
-			int id = m_level->insertTile(tile_name.toStdString(), top, side, tile_color, (Tilemap::TileType)type);
+			unsigned int top_type = input.read_dword();
+
+			float top_height = input.read_float();
+
+			int id = m_level->insertTile(tile_name.toStdString(), top, side, tile_color, (Tilemap::TileType)type, (Tilemap::TopType)top_type, top_height);
 			emit m_tileset_window->add(id);
 		}
 
@@ -2090,7 +2094,7 @@ bool MainWindow::writeBinaryProjectFile(QString& filename)
 	BinaryFile output;
 
 	const char hspf_id[4] = { 0x48, 0x53, 0x50, 0x46 };
-	const unsigned int hspf_version = 0x10003;
+	const unsigned int hspf_version = 0x10004;
 
 	int num_objects = m_level->numObjects();
 
@@ -2223,6 +2227,10 @@ bool MainWindow::writeBinaryProjectFile(QString& filename)
 
 			// tile color
 			output.write_dword(tile->color);
+
+			output.write_dword(tile->top_type);
+
+			output.write_float(tile->top_height);
 		}
 
 		// buckets
@@ -2428,6 +2436,9 @@ void MainWindow::writeLevelFile(QString& filename)
 				output.write_float(tile->side_points[j].x);
 				output.write_float(tile->side_points[j].y);
 			}
+
+			output.write_dword(tile->top_type);
+			output.write_float(tile->top_height);
 		}
 
 		// Tilemap

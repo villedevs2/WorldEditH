@@ -11,6 +11,8 @@
 class Tilemap
 {
 public:
+	static const int MAX_VERTS = 18;
+
 	enum TileType
 	{
 		TILE_FULL = 0,
@@ -36,6 +38,12 @@ public:
 		SIDE_MID = 0x40,
 	};
 
+	enum TopType
+	{
+		TOP_FLAT = 0,
+		TOP_POINTY = 1
+	};
+
 	struct Tile
 	{
 		glm::vec2 top_points[6];
@@ -45,6 +53,8 @@ public:
 		int id;
 		Tilemap::TileType type;
 		int side_bits;
+		Tilemap::TopType top_type;
+		float top_height;
 
 		int numTopPoints()
 		{
@@ -69,7 +79,6 @@ public:
 	struct Bucket
 	{
 		unsigned int* map;
-		VBO* tiles;
 		VBO* preview;
 		uint64_t coverage;
 		int x;
@@ -96,14 +105,14 @@ public:
 	~Tilemap();
 
 	void reset();
-	float* getVBO(int bx, int by);
-	int numTris(int bx, int by);
+	//float* getVBO(int bx, int by);
+	//int numTris(int bx, int by);
 	int get(int x, int y);
 	int getZ(int x, int y);	
 	void edit(int x, int y, int tile);
 	void editZ(int x, int y, int z);
-	int insertTile(std::string name, PolygonDef* top, PolygonDef* side, unsigned int color, Tilemap::TileType type);
-	int replaceTile(int index, std::string name, PolygonDef* top, PolygonDef* side, unsigned int color, Tilemap::TileType type);
+	int insertTile(std::string name, PolygonDef* top, PolygonDef* side, unsigned int color, Tilemap::TileType type, Tilemap::TopType top_type, float top_height);
+	int replaceTile(int index, std::string name, PolygonDef* top, PolygonDef* side, unsigned int color, Tilemap::TileType type, Tilemap::TopType top_type, float top_height);
 	bool removeTile(int id);
 	void removeTiles();
 	int getNumTiles();

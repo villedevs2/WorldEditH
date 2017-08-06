@@ -62,6 +62,7 @@ public:
 				const glm::vec3& uvb1, const glm::vec3& uvb2, const glm::vec3& uvb3, const glm::vec3& uvb4, unsigned int color);
 				*/
 	int makeTri(int index, const VBO::Vertex& v1, const VBO::Vertex& v2, const VBO::Vertex& v3);
+	int makeTriPolyNorm(int index, const VBO::Vertex& v1, const VBO::Vertex& v2, const VBO::Vertex& v3);
 	int makeQuad(int index, const VBO::Vertex& v1, const VBO::Vertex& v2, const VBO::Vertex& v3, const VBO::Vertex& v4);
 	int makeQuadPolyNorm(int index, const VBO::Vertex& v1, const VBO::Vertex& v2, const VBO::Vertex& v3, const VBO::Vertex& v4);
 

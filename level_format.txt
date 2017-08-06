@@ -1,5 +1,5 @@
 Homestar Level Format Specification
-v1.3 / 20.07.2017
+v1.4 / 06.08.2017
 
 Header
 ------
@@ -49,6 +49,8 @@ Tile
 4 bytes		| Tile type
 n bytes		| Top UV coords [4-6x UV-pairs]
 32 bytes	| Side UV coords [4x UV-pairs]
+4 bytes		| Top type
+4 bytes		| Top height
 
 Bucket
 ------

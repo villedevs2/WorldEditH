@@ -1,5 +1,5 @@
 Homestar Project Binary File Format
-v1.3 / 19.07.2017
+v1.4 / 06.08.2017
 
 Header
 ------
@@ -45,6 +45,10 @@ n bytes		| Tile name (null-terminated)
 n bytes		| Top UVs 4-6x [2 floats: U, V]
 n bytes		| Side UVs 4x [2 floats: U, V]
 4 bytes		| Tile color
+4 bytes		| Tile top type
+		     0 = Flat
+		     1 = Pointy
+4 bytes		| Top height [float]
 
 Bucket structure
 ----------------

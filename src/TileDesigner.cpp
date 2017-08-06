@@ -535,7 +535,10 @@ void TileDesignerWidget::insertTile(QString& name)
 		default: type = Tilemap::TILE_FULL; break;
 	}
 
-	int id = m_level->insertTile(name.toStdString(), m_poly[0], m_poly[1], m_color, type);
+	Tilemap::TopType top_type = Tilemap::TOP_POINTY;
+	float top_height = 2.0f;
+
+	int id = m_level->insertTile(name.toStdString(), m_poly[0], m_poly[1], m_color, type, top_type, top_height);
 	emit onInsertTile(id);
 
 	resetObject(POLY_TOP | POLY_SIDE);
@@ -561,7 +564,10 @@ void TileDesignerWidget::replaceTile(QString& name, int index)
 		default: type = Tilemap::TILE_FULL; break;
 	}
 
-	int id = m_level->replaceTile(index, name.toStdString(), m_poly[0], m_poly[1], m_color, type);
+	Tilemap::TopType top_type = Tilemap::TOP_POINTY;
+	float top_height = 2.0f;
+
+	int id = m_level->replaceTile(index, name.toStdString(), m_poly[0], m_poly[1], m_color, type, top_type, top_height);
 	emit onReplaceTile(id);
 
 	resetObject(POLY_TOP | POLY_SIDE);

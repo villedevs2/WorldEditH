@@ -127,10 +127,10 @@ public:
 	void editTilemapZ(int x, int y, int z);
 	float getTileWidth();
 	float getTileHeight();
-	float* getTilemapVBO(int bx, int by);
-	int numTilemapTris(int bx, int by);
-	int insertTile(std::string name, PolygonDef* top, PolygonDef* side, unsigned int color, Tilemap::TileType type);
-	int replaceTile(int index, std::string name, PolygonDef* top, PolygonDef* side, unsigned int color, Tilemap::TileType type);
+//	float* getTilemapVBO(int bx, int by);
+//	int numTilemapTris(int bx, int by);
+	int insertTile(std::string name, PolygonDef* top, PolygonDef* side, unsigned int color, Tilemap::TileType type, Tilemap::TopType top_type, float top_height);
+	int replaceTile(int index, std::string name, PolygonDef* top, PolygonDef* side, unsigned int color, Tilemap::TileType type, Tilemap::TopType top_type, float top_height);
 	void removeTile(int id);
 	void removeTiles();
 	int getNumTiles();

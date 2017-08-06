@@ -2485,7 +2485,7 @@ void GLWidget::paintGL()
 					m_reflect_program->enableAttributeArray(m_reflect_shader.color);
 					m_reflect_program->setAttributeArray(m_reflect_shader.color, GL_UNSIGNED_BYTE, (GLbyte*)geo + 32, 4, vbsize);
 
-					glDrawArrays(GL_TRIANGLES, 0, Tilemap::BUCKET_WIDTH*Tilemap::BUCKET_HEIGHT * 16 * 3);
+					glDrawArrays(GL_TRIANGLES, 0, Tilemap::BUCKET_WIDTH*Tilemap::BUCKET_HEIGHT * Tilemap::MAX_VERTS * 3);
 
 					m_reflect_program->disableAttributeArray(m_reflect_shader.position);
 					m_reflect_program->disableAttributeArray(m_reflect_shader.tex_coord);

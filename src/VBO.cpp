@@ -103,6 +103,30 @@ int VBO::makeTri(int index, const VBO::Vertex& v1, const VBO::Vertex& v2, const 
 	return 1;
 }
 
+int VBO::makeTriPolyNorm(int index, const VBO::Vertex& v1, const VBO::Vertex& v2, const VBO::Vertex& v3)
+{
+	assert(index >= 0 && index < m_capacity);
+
+	glm::vec3 e1 = v2.pos - v1.pos;
+	glm::vec3 e2 = v3.pos - v1.pos;
+	glm::vec3 norm;
+	glm::vec3 cr = glm::cross(e1, e2);
+	if (!(cr.x == 0 && cr.y == 0 && cr.z == 0))
+		norm = glm::normalize(cr);
+	else
+		norm = glm::vec3(0, 0, 0);
+
+	int i = index * 3;
+	m_data[i + 0] = v1;
+	m_data[i + 0].normal = norm;
+	m_data[i + 1] = v3;
+	m_data[i + 1].normal = norm;
+	m_data[i + 2] = v2;
+	m_data[i + 2].normal = norm;
+
+	return 1;
+}
+
 int VBO::makeQuad(int index, const VBO::Vertex& v1, const VBO::Vertex& v2, const VBO::Vertex& v3, const VBO::Vertex& v4)
 {
 	assert(index >= 0 && index < m_capacity);

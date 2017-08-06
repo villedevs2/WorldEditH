@@ -682,6 +682,7 @@ void Level::editTilemapZ(int x, int y, int z)
 	setModified();
 }
 
+/*
 float* Level::getTilemapVBO(int bx, int by)
 {
 	return m_tilemap->getVBO(bx, by);
@@ -691,18 +692,18 @@ int Level::numTilemapTris(int bx, int by)
 {
 	return m_tilemap->numTris(bx, by);
 }
+*/
 
-
-int Level::insertTile(std::string name, PolygonDef* top, PolygonDef* side, unsigned int color, Tilemap::TileType type)
+int Level::insertTile(std::string name, PolygonDef* top, PolygonDef* side, unsigned int color, Tilemap::TileType type, Tilemap::TopType top_type, float top_height)
 {
 	setModified();
-	return m_tilemap->insertTile(name, top, side, color, type);
+	return m_tilemap->insertTile(name, top, side, color, type, top_type, top_height);
 }
 
-int Level::replaceTile(int index, std::string name, PolygonDef* top, PolygonDef* side, unsigned int color, Tilemap::TileType type)
+int Level::replaceTile(int index, std::string name, PolygonDef* top, PolygonDef* side, unsigned int color, Tilemap::TileType type, Tilemap::TopType top_type, float top_height)
 {
 	setModified();
-	return m_tilemap->replaceTile(index, name, top, side, color, type);
+	return m_tilemap->replaceTile(index, name, top, side, color, type, top_type, top_height);
 }
 
 void Level::removeTile(int id)
