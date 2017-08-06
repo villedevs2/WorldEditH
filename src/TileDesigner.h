@@ -29,13 +29,6 @@ class TileDesignerWidget : public QGLWidget
 	friend class TileDesigner;
 
 public:
-	enum OperationMode
-	{
-		MODE_MOVE,
-		MODE_ROTATE,
-		MODE_SCALE,
-	};
-
 	enum PolyObject
 	{
 		POLY_TOP = 0x1,
@@ -46,7 +39,6 @@ public:
 	~TileDesignerWidget();
 
 	void setTexture(QImage* texture);
-	void setMode(OperationMode mode);
 
 signals:
 	void onInsertTile(int tile_id);
@@ -65,6 +57,9 @@ public slots:
 	void setTileType(int type);
 	void setScale(double scale);
 	void setRotate(int angle);
+	void setTopType(Tilemap::TopType type);
+	void setTopHeight(double height);
+	void setShadingType(Tilemap::ShadingType type);
 
 protected:
 	void paintEvent(QPaintEvent* event);
@@ -155,8 +150,6 @@ private:
 	bool m_move_dragging;
 	glm::vec2 m_move_reference;
 
-	OperationMode m_mode;
-
 	glm::vec2 m_position[2];
 	float m_angle[2];
 	float m_scale[2];
@@ -164,6 +157,10 @@ private:
 	bool m_snap_grid;
 	bool m_show_grid;
 	int m_grid_size;
+
+	Tilemap::ShadingType m_shading_type;
+	Tilemap::TopType m_top_type;
+	float m_top_height;
 };
 
 
@@ -193,7 +190,6 @@ signals:
 	void onReplaceTile(int tile_id);
 
 public slots:
-	void setMoveMode();
 	void reset();
 	void insertTile();
 	void replaceTile();
@@ -205,23 +201,20 @@ public slots:
 	void setScale(double scale);
 	void setRotate(int angle);
 	void polySelected(int poly);
+	void setTopType(int type);
+	void setShadingType(int type);
+	void setTopHeight(double height);
 
 private:
 	QMainWindow* m_window;	
 	QMenu* m_menu;
 	TileDesignerWidget* m_widget;
 
-	QToolBar* m_edit_toolbar;
 	QToolBar* m_tile_toolbar;
 	QToolBar* m_zoom_toolbar;
 	QToolBar* m_grid_toolbar;
 	QToolBar* m_control_toolbar;
 	QToolBar* m_color_toolbar;
-
-	QActionGroup* m_toolgroup;
-	QAction* m_move_action;
-	QAction* m_rotate_action;
-	QAction* m_scale_action;
 
 	QActionGroup* m_tilegroup;
 	QWidget* m_tiletype_widget;
@@ -256,6 +249,18 @@ private:
 	QWidget* m_color_widget;
 	QLabel* m_color_label;
 	QPushButton* m_color_button;
+
+	QLabel* m_toptype_label;
+	QComboBox* m_toptype_combo;
+	QWidget* m_toptype_widget;
+
+	QLabel* m_topheight_label;
+	QDoubleSpinBox* m_topheight_spin;
+	QWidget* m_topheight_widget;
+
+	QLabel* m_shading_label;
+	QComboBox* m_shading_combo;
+	QWidget* m_shading_widget;
 
 	Level* m_level;
 

@@ -380,17 +380,6 @@ void TileDesignerWidget::setTexture(QImage* texture)
 	update();
 }
 
-void TileDesignerWidget::setMode(OperationMode mode)
-{
-	m_mode = mode;
-
-	switch (mode)
-	{
-	}
-
-	update();
-}
-
 // convert uv coords to screen coordinates
 glm::vec2 TileDesignerWidget::toScreenCoords(glm::vec2& point)
 {
@@ -513,6 +502,10 @@ void TileDesignerWidget::resetObject(int objects)
 	transformPoly(m_poly[0], m_poly_top_default[m_current_tile_type], m_position[0], m_angle[0], m_scale[0]);
 	transformPoly(m_poly[1], m_poly_side_default, m_position[1], m_angle[1], m_scale[1]);
 
+	m_top_height = 2.0f;
+	m_top_type = Tilemap::TOP_FLAT;
+	m_shading_type = Tilemap::SHADING_STANDARD;
+
 	update();
 }
 
@@ -591,41 +584,34 @@ void TileDesignerWidget::mouseReleaseEvent(QMouseEvent* event)
 
 	if (event->button() & Qt::LeftButton)
 	{
-		switch (m_mode)
+		if (m_selected_poly >= 0)
 		{
-			case MODE_MOVE:
+			glm::vec2 p = toUVCoords(glm::vec2(mouse_x, mouse_y));
+			if (m_snap_grid)
+				p = snapToGrid(p);
+
+			glm::vec2 delta = p - m_move_reference;
+			/*
+			int num_points = m_poly[m_selected_poly]->getNumPoints();
+			for (int i = 0; i < num_points; i++)
 			{
-				if (m_selected_poly >= 0)
-				{
-					glm::vec2 p = toUVCoords(glm::vec2(mouse_x, mouse_y));
-					if (m_snap_grid)
-						p = snapToGrid(p);
-
-					glm::vec2 delta = p - m_move_reference;
-					/*
-					int num_points = m_poly[m_selected_poly]->getNumPoints();
-					for (int i = 0; i < num_points; i++)
-					{
-						glm::vec2 v = m_poly[m_selected_poly]->getPoint(i);
-						m_poly[m_selected_poly]->edit(i, v + delta);
-					}
-					*/
-					if (m_selected_poly == 0)
-					{
-						m_position[0] += delta;
-						transformPoly(m_poly[0], m_poly_top_default[m_current_tile_type], m_position[0], m_angle[0], m_scale[0]);
-					}
-					else if (m_selected_poly == 1)
-					{
-						m_position[1] += delta;
-						transformPoly(m_poly[1], m_poly_side_default, m_position[1], m_angle[1], m_scale[1]);
-					}
-				}
-
-				m_move_dragging = false;
-				break;
+				glm::vec2 v = m_poly[m_selected_poly]->getPoint(i);
+				m_poly[m_selected_poly]->edit(i, v + delta);
+			}
+			*/
+			if (m_selected_poly == 0)
+			{
+				m_position[0] += delta;
+				transformPoly(m_poly[0], m_poly_top_default[m_current_tile_type], m_position[0], m_angle[0], m_scale[0]);
+			}
+			else if (m_selected_poly == 1)
+			{
+				m_position[1] += delta;
+				transformPoly(m_poly[1], m_poly_side_default, m_position[1], m_angle[1], m_scale[1]);
 			}
 		}
+
+		m_move_dragging = false;
 	}
 
 	update();
@@ -650,35 +636,27 @@ void TileDesignerWidget::mousePressEvent(QMouseEvent* event)
 
 	if (event->button() & Qt::LeftButton)
 	{
-		switch (m_mode)
+		if (!m_move_dragging)
 		{
-			case MODE_MOVE:
+			glm::vec2 mp = toUVCoords(glm::vec2(mouse_x, mouse_y));
+			if (m_snap_grid)
+				mp = snapToGrid(mp);
+
+			m_selected_poly = -1;
+
+			for (int i = 0; i < 2; i++)
 			{
-				if (!m_move_dragging)
+				bool inside = m_poly[i]->isPointInside(mp);
+				if (inside)
 				{
-					glm::vec2 mp = toUVCoords(glm::vec2(mouse_x, mouse_y));
-					if (m_snap_grid)
-						mp = snapToGrid(mp);
-
-					m_selected_poly = -1;
-
-					for (int i = 0; i < 2; i++)
-					{
-						bool inside = m_poly[i]->isPointInside(mp);
-						if (inside)
-						{
-							m_move_reference = mp;
-							m_move_dragging = true;
-							m_selected_poly = i;
-							break;
-						}
-					}
-
-					emit onSelectPoly(m_selected_poly);
+					m_move_reference = mp;
+					m_move_dragging = true;
+					m_selected_poly = i;
+					break;
 				}
-				
-				break;
 			}
+			
+			emit onSelectPoly(m_selected_poly);
 		}
 	}
 
@@ -705,59 +683,6 @@ void TileDesignerWidget::mouseMoveEvent(QMouseEvent* event)
 void TileDesignerWidget::keyReleaseEvent(QKeyEvent* event)
 {
 	int key = event->key();
-
-	switch (m_mode)
-	{
-		/*
-		case MODE_DRAW_POLY:
-		{
-			if (key == Qt::Key_Escape)
-			{
-				if (!m_poly_closed)
-				{
-					m_polydef->reset();
-					m_poly_closed = false;
-				}
-			}
-			else if (key == Qt::Key_Backspace)
-			{
-				if (!m_poly_closed)
-				{
-					m_polydef->deleteLatest();
-				}
-			}
-			else if (key == Qt::Key_Space)
-			{
-				int num_points = m_polydef->getNumPoints();
-				if (num_points >= 3 && m_polydef->fullConvexTest())
-				{
-					m_poly_closed = true;
-				}
-			}
-			break;
-		}
-
-		case MODE_EDIT_VERTICES:
-		{
-			if (key == Qt::Key_Escape || key == Qt::Key_Backspace)
-			{
-				m_selected_point = -1;
-			}
-			break;
-		}
-
-		case MODE_EDIT_EDGES:
-		{			
-			if (key == Qt::Key_Escape || key == Qt::Key_Backspace)
-			{
-				m_line_dragging = false;
-				m_line_point0 = -1;
-				m_line_point1 = -1;
-			}		
-			break;
-		}
-		*/
-	}
 
 	update();
 }
@@ -927,6 +852,34 @@ void TileDesignerWidget::transformPoly(PolygonDef* def, PolygonDef* srcdef, glm:
 	}
 }
 
+void TileDesignerWidget::setTopType(Tilemap::TopType type)
+{
+	// TODO: update preview
+
+	m_top_type = type;
+
+	update();
+}
+
+void TileDesignerWidget::setTopHeight(double height)
+{
+	// TODO: update preview
+
+	m_top_height = height;
+
+	update();
+}
+
+void TileDesignerWidget::setShadingType(Tilemap::ShadingType type)
+{
+	// TODO: update preview
+
+	m_shading_type = type;
+
+	update();
+}
+
+
 
 
 
@@ -966,26 +919,6 @@ TileDesigner::TileDesigner(QWidget* parent, Level* level) : QDockWidget("Tile De
 	m_widget->setColor(m_object_color);
 
 
-	// edit tools
-	m_toolgroup = new QActionGroup(this);
-
-	m_move_action = new QAction(QIcon("move.png"), tr("Move"), this);
-	m_move_action->setCheckable(true);
-	connect(m_move_action, SIGNAL(triggered()), this, SLOT(setMoveMode()));
-
-	m_rotate_action = new QAction(QIcon("rotate.png"), tr("Rotate"), this);
-	m_rotate_action->setCheckable(true);
-	connect(m_rotate_action, SIGNAL(triggered()), this, SLOT(setRotateMode()));
-
-	m_scale_action = new QAction(QIcon("scale.png"), tr("Scale"), this);
-	m_scale_action->setCheckable(true);
-	connect(m_scale_action, SIGNAL(triggered()), this, SLOT(setScaleMode()));
-		
-	m_toolgroup->addAction(m_move_action);
-	m_toolgroup->addAction(m_rotate_action);
-	m_toolgroup->addAction(m_scale_action);
-
-
 	// tile tools
 	m_tilegroup = new QActionGroup(this);
 
@@ -1014,6 +947,65 @@ TileDesigner::TileDesigner(QWidget* parent, Level* level) : QDockWidget("Tile De
 	m_tiletype_widget = new QWidget;
 	m_tiletype_widget->setMaximumHeight(30);
 	m_tiletype_widget->setLayout(tiletype_layout);
+
+
+	// tile top type
+	m_toptype_combo = new QComboBox();
+	m_toptype_combo->setWindowTitle("Top type");
+	m_toptype_combo->addItem("Flat", QVariant(Tilemap::TOP_FLAT));
+	m_toptype_combo->addItem("Pointy", QVariant(Tilemap::TOP_POINTY));
+	m_toptype_combo->setFocusPolicy(Qt::NoFocus);
+	connect(m_toptype_combo, SIGNAL(currentIndexChanged(int)), this, SLOT(setTopType(int)));
+
+	m_toptype_label = new QLabel("Top type:");
+	QBoxLayout* toptype_layout = new QBoxLayout(QBoxLayout::LeftToRight);
+	toptype_layout->setSpacing(2);
+	toptype_layout->setMargin(1);
+	toptype_layout->addWidget(m_toptype_label);
+	toptype_layout->addWidget(m_toptype_combo);
+	m_toptype_widget = new QWidget;
+	m_toptype_widget->setMaximumHeight(30);
+	m_toptype_widget->setLayout(toptype_layout);
+
+
+	// top height
+	m_topheight_label = new QLabel("Top height:");
+	m_topheight_label->setMinimumWidth(30);
+	m_topheight_spin = new QDoubleSpinBox();
+	m_topheight_spin->setRange(-100.0, 100.0);
+	m_topheight_spin->setSingleStep(0.1);
+	m_topheight_spin->setValue(2.00);
+	QBoxLayout* topheight_layout = new QBoxLayout(QBoxLayout::LeftToRight);
+	topheight_layout->setSpacing(2);
+	topheight_layout->setMargin(1);
+	topheight_layout->addWidget(m_topheight_label);
+	topheight_layout->addWidget(m_topheight_spin);
+	m_topheight_widget = new QWidget;
+	m_topheight_widget->setMaximumHeight(30);
+	m_topheight_widget->setLayout(topheight_layout);
+
+	connect(m_topheight_spin, SIGNAL(valueChanged(double)), this, SLOT(setTopHeight(double)));
+
+
+	// shading type
+	
+	m_shading_combo = new QComboBox();
+	m_shading_combo->setWindowTitle("Shading");
+	m_shading_combo->addItem("Standard", QVariant(Tilemap::SHADING_STANDARD));
+	m_shading_combo->addItem("Enviroment", QVariant(Tilemap::SHADING_ENVIRONMENT));
+	m_shading_combo->addItem("Self Luminous", QVariant(Tilemap::SHADING_SELFLUMINOUS));
+	m_shading_combo->setFocusPolicy(Qt::NoFocus);
+	connect(m_shading_combo, SIGNAL(currentIndexChanged(int)), this, SLOT(setShadingType(int)));
+
+	m_shading_label = new QLabel("Shading:");
+	QBoxLayout* shading_layout = new QBoxLayout(QBoxLayout::LeftToRight);
+	shading_layout->setSpacing(2);
+	shading_layout->setMargin(1);
+	shading_layout->addWidget(m_shading_label);
+	shading_layout->addWidget(m_shading_combo);
+	m_shading_widget = new QWidget;
+	m_shading_widget->setMaximumHeight(30);
+	m_shading_widget->setLayout(shading_layout);
 
 
 	// zoom tools
@@ -1135,18 +1127,13 @@ TileDesigner::TileDesigner(QWidget* parent, Level* level) : QDockWidget("Tile De
 
 
 
-
-	// add toolbar
-	m_edit_toolbar = new QToolBar(m_window);
-	m_edit_toolbar->addAction(m_move_action);
-	m_edit_toolbar->addAction(m_rotate_action);
-	m_edit_toolbar->addAction(m_scale_action);
-	m_window->addToolBar(m_edit_toolbar);
-
 	m_tile_toolbar = new QToolBar(m_window);
 	m_tile_toolbar->addWidget(m_rotate_widget);
 	m_tile_toolbar->addWidget(m_scale_widget);
 	m_tile_toolbar->addWidget(m_tiletype_widget);
+	m_tile_toolbar->addWidget(m_toptype_widget);
+	m_tile_toolbar->addWidget(m_topheight_widget);
+	m_tile_toolbar->addWidget(m_shading_widget);
 	m_window->addToolBar(m_tile_toolbar);
 
 	m_zoom_toolbar = new QToolBar(m_window);
@@ -1179,7 +1166,7 @@ TileDesigner::TileDesigner(QWidget* parent, Level* level) : QDockWidget("Tile De
 	setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable);
 	setFloating(true);
 
-	this->setMinimumWidth(1400);
+	this->setMinimumWidth(1500);
 	this->setMinimumHeight(1000);
 	this->setMaximumWidth(1800);
 	this->setMaximumHeight(1500);
@@ -1191,10 +1178,6 @@ TileDesigner::TileDesigner(QWidget* parent, Level* level) : QDockWidget("Tile De
 
 	// default zoom = 100%
 	m_zoom_box->setCurrentIndex(1);
-
-	// move mode enable initially
-	m_move_action->setChecked(true);
-	m_widget->setMode(TileDesignerWidget::MODE_MOVE);
 
 
 	// replace tile grayed by default
@@ -1217,17 +1200,18 @@ TileDesigner::~TileDesigner()
 {
 }
 
-void TileDesigner::setMoveMode()
-{
-	m_widget->setMode(TileDesignerWidget::MODE_MOVE);
-}
-
 void TileDesigner::reset()
 {
 	m_widget->resetObject(TileDesignerWidget::POLY_TOP | TileDesignerWidget::POLY_SIDE);
 
+	m_tiletype_combo->setCurrentIndex(0);
+	m_toptype_combo->setCurrentIndex(0);
+	m_shading_combo->setCurrentIndex(0);
+
 	m_rotate_spin->setValue(0);
 	m_scale_spin->setValue(1.0);
+
+	m_topheight_spin->setValue(2.0);
 }
 
 void TileDesigner::insertTile()
@@ -1355,4 +1339,25 @@ void TileDesigner::polySelected(int poly)
 		m_rotate_widget->setDisabled(true);
 		m_scale_widget->setDisabled(true);
 	}
+}
+
+void TileDesigner::setTopType(int type)
+{
+	Tilemap::TopType toptype = (Tilemap::TopType)m_toptype_combo->itemData(type).toInt();
+
+	emit m_widget->setTopType(toptype);
+}
+
+void TileDesigner::setShadingType(int type)
+{
+	Tilemap::ShadingType shadtype = (Tilemap::ShadingType)m_shading_combo->itemData(type).toInt();
+
+	emit m_widget->setShadingType(shadtype);
+}
+
+void TileDesigner::setTopHeight(double height)
+{
+	double val = m_topheight_spin->value();
+
+	emit m_widget->setTopHeight(val);
 }

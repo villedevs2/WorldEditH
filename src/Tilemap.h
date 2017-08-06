@@ -44,6 +44,13 @@ public:
 		TOP_POINTY = 1
 	};
 
+	enum ShadingType
+	{
+		SHADING_STANDARD = 0,
+		SHADING_ENVIRONMENT = 1,
+		SHADING_SELFLUMINOUS = 2,
+	};
+
 	struct Tile
 	{
 		glm::vec2 top_points[6];
