@@ -2473,8 +2473,8 @@ void GLWidget::paintGL()
 				const Tilemap::Bucket* bucket = m_level->getTileBucket(i, j);
 				if (bucket != nullptr)
 				{
-					float* geo = (float*)bucket->preview->getPointer();
-					int vbsize = bucket->preview->getVertexSize();
+					float* geo = (float*)bucket->tiles->getPointer();
+					int vbsize = bucket->tiles->getVertexSize();
 
 					m_reflect_program->enableAttributeArray(m_reflect_shader.position);
 					m_reflect_program->setAttributeArray(m_reflect_shader.position, (GLfloat*)geo, 3, vbsize);

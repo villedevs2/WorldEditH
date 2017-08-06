@@ -79,7 +79,7 @@ public:
 	struct Bucket
 	{
 		unsigned int* map;
-		VBO* preview;
+		VBO* tiles;
 		uint64_t coverage;
 		int x;
 		int y;

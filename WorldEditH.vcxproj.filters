@@ -97,9 +97,6 @@
     <ClCompile Include="src\TileDesigner.cpp">
       <Filter>Source Files\src</Filter>
     </ClCompile>
-    <ClCompile Include="src\Preview.cpp">
-      <Filter>Source Files\src</Filter>
-    </ClCompile>
     <ClCompile Include="src\VBO.cpp">
       <Filter>Source Files\src</Filter>
     </ClCompile>
@@ -131,12 +128,6 @@
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_TileDesigner.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_Preview.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_Preview.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_GLWidget.cpp">
@@ -217,9 +208,6 @@
       <Filter>Header Files\src</Filter>
     </CustomBuild>
     <CustomBuild Include="src\TileDesigner.h">
-      <Filter>Header Files\src</Filter>
-    </CustomBuild>
-    <CustomBuild Include="src\Preview.h">
       <Filter>Header Files\src</Filter>
     </CustomBuild>
   </ItemGroup>

@@ -74,12 +74,12 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 	assert(bx >= 0 && bx < BUCKET_WIDTH);
 	assert(by >= 0 && by < BUCKET_HEIGHT);
 
-	VBO* vbo3d = bucket->preview;
+	VBO* vbo = bucket->tiles;
 	float z = ((bucket->map[(by * BUCKET_WIDTH) + bx] & Z_MASK) >> Z_SHIFT) * 0.1f;
 
 	int ctile = bucket->map[(by * BUCKET_WIDTH) + bx] & TILE_MASK;
 
-	int vbo3d_index = ((by * BUCKET_WIDTH) + bx) * MAX_VERTS;
+	int vbo_index = ((by * BUCKET_WIDTH) + bx) * MAX_VERTS;
 
 	float tx1 = (float)((bucket->x * BUCKET_WIDTH) + bx) * m_tile_width;
 	float tx2 = tx1 + m_tile_width;
@@ -95,7 +95,7 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 	if (ctile == Tilemap::TILE_EMPTY)
 	{
 		// make degen geo
-		vbo3d->degenTris(vbo3d_index, MAX_VERTS);
+		vbo->degenTris(vbo_index, MAX_VERTS);
 	}
 	else
 	{
@@ -316,12 +316,12 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 				vbo3d->makeTri(vbo3d_index++, tv1, tv3, tv2);
 				*/
 
-				vbo3d->makeTriPolyNorm(vbo3d_index++, tv1, tv6, tvcen);
-				vbo3d->makeTriPolyNorm(vbo3d_index++, tv6, tv5, tvcen);
-				vbo3d->makeTriPolyNorm(vbo3d_index++, tv5, tv4, tvcen);
-				vbo3d->makeTriPolyNorm(vbo3d_index++, tv4, tv3, tvcen);
-				vbo3d->makeTriPolyNorm(vbo3d_index++, tv3, tv2, tvcen);
-				vbo3d->makeTriPolyNorm(vbo3d_index++, tv2, tv1, tvcen);
+				vbo->makeTriPolyNorm(vbo_index++, tv1, tv6, tvcen);
+				vbo->makeTriPolyNorm(vbo_index++, tv6, tv5, tvcen);
+				vbo->makeTriPolyNorm(vbo_index++, tv5, tv4, tvcen);
+				vbo->makeTriPolyNorm(vbo_index++, tv4, tv3, tvcen);
+				vbo->makeTriPolyNorm(vbo_index++, tv3, tv2, tvcen);
+				vbo->makeTriPolyNorm(vbo_index++, tv2, tv1, tvcen);
 
 				render_sides |= RENDER_LEFT;
 				render_sides |= RENDER_TOPLEFT;
@@ -342,8 +342,8 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 				      \|
 				*/
 
-				vbo3d->makeTri(vbo3d_index++, tv1, tv6, tv3);
-				vbo3d->makeTri(vbo3d_index++, tv1, tv3, tv2);
+				vbo->makeTri(vbo_index++, tv1, tv6, tv3);
+				vbo->makeTri(vbo_index++, tv1, tv3, tv2);
 
 				render_sides |= RENDER_LEFT;
 				render_sides |= RENDER_TOPLEFT;
@@ -362,8 +362,8 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 				    |/
 				*/
 
-				vbo3d->makeTri(vbo3d_index++, tv6, tv5, tv4);
-				vbo3d->makeTri(vbo3d_index++, tv6, tv4, tv3);
+				vbo->makeTri(vbo_index++, tv6, tv5, tv4);
+				vbo->makeTri(vbo_index++, tv6, tv4, tv3);
 
 				render_sides |= RENDER_TOPRIGHT;
 				render_sides |= RENDER_RIGHT;
@@ -378,7 +378,7 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 				    /__\
 				*/
 
-				vbo3d->makeTri(vbo3d_index++, tv1, tv6, tv5);
+				vbo->makeTri(vbo_index++, tv1, tv6, tv5);
 
 				render_sides |= RENDER_TOPLEFT;
 				render_sides |= RENDER_TOPRIGHT;
@@ -392,7 +392,7 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 				     \/
 				*/
 
-				vbo3d->makeTri(vbo3d_index++, tv2, tv4, tv3);
+				vbo->makeTri(vbo_index++, tv2, tv4, tv3);
 
 				render_sides |= RENDER_BOTLEFT;
 				render_sides |= RENDER_BOTRIGHT;
@@ -406,8 +406,8 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 				    |____|
 				*/
 
-				vbo3d->makeTri(vbo3d_index++, tv1, tv5, tv4);
-				vbo3d->makeTri(vbo3d_index++, tv1, tv4, tv2);
+				vbo->makeTri(vbo_index++, tv1, tv5, tv4);
+				vbo->makeTri(vbo_index++, tv1, tv4, tv2);
 
 				render_sides |= RENDER_LEFT;
 				render_sides |= RENDER_RIGHT;
@@ -424,7 +424,7 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 				    |.  				   
 				*/
 
-				vbo3d->makeTri(vbo3d_index++, tv1, tv6, tv2);
+				vbo->makeTri(vbo_index++, tv1, tv6, tv2);
 
 				render_sides |= RENDER_LEFT;
 				render_sides |= RENDER_TOPLEFT;
@@ -440,7 +440,7 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 				      .|				      
 				*/
 
-				vbo3d->makeTri(vbo3d_index++, tv6, tv5, tv4);
+				vbo->makeTri(vbo_index++, tv6, tv5, tv4);
 
 				render_sides |= RENDER_TOPRIGHT;
 				render_sides |= RENDER_RIGHT;
@@ -456,7 +456,7 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 				      \.
 				*/
 
-				vbo3d->makeTri(vbo3d_index++, tv1, tv3, tv2);
+				vbo->makeTri(vbo_index++, tv1, tv3, tv2);
 
 				render_sides |= RENDER_LEFT;
 				render_sides |= RENDER_BOTLEFT;
@@ -472,7 +472,7 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 				    ./
 				*/
 
-				vbo3d->makeTri(vbo3d_index++, tv3, tv5, tv4);
+				vbo->makeTri(vbo_index++, tv3, tv5, tv4);
 
 				render_sides |= RENDER_RIGHT;
 				render_sides |= RENDER_BOTRIGHT;
@@ -483,46 +483,46 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 			default:
 			{
 				// make degen geo
-				vbo3d->degenTris(vbo3d_index, MAX_VERTS);
+				vbo->degenTris(vbo_index, MAX_VERTS);
 				break;
 			}
 		}
 
 		if (render_sides & RENDER_LEFT)		
-			vbo3d_index += vbo3d->makeQuadPolyNorm(vbo3d_index, left_v1, left_v2, left_v3, left_v4);		
+			vbo_index += vbo->makeQuadPolyNorm(vbo_index, left_v1, left_v2, left_v3, left_v4);		
 		if (render_sides & RENDER_TOPLEFT)		
-			vbo3d_index += vbo3d->makeQuadPolyNorm(vbo3d_index, topleft_v1, topleft_v2, topleft_v3, topleft_v4);
+			vbo_index += vbo->makeQuadPolyNorm(vbo_index, topleft_v1, topleft_v2, topleft_v3, topleft_v4);
 		if (render_sides & RENDER_TOPRIGHT)
-			vbo3d_index += vbo3d->makeQuadPolyNorm(vbo3d_index, topright_v1, topright_v2, topright_v3, topright_v4);
+			vbo_index += vbo->makeQuadPolyNorm(vbo_index, topright_v1, topright_v2, topright_v3, topright_v4);
 		if (render_sides & RENDER_RIGHT)
-			vbo3d_index += vbo3d->makeQuadPolyNorm(vbo3d_index, right_v1, right_v2, right_v3, right_v4);
+			vbo_index += vbo->makeQuadPolyNorm(vbo_index, right_v1, right_v2, right_v3, right_v4);
 		if (render_sides & RENDER_BOTRIGHT)
-			vbo3d_index += vbo3d->makeQuadPolyNorm(vbo3d_index, botright_v1, botright_v2, botright_v3, botright_v4);
+			vbo_index += vbo->makeQuadPolyNorm(vbo_index, botright_v1, botright_v2, botright_v3, botright_v4);
 		if (render_sides & RENDER_BOTLEFT)
-			vbo3d_index += vbo3d->makeQuadPolyNorm(vbo3d_index, botleft_v1, botleft_v2, botleft_v3, botleft_v4);
+			vbo_index += vbo->makeQuadPolyNorm(vbo_index, botleft_v1, botleft_v2, botleft_v3, botleft_v4);
 		if (render_sides & RENDER_SIDELEFT)
-			vbo3d_index += vbo3d->makeQuadPolyNorm(vbo3d_index, sideleft_v1, sideleft_v2, sideleft_v3, sideleft_v4);
+			vbo_index += vbo->makeQuadPolyNorm(vbo_index, sideleft_v1, sideleft_v2, sideleft_v3, sideleft_v4);
 		if (render_sides & RENDER_SIDERIGHT)
-			vbo3d_index += vbo3d->makeQuadPolyNorm(vbo3d_index, sideright_v1, sideright_v2, sideright_v3, sideright_v4);
+			vbo_index += vbo->makeQuadPolyNorm(vbo_index, sideright_v1, sideright_v2, sideright_v3, sideright_v4);
 		if (render_sides & RENDER_MIDTOP)
-			vbo3d_index += vbo3d->makeQuadPolyNorm(vbo3d_index, midtop_v1, midtop_v2, midtop_v3, midtop_v4);
+			vbo_index += vbo->makeQuadPolyNorm(vbo_index, midtop_v1, midtop_v2, midtop_v3, midtop_v4);
 		if (render_sides & RENDER_MIDBOT)
-			vbo3d_index += vbo3d->makeQuadPolyNorm(vbo3d_index, midbot_v1, midbot_v2, midbot_v3, midbot_v4);
+			vbo_index += vbo->makeQuadPolyNorm(vbo_index, midbot_v1, midbot_v2, midbot_v3, midbot_v4);
 		if (render_sides & RENDER_CENTER_TOP)
-			vbo3d_index += vbo3d->makeQuadPolyNorm(vbo3d_index, centtop_v1, centtop_v2, centtop_v3, centtop_v4);
+			vbo_index += vbo->makeQuadPolyNorm(vbo_index, centtop_v1, centtop_v2, centtop_v3, centtop_v4);
 		if (render_sides & RENDER_CENTER_BOT)
-			vbo3d_index += vbo3d->makeQuadPolyNorm(vbo3d_index, centbot_v1, centbot_v2, centbot_v3, centbot_v4);
+			vbo_index += vbo->makeQuadPolyNorm(vbo_index, centbot_v1, centbot_v2, centbot_v3, centbot_v4);
 		if (render_sides & RENDER_CORNER_TL)
-			vbo3d_index += vbo3d->makeQuadPolyNorm(vbo3d_index, corntl_v1, corntl_v2, corntl_v3, corntl_v4);
+			vbo_index += vbo->makeQuadPolyNorm(vbo_index, corntl_v1, corntl_v2, corntl_v3, corntl_v4);
 		if (render_sides & RENDER_CORNER_TR)
-			vbo3d_index += vbo3d->makeQuadPolyNorm(vbo3d_index, corntr_v1, corntr_v2, corntr_v3, corntr_v4);
+			vbo_index += vbo->makeQuadPolyNorm(vbo_index, corntr_v1, corntr_v2, corntr_v3, corntr_v4);
 		if (render_sides & RENDER_CORNER_BL)
-			vbo3d_index += vbo3d->makeQuadPolyNorm(vbo3d_index, cornbl_v1, cornbl_v2, cornbl_v3, cornbl_v4);
+			vbo_index += vbo->makeQuadPolyNorm(vbo_index, cornbl_v1, cornbl_v2, cornbl_v3, cornbl_v4);
 		if (render_sides & RENDER_CORNER_BR)
-			vbo3d_index += vbo3d->makeQuadPolyNorm(vbo3d_index, cornbr_v1, cornbr_v2, cornbr_v3, cornbr_v4);
+			vbo_index += vbo->makeQuadPolyNorm(vbo_index, cornbr_v1, cornbr_v2, cornbr_v3, cornbr_v4);
 
-		if (vbo3d_index < 16)
-			vbo3d->degenTris(vbo3d_index, 16 - vbo3d_index);
+		if (vbo_index < MAX_VERTS)
+			vbo->degenTris(vbo_index, MAX_VERTS - vbo_index);
 	}
 }
 
@@ -868,7 +868,7 @@ void Tilemap::allocBucket(int bin)
 
 	m_buckets[bin]->coverage = 0;
 	m_buckets[bin]->map = new unsigned int[BUCKET_WIDTH * BUCKET_HEIGHT];
-	m_buckets[bin]->preview = new VBO(BUCKET_WIDTH * BUCKET_HEIGHT * MAX_VERTS);
+	m_buckets[bin]->tiles = new VBO(BUCKET_WIDTH * BUCKET_HEIGHT * MAX_VERTS);
 	m_buckets[bin]->x = bx;
 	m_buckets[bin]->y = by;
 	
@@ -876,7 +876,7 @@ void Tilemap::allocBucket(int bin)
 	{
 		m_buckets[bin]->map[i] = TILE_EMPTY;
 
-		m_buckets[bin]->preview->degenTris(i * MAX_VERTS, MAX_VERTS);
+		m_buckets[bin]->tiles->degenTris(i * MAX_VERTS, MAX_VERTS);
 	}
 }
 
@@ -885,7 +885,7 @@ void Tilemap::deallocBucket(int bin)
 	assert(m_buckets[bin] != nullptr);
 
 	delete[] m_buckets[bin]->map;
-	delete m_buckets[bin]->preview;
+	delete m_buckets[bin]->tiles;
 	delete m_buckets[bin];
 
 	m_buckets[bin] = nullptr;
