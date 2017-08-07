@@ -1,8 +1,9 @@
 #include "TileDesigner.h"
 
-TileDesignerWidget::TileDesignerWidget(QWidget* parent, Level* level) : QGLWidget(QGLFormat(QGL::SampleBuffers), parent)
+TileDesignerWidget::TileDesignerWidget(QWidget* parent, Level* level, TilePreview* preview) : QGLWidget(QGLFormat(QGL::SampleBuffers), parent)
 {
 	m_level = level;
+	m_preview = preview;
 
 	setFocusPolicy(Qt::ClickFocus);
 
@@ -259,7 +260,7 @@ void TileDesignerWidget::paintGL()
 
 	// opengl scene rendering
 	// --------------------------------------------------------------------------
-		glDisable(GL_CULL_FACE);
+	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
 
 	qglClearColor(m_bgcolor);
@@ -850,6 +851,9 @@ void TileDesignerWidget::transformPoly(PolygonDef* def, PolygonDef* srcdef, glm:
 
 		def->insertPoint(pp);
 	}
+
+	m_preview->setTopUVs(m_poly[0]);
+	m_preview->setSideUVs(m_poly[1]);
 }
 
 void TileDesignerWidget::setTopType(Tilemap::TopType type)
@@ -857,6 +861,7 @@ void TileDesignerWidget::setTopType(Tilemap::TopType type)
 	// TODO: update preview
 
 	m_top_type = type;
+	m_preview->setTopType(type);
 
 	update();
 }
@@ -866,6 +871,7 @@ void TileDesignerWidget::setTopHeight(double height)
 	// TODO: update preview
 
 	m_top_height = height;
+	m_preview->setTopHeight(height);
 
 	update();
 }
@@ -875,6 +881,7 @@ void TileDesignerWidget::setShadingType(Tilemap::ShadingType type)
 	// TODO: update preview
 
 	m_shading_type = type;
+	m_preview->setShadingType(type);
 
 	update();
 }
@@ -907,8 +914,27 @@ TileDesigner::TileDesigner(QWidget* parent, Level* level) : QDockWidget("Tile De
 {
 	m_level = level;
 
-	m_widget = new TileDesignerWidget(parent, m_level);
+	m_preview = new TilePreview(parent, m_level);
+	m_widget = new TileDesignerWidget(parent, m_level, m_preview);	
 	m_window = new QMainWindow(0);
+
+	QVBoxLayout* side_layout = new QVBoxLayout();
+	side_layout->addWidget(m_preview);
+	side_layout->addStretch();
+
+	QWidget* sidewidget = new QWidget;
+	sidewidget->setMinimumWidth(220);
+	sidewidget->setMaximumWidth(220);
+	sidewidget->setLayout(side_layout);
+
+	QGridLayout* layout = new QGridLayout();
+	layout->setMargin(3);
+	layout->setSpacing(3);
+	layout->addWidget(m_widget, 0, 0);
+	layout->addWidget(sidewidget, 0, 1);
+
+	m_central_widget = new QWidget;	
+	m_central_widget->setLayout(layout);
 
 	setFocusPolicy(Qt::ClickFocus);
 
@@ -1160,7 +1186,7 @@ TileDesigner::TileDesigner(QWidget* parent, Level* level) : QDockWidget("Tile De
 
 	m_window->setParent(this);
 	setWidget(m_window);
-	m_window->setCentralWidget(m_widget);
+	m_window->setCentralWidget(m_central_widget);
 	m_window->setContextMenuPolicy(Qt::NoContextMenu);
 	
 	setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable);
@@ -1255,6 +1281,7 @@ void TileDesigner::closeEvent(QCloseEvent* event)
 void TileDesigner::setTexture(QImage* texture)
 {
 	m_widget->setTexture(texture);
+	m_preview->setTexture(texture);
 }
 
 
@@ -1360,4 +1387,5 @@ void TileDesigner::setTopHeight(double height)
 	double val = m_topheight_spin->value();
 
 	emit m_widget->setTopHeight(val);
+	m_preview->setTopHeight(val);
 }

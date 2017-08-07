@@ -21,6 +21,7 @@
 
 #include "Level.h"
 #include "PolygonDef.h"
+#include "TilePreview.h"
 
 class TileDesignerWidget : public QGLWidget
 {
@@ -35,7 +36,7 @@ public:
 		POLY_SIDE = 0x2,
 	};
 
-	TileDesignerWidget(QWidget* parent, Level* level);
+	TileDesignerWidget(QWidget* parent, Level* level, TilePreview* preview);
 	~TileDesignerWidget();
 
 	void setTexture(QImage* texture);
@@ -161,6 +162,8 @@ private:
 	Tilemap::ShadingType m_shading_type;
 	Tilemap::TopType m_top_type;
 	float m_top_height;
+
+	TilePreview* m_preview;
 };
 
 
@@ -209,6 +212,7 @@ private:
 	QMainWindow* m_window;	
 	QMenu* m_menu;
 	TileDesignerWidget* m_widget;
+	TilePreview* m_preview;
 
 	QToolBar* m_tile_toolbar;
 	QToolBar* m_zoom_toolbar;
@@ -267,4 +271,6 @@ private:
 	QColor m_object_color;
 
 	int m_selected_tile;
+
+	QWidget* m_central_widget;
 };
