@@ -154,7 +154,7 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 		glm::vec3 p5 = glm::vec3(tx2, ty1 + (m_tile_height * (15.0 / 70.0)), z);
 		glm::vec3 p6 = glm::vec3(tx1 + (m_tile_width * 0.5), ty1, z);
 
-		glm::vec3 pcen = glm::vec3(tx1 + (m_tile_width * 0.5), ty1 + (m_tile_height * (20.0 / 70.0)), z + tiledata->top_height);
+		glm::vec3 pcen = glm::vec3(tx1 + (m_tile_width * 0.5), ty1 + (m_tile_height * (20.0 / 70.0)), z + (tiledata->top_height * 0.1f));
 
 		glm::vec3 bp1 = glm::vec3(tx1, ty1 + (m_tile_height * (15.0 / 70.0)), 0.0f);
 		glm::vec3 bp2 = glm::vec3(tx1, ty1 + (m_tile_height * (35.0 / 70.0)), 0.0f);
@@ -316,12 +316,22 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 				vbo3d->makeTri(vbo3d_index++, tv1, tv3, tv2);
 				*/
 
-				vbo->makeTriPolyNorm(vbo_index++, tv1, tv6, tvcen);
-				vbo->makeTriPolyNorm(vbo_index++, tv6, tv5, tvcen);
-				vbo->makeTriPolyNorm(vbo_index++, tv5, tv4, tvcen);
-				vbo->makeTriPolyNorm(vbo_index++, tv4, tv3, tvcen);
-				vbo->makeTriPolyNorm(vbo_index++, tv3, tv2, tvcen);
-				vbo->makeTriPolyNorm(vbo_index++, tv2, tv1, tvcen);
+				if (tiledata->top_type == Tilemap::TOP_POINTY)
+				{
+					vbo->makeTriPolyNorm(vbo_index++, tv1, tv6, tvcen);
+					vbo->makeTriPolyNorm(vbo_index++, tv6, tv5, tvcen);
+					vbo->makeTriPolyNorm(vbo_index++, tv5, tv4, tvcen);
+					vbo->makeTriPolyNorm(vbo_index++, tv4, tv3, tvcen);
+					vbo->makeTriPolyNorm(vbo_index++, tv3, tv2, tvcen);
+					vbo->makeTriPolyNorm(vbo_index++, tv2, tv1, tvcen);
+				}
+				else if (tiledata->top_type == Tilemap::TOP_FLAT)
+				{
+					vbo->makeTriPolyNorm(vbo_index++, tv1, tv6, tv5);
+					vbo->makeTriPolyNorm(vbo_index++, tv1, tv5, tv4);
+					vbo->makeTriPolyNorm(vbo_index++, tv1, tv4, tv3);
+					vbo->makeTriPolyNorm(vbo_index++, tv1, tv3, tv2);
+				}
 
 				render_sides |= RENDER_LEFT;
 				render_sides |= RENDER_TOPLEFT;

@@ -2182,7 +2182,7 @@ bool MainWindow::writeBinaryProjectFile(QString& filename)
 
 		for (int i=0; i < num_tiles; i++)
 		{
-			const Tilemap::Tile* tile  = m_level->getTile(i);
+			Tilemap::Tile* tile  = m_level->getTile(i);
 
 			// tile name
 			std::string name = tile->name;
@@ -2195,22 +2195,7 @@ bool MainWindow::writeBinaryProjectFile(QString& filename)
 			// tile type
 			output.write_dword(tile->type);
 
-			int num_top_points = 0;
-
-			// top UVs
-			switch (tile->type)
-			{
-				case Tilemap::TILE_FULL:		num_top_points = 6; break;				
-				case Tilemap::TILE_LEFT:		num_top_points = 4; break;				
-				case Tilemap::TILE_RIGHT:		num_top_points = 4; break;
-				case Tilemap::TILE_TOP:			num_top_points = 3; break;				
-				case Tilemap::TILE_BOTTOM:		num_top_points = 3; break;
-				case Tilemap::TILE_MID:			num_top_points = 4; break;
-				case Tilemap::TILE_CORNER_TL:	num_top_points = 3; break;
-				case Tilemap::TILE_CORNER_TR:	num_top_points = 3; break;
-				case Tilemap::TILE_CORNER_BL:	num_top_points = 3; break;
-				case Tilemap::TILE_CORNER_BR:	num_top_points = 3; break;
-			}
+			int num_top_points = tile->numTopPoints();
 
 			for (int j = 0; j < num_top_points; j++)
 			{
@@ -2401,7 +2386,7 @@ void MainWindow::writeLevelFile(QString& filename)
 
 		for (int i=0; i < num_tiles; i++)
 		{
-			const Tilemap::Tile* tile = m_level->getTile(i);	
+			Tilemap::Tile* tile = m_level->getTile(i);	
 
 			// tile color
 			output.write_dword(tile->color);
@@ -2409,21 +2394,7 @@ void MainWindow::writeLevelFile(QString& filename)
 			// tile type
 			output.write_dword(tile->type);
 
-			int num_top_points = 0;
-
-			switch (tile->type)
-			{
-				case Tilemap::TILE_FULL:		num_top_points = 6; break;				
-				case Tilemap::TILE_LEFT:		num_top_points = 4;	break;				
-				case Tilemap::TILE_RIGHT:		num_top_points = 4; break;
-				case Tilemap::TILE_TOP:			num_top_points = 3; break;				
-				case Tilemap::TILE_BOTTOM:		num_top_points = 3; break;
-				case Tilemap::TILE_MID:			num_top_points = 4; break;
-				case Tilemap::TILE_CORNER_TL:	num_top_points = 3; break;
-				case Tilemap::TILE_CORNER_TR:	num_top_points = 3; break;
-				case Tilemap::TILE_CORNER_BL:	num_top_points = 3; break;
-				case Tilemap::TILE_CORNER_BR:	num_top_points = 3; break;
-			}
+			int num_top_points = tile->numTopPoints();
 
 			for (int j = 0; j < num_top_points; j++)
 			{

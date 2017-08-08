@@ -11,6 +11,7 @@ TilePreview::TilePreview(QWidget* parent, Level* level) : QGLWidget(QGLFormat(QG
 	m_vbo = new VBO(20);
 
 	m_tile_type = Tilemap::TILE_FULL;
+	m_top_type = Tilemap::TOP_FLAT;
 	updateGeo();
 
 	m_side_points[0] = glm::vec2(0.0f, 0.0f);

@@ -55,7 +55,7 @@ public slots:
 	void insertTile(QString& name);
 	void replaceTile(QString& name, int index);
 	void setColor(QColor color);
-	void setTileType(int type);
+	void setTileType(Tilemap::TileType type);
 	void setScale(double scale);
 	void setRotate(int angle);
 	void setTopType(Tilemap::TopType type);
@@ -127,7 +127,7 @@ private:
 	QGLShaderProgram* m_level_program;
 	Shader m_level_shader;
 
-	int m_current_tile_type;
+	Tilemap::TileType m_current_tile_type;
 	int m_selected_poly;
 
 	PolygonDef* m_poly[2];
@@ -207,6 +207,7 @@ public slots:
 	void setTopType(int type);
 	void setShadingType(int type);
 	void setTopHeight(double height);
+	void setTileType(int type);
 
 private:
 	QMainWindow* m_window;	

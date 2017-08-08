@@ -118,7 +118,7 @@ TileDesignerWidget::TileDesignerWidget(QWidget* parent, Level* level, TilePrevie
 
 	m_selected_poly = -1;
 	emit onSelectPoly(m_selected_poly);
-	m_current_tile_type = 0;
+	m_current_tile_type = Tilemap::TILE_FULL;
 
 	/*
 	m_position[0] = glm::vec2(0.0f, 0.0f);
@@ -468,7 +468,7 @@ void TileDesignerWidget::enableSnapGrid(bool enable)
 	m_snap_grid = enable;
 }
 
-void TileDesignerWidget::setTileType(int type)
+void TileDesignerWidget::setTileType(Tilemap::TileType type)
 {
 	m_current_tile_type = type;
 
@@ -512,27 +512,7 @@ void TileDesignerWidget::resetObject(int objects)
 
 void TileDesignerWidget::insertTile(QString& name)
 {
-	Tilemap::TileType type;
-
-	switch (m_current_tile_type)
-	{
-		case 0:	type = Tilemap::TILE_FULL; break;
-		case 1: type = Tilemap::TILE_LEFT; break;
-		case 2: type = Tilemap::TILE_RIGHT; break;
-		case 3: type = Tilemap::TILE_TOP; break;
-		case 4: type = Tilemap::TILE_BOTTOM; break;
-		case 5: type = Tilemap::TILE_MID; break;
-		case 6: type = Tilemap::TILE_CORNER_TL; break;
-		case 7: type = Tilemap::TILE_CORNER_TR; break;
-		case 8: type = Tilemap::TILE_CORNER_BL; break;
-		case 9: type = Tilemap::TILE_CORNER_BR; break;
-		default: type = Tilemap::TILE_FULL; break;
-	}
-
-	Tilemap::TopType top_type = Tilemap::TOP_POINTY;
-	float top_height = 2.0f;
-
-	int id = m_level->insertTile(name.toStdString(), m_poly[0], m_poly[1], m_color, type, top_type, top_height);
+	int id = m_level->insertTile(name.toStdString(), m_poly[0], m_poly[1], m_color, m_current_tile_type, m_top_type, m_top_height);
 	emit onInsertTile(id);
 
 	resetObject(POLY_TOP | POLY_SIDE);
@@ -541,27 +521,7 @@ void TileDesignerWidget::insertTile(QString& name)
 
 void TileDesignerWidget::replaceTile(QString& name, int index)
 {
-	Tilemap::TileType type;
-
-	switch (m_current_tile_type)
-	{
-		case 0:	type = Tilemap::TILE_FULL; break;
-		case 1: type = Tilemap::TILE_LEFT; break;
-		case 2: type = Tilemap::TILE_RIGHT; break;
-		case 3: type = Tilemap::TILE_TOP; break;
-		case 4: type = Tilemap::TILE_BOTTOM; break;
-		case 5: type = Tilemap::TILE_MID; break;
-		case 6: type = Tilemap::TILE_CORNER_TL; break;
-		case 7: type = Tilemap::TILE_CORNER_TR; break;
-		case 8: type = Tilemap::TILE_CORNER_BL; break;
-		case 9: type = Tilemap::TILE_CORNER_BR; break;
-		default: type = Tilemap::TILE_FULL; break;
-	}
-
-	Tilemap::TopType top_type = Tilemap::TOP_POINTY;
-	float top_height = 2.0f;
-
-	int id = m_level->replaceTile(index, name.toStdString(), m_poly[0], m_poly[1], m_color, type, top_type, top_height);
+	int id = m_level->replaceTile(index, name.toStdString(), m_poly[0], m_poly[1], m_color, m_current_tile_type, m_top_type, m_top_height);
 	emit onReplaceTile(id);
 
 	resetObject(POLY_TOP | POLY_SIDE);
@@ -950,18 +910,18 @@ TileDesigner::TileDesigner(QWidget* parent, Level* level) : QDockWidget("Tile De
 
 	m_tiletype_combo = new QComboBox();
 	m_tiletype_combo->setWindowTitle("Tile type");
-	m_tiletype_combo->addItem("Full", QVariant(0));
-	m_tiletype_combo->addItem("Left", QVariant(1));
-	m_tiletype_combo->addItem("Right", QVariant(2));
-	m_tiletype_combo->addItem("Top", QVariant(3));
-	m_tiletype_combo->addItem("Bottom", QVariant(4));
-	m_tiletype_combo->addItem("Middle", QVariant(5));
-	m_tiletype_combo->addItem("Top-Left", QVariant(6));
-	m_tiletype_combo->addItem("Top-Right", QVariant(7));
-	m_tiletype_combo->addItem("Bottom-Left", QVariant(8));
-	m_tiletype_combo->addItem("Bottom-Right", QVariant(9));
+	m_tiletype_combo->addItem("Full", QVariant(Tilemap::TILE_FULL));
+	m_tiletype_combo->addItem("Left", QVariant(Tilemap::TILE_LEFT));
+	m_tiletype_combo->addItem("Right", QVariant(Tilemap::TILE_RIGHT));
+	m_tiletype_combo->addItem("Top", QVariant(Tilemap::TILE_TOP));
+	m_tiletype_combo->addItem("Bottom", QVariant(Tilemap::TILE_BOTTOM));
+	m_tiletype_combo->addItem("Middle", QVariant(Tilemap::TILE_MID));
+	m_tiletype_combo->addItem("Top-Left", QVariant(Tilemap::TILE_CORNER_TL));
+	m_tiletype_combo->addItem("Top-Right", QVariant(Tilemap::TILE_CORNER_TR));
+	m_tiletype_combo->addItem("Bottom-Left", QVariant(Tilemap::TILE_CORNER_BL));
+	m_tiletype_combo->addItem("Bottom-Right", QVariant(Tilemap::TILE_CORNER_BR));
 	m_tiletype_combo->setFocusPolicy(Qt::NoFocus);
-	connect(m_tiletype_combo, SIGNAL(currentIndexChanged(int)), m_widget, SLOT(setTileType(int)));
+	connect(m_tiletype_combo, SIGNAL(currentIndexChanged(int)), this, SLOT(setTileType(int)));
 
 	m_tiletype_label = new QLabel("Tile type:");
 	m_tiletype_label->setMinimumWidth(50);
@@ -1018,7 +978,7 @@ TileDesigner::TileDesigner(QWidget* parent, Level* level) : QDockWidget("Tile De
 	m_shading_combo = new QComboBox();
 	m_shading_combo->setWindowTitle("Shading");
 	m_shading_combo->addItem("Standard", QVariant(Tilemap::SHADING_STANDARD));
-	m_shading_combo->addItem("Enviroment", QVariant(Tilemap::SHADING_ENVIRONMENT));
+	m_shading_combo->addItem("Environment", QVariant(Tilemap::SHADING_ENVIRONMENT));
 	m_shading_combo->addItem("Self Luminous", QVariant(Tilemap::SHADING_SELFLUMINOUS));
 	m_shading_combo->setFocusPolicy(Qt::NoFocus);
 	connect(m_shading_combo, SIGNAL(currentIndexChanged(int)), this, SLOT(setShadingType(int)));
@@ -1388,4 +1348,12 @@ void TileDesigner::setTopHeight(double height)
 
 	emit m_widget->setTopHeight(val);
 	m_preview->setTopHeight(val);
+}
+
+void TileDesigner::setTileType(int type)
+{
+	Tilemap::TileType tile_type = (Tilemap::TileType)m_tiletype_combo->itemData(type).toInt();
+
+	emit m_widget->setTileType(tile_type);
+	m_preview->setTileType(tile_type);
 }
