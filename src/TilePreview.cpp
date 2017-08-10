@@ -690,5 +690,6 @@ QImage TilePreview::makeThumbnail(PolygonDef* top_points, PolygonDef* side_point
 
 	updateGeo(top, side, tile_type, top_type, shading_type, top_height, color);
 
+	repaint();
 	return grabFrameBuffer();
 }

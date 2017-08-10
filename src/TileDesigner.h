@@ -178,6 +178,13 @@ public:
 
 	void setTexture(QImage* texture);
 
+	QImage makeThumbnail(PolygonDef* top_points, PolygonDef* side_points,
+						Tilemap::TileType tile_type,
+						Tilemap::TopType top_type,
+						Tilemap::ShadingType shading_type,
+						float top_height,
+						unsigned int color);
+
 	static const int NUM_GRID_SIZES = 8;
 	static const float GRID_SIZE[NUM_GRID_SIZES];
 

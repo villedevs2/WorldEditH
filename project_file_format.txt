@@ -50,6 +50,8 @@ n bytes		| Side UVs 4x [2 floats: U, V]
 		     1 = Pointy
 4 bytes		| Top height [float]
 4 bytes		| Shading type
+4 bytes		| Thumbnail size in bytes
+n bytes		| Thumbnail as PNG
 
 Bucket structure
 ----------------

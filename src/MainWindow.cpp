@@ -1880,6 +1880,26 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 
 		texture_name = QString(buf);
 
+		// load texture if needed
+		if (!texture_name.isEmpty())
+		{
+			if (texture_name != m_texture_file)
+			{
+				QMessageBox box;
+				box.setText("Different texture.");
+				box.setInformativeText("The prefab file uses a different texture. Want to load this texture?");
+				box.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+				box.setDefaultButton(QMessageBox::Yes);
+				int ret = box.exec();
+
+				if (ret == QMessageBox::Yes)
+				{
+					changeTexture(texture_name);
+				}
+			}
+		}
+
+
 
 		// custom colors
 		for (int i = 0; i < 16; i++)
@@ -2015,11 +2035,31 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 			float top_height = input.read_float();
 			unsigned int shading_type = input.read_dword();
 
-			int thumb_w = 200;
-			int thumb_h = 300;
+			QByteArray ba;
+			int thumb_datasize = input.read_dword();
+			for (int i = 0; i < thumb_datasize; i++)
+			{
+				ba.push_back(input.read_byte());
+			}
+
+			QBuffer buffer(&ba);
+			buffer.open(QIODevice::ReadOnly);
+			
+			QImage* thumb_image = new QImage();
+			thumb_image->load(&buffer, "PNG");
+
+			int thumb_w = thumb_image->width();
+			int thumb_h = thumb_image->height();
 			unsigned int* thumb = new unsigned int[thumb_w * thumb_h];
 
-			// TODO: make real thumbnail
+			for (int j = 0; j < thumb_h; j++)
+			{
+				QRgb* line = (QRgb*)thumb_image->scanLine(j);
+				for (int i = 0; i < thumb_w; i++)
+				{
+					thumb[(j * thumb_w) + i] = line[i];
+				}
+			}
 
 			int id = m_level->insertTile(tile_name.toStdString(), top, side, tile_color,
 										(Tilemap::TileType)type,
@@ -2029,6 +2069,7 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 			emit m_tileset_window->add(id);
 
 			delete[] thumb;
+			delete thumb_image;
 		}
 
 		delete top;
@@ -2061,25 +2102,6 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 
 
 		// ------------------------
-
-		// load texture if needed
-		if (!texture_name.isEmpty())
-		{
-			if (texture_name != m_texture_file)
-			{
-				QMessageBox box;
-				box.setText("Different texture.");
-				box.setInformativeText("The prefab file uses a different texture. Want to load this texture?");
-				box.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-				box.setDefaultButton(QMessageBox::Yes);
-				int ret = box.exec();
-
-				if (ret == QMessageBox::Yes)
-				{
-					changeTexture(texture_name);
-				}
-			}
-		}	
 	}
 	catch (ios_base::failure&)
 	{
@@ -2229,6 +2251,31 @@ bool MainWindow::writeBinaryProjectFile(QString& filename)
 			output.write_dword(tile->top_type);
 
 			output.write_float(tile->top_height);
+
+			output.write_dword(tile->shading_type);
+
+			QImage* thumb_image = new QImage(tile->thumb_width, tile->thumb_height, QImage::Format_ARGB32);
+			for (int j = 0; j < tile->thumb_height; j++)
+			{
+				QRgb* line = (QRgb*)thumb_image->scanLine(j);
+				for (int i = 0; i < tile->thumb_width; i++)
+				{
+					line[i] = tile->thumbnail[(j * tile->thumb_width) + i];
+				}
+			}
+
+			QByteArray ba;
+			QBuffer buffer(&ba);
+			buffer.open(QIODevice::WriteOnly);
+			thumb_image->save(&buffer, "PNG");
+
+			output.write_dword(ba.size());
+			for (int i = 0; i < ba.size(); i++)
+			{
+				output.write_byte(ba.at(i));
+			}
+
+			delete thumb_image;
 		}
 
 		// buckets

@@ -110,6 +110,9 @@ public:
 	static const int BUCKET_WIDTH = 8;
 	static const int BUCKET_HEIGHT = 8;
 
+	static const int THUMB_WIDTH = 70;
+	static const int THUMB_HEIGHT = 105;
+
 
 
 	Tilemap();

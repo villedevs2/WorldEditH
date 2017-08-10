@@ -514,13 +514,15 @@ void TileDesignerWidget::insertTile(QString& name)
 {
 	QImage thumb_image = m_preview->makeThumbnail(m_poly[0], m_poly[1], m_current_tile_type, m_top_type, m_shading_type, m_top_height, m_color);
 
-	int thumb_w = thumb_image.width();
-	int thumb_h = thumb_image.height();
+	QImage t2img = thumb_image.scaled(Tilemap::THUMB_WIDTH, Tilemap::THUMB_HEIGHT, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+
+	int thumb_w = t2img.width();
+	int thumb_h = t2img.height();
 
 	unsigned int* thumb = new unsigned int[thumb_w * thumb_h];
 	for (int j = 0; j < thumb_h; j++)
 	{
-		QRgb* line = (QRgb*)thumb_image.scanLine(j);
+		QRgb* line = (QRgb*)t2img.scanLine(j);
 		for (int i = 0; i < thumb_w; i++)
 		{
 			thumb[(j * thumb_w) + i] = line[i];
@@ -544,13 +546,15 @@ void TileDesignerWidget::replaceTile(QString& name, int index)
 {
 	QImage thumb_image = m_preview->makeThumbnail(m_poly[0], m_poly[1], m_current_tile_type, m_top_type, m_shading_type, m_top_height, m_color);
 
-	int thumb_w = thumb_image.width();
-	int thumb_h = thumb_image.height();
+	QImage t2img = thumb_image.scaled(Tilemap::THUMB_WIDTH, Tilemap::THUMB_HEIGHT, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+
+	int thumb_w = t2img.width();
+	int thumb_h = t2img.height();
 
 	unsigned int* thumb = new unsigned int[thumb_w * thumb_h];
 	for (int j = 0; j < thumb_h; j++)
 	{
-		QRgb* line = (QRgb*)thumb_image.scanLine(j);
+		QRgb* line = (QRgb*)t2img.scanLine(j);
 		for (int i = 0; i < thumb_w; i++)
 		{
 			thumb[(j * thumb_w) + i] = line[i];
@@ -1398,4 +1402,15 @@ void TileDesigner::setTileType(int type)
 
 	emit m_widget->setTileType(tile_type);
 	m_preview->setTileType(tile_type);
+}
+
+
+QImage TileDesigner::makeThumbnail(PolygonDef* top_points, PolygonDef* side_points,
+	Tilemap::TileType tile_type,
+	Tilemap::TopType top_type,
+	Tilemap::ShadingType shading_type,
+	float top_height,
+	unsigned int color)
+{
+	return m_preview->makeThumbnail(top_points, side_points, tile_type, top_type, shading_type, top_height, color);
 }
