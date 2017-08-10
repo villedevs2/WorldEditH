@@ -2013,9 +2013,22 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 			unsigned int top_type = input.read_dword();
 
 			float top_height = input.read_float();
+			unsigned int shading_type = input.read_dword();
 
-			int id = m_level->insertTile(tile_name.toStdString(), top, side, tile_color, (Tilemap::TileType)type, (Tilemap::TopType)top_type, top_height);
+			int thumb_w = 200;
+			int thumb_h = 300;
+			unsigned int* thumb = new unsigned int[thumb_w * thumb_h];
+
+			// TODO: make real thumbnail
+
+			int id = m_level->insertTile(tile_name.toStdString(), top, side, tile_color,
+										(Tilemap::TileType)type,
+										(Tilemap::TopType)top_type,
+										(Tilemap::ShadingType)shading_type,
+										top_height, thumb, thumb_w, thumb_h);
 			emit m_tileset_window->add(id);
+
+			delete[] thumb;
 		}
 
 		delete top;

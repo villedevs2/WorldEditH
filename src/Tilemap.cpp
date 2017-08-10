@@ -744,7 +744,11 @@ int Tilemap::getSideBits(Tilemap::TileType type)
 	return bits;
 }
 
-int Tilemap::insertTile(std::string name, PolygonDef* top, PolygonDef* side, unsigned int color, Tilemap::TileType type, Tilemap::TopType top_type, float top_height)
+int Tilemap::insertTile(std::string name, PolygonDef* top, PolygonDef* side, unsigned int color,
+						Tilemap::TileType type,
+						Tilemap::TopType top_type,
+						Tilemap::ShadingType shading_type,
+						float top_height, unsigned int* thumb, int thumb_w, int thumb_h)
 {
 	Tile tile;
 	for (int i=0; i < top->getNumPoints(); i++)
@@ -775,11 +779,24 @@ int Tilemap::insertTile(std::string name, PolygonDef* top, PolygonDef* side, uns
 
 	tile.top_height = top_height;
 
+	tile.thumb_width = thumb_w;
+	tile.thumb_height = thumb_h;
+	tile.thumbnail = new unsigned int[thumb_w * thumb_h];
+
+	for (int i = 0; i < thumb_w*thumb_h; i++)
+	{
+		tile.thumbnail[i] = thumb[i];
+	}
+
 	m_tiles.push_back(tile);
 	return tile.id;
 }
 
-int Tilemap::replaceTile(int index, std::string name, PolygonDef* top, PolygonDef* side, unsigned int color, Tilemap::TileType type, Tilemap::TopType top_type, float top_height)
+int Tilemap::replaceTile(int index, std::string name, PolygonDef* top, PolygonDef* side, unsigned int color,
+						Tilemap::TileType type,
+						Tilemap::TopType top_type,
+						Tilemap::ShadingType shading_type,
+						float top_height, unsigned int* thumb, int thumb_w, int thumb_h)
 {
 	Tile* tile = &m_tiles.at(index);
 	for (int i = 0; i < top->getNumPoints(); i++)
@@ -800,6 +817,18 @@ int Tilemap::replaceTile(int index, std::string name, PolygonDef* top, PolygonDe
 	tile->top_type = top_type;
 
 	tile->top_height = top_height;
+
+	if (tile->thumbnail != nullptr)
+		delete[] tile->thumbnail;
+
+	tile->thumb_width = thumb_w;
+	tile->thumb_height = thumb_h;
+	tile->thumbnail = new unsigned int[thumb_w * thumb_h];
+
+	for (int i = 0; i < thumb_w*thumb_h; i++)
+	{
+		tile->thumbnail[i] = thumb[i];
+	}
 
 	tesselateAllByTile(index);
 

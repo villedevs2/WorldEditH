@@ -56,11 +56,23 @@ void TilesetWidget::add(int tile_id)
 
 	if (tile != nullptr)
 	{
+		/*
 		QImage* image = new QImage(TILESET_THUMB_W, TILESET_THUMB_H, QImage::Format_ARGB32);
 
 		int numtop = tile->numTopPoints();
 
 		Thumbnail::fromTileType(image, m_texture, tile->top_points, numtop, tile->side_points, 4, tile->type);
+		*/
+
+		QImage* image = new QImage(tile->thumb_width, tile->thumb_height, QImage::Format_ARGB32);
+		for (int j = 0; j < tile->thumb_height; j++)
+		{
+			QRgb* line = (QRgb*)image->scanLine(j);
+			for (int i = 0; i < tile->thumb_width; i++)
+			{
+				line[i] = tile->thumbnail[(j * tile->thumb_width) + i];
+			}
+		}
 
 		QListWidgetItem* item = new QListWidgetItem();
 		item->setData(Qt::DisplayRole, QString(tile->name.c_str()));
@@ -84,16 +96,31 @@ void TilesetWidget::replace(int tile_id)
 		if (tile_id == id)
 		{
 			QImage* image = obj->data(Qt::UserRole + 1).value<QImage*>();
+			if (image != nullptr)
+				delete image;
+
+
 
 			Tilemap::Tile* tile = m_level->getTileById(tile_id);
 			assert(tile != nullptr);
 
-			int numtop = tile->numTopPoints();
+			image = new QImage(tile->thumb_width, tile->thumb_height, QImage::Format_ARGB32);
+			for (int j = 0; j < tile->thumb_height; j++)
+			{
+				QRgb* line = (QRgb*)image->scanLine(j);
+				for (int i = 0; i < tile->thumb_width; i++)
+				{
+					line[i] = tile->thumbnail[(j * tile->thumb_width) + i];
+				}
+			}
 
-			Thumbnail::fromTileType(image, m_texture, tile->top_points, numtop, tile->side_points, 4, tile->type);
+			//int numtop = tile->numTopPoints();
+
+			//Thumbnail::fromTileType(image, m_texture, tile->top_points, numtop, tile->side_points, 4, tile->type);
 
 			obj->setData(Qt::DisplayRole, QString(tile->name.c_str()));
-			// image and tile_id stay as is
+			obj->setData(Qt::UserRole + 1, QVariant::fromValue<QImage*>(image));
+			// tile_id stays as is
 
 			return;
 		}

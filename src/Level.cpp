@@ -694,16 +694,24 @@ int Level::numTilemapTris(int bx, int by)
 }
 */
 
-int Level::insertTile(std::string name, PolygonDef* top, PolygonDef* side, unsigned int color, Tilemap::TileType type, Tilemap::TopType top_type, float top_height)
+int Level::insertTile(std::string name, PolygonDef* top, PolygonDef* side, unsigned int color,
+					Tilemap::TileType type,
+					Tilemap::TopType top_type,
+					Tilemap::ShadingType shading_type,
+					float top_height, unsigned int* thumb, int thumb_w, int thumb_h)
 {
 	setModified();
-	return m_tilemap->insertTile(name, top, side, color, type, top_type, top_height);
+	return m_tilemap->insertTile(name, top, side, color, type, top_type, shading_type, top_height, thumb, thumb_w, thumb_h);
 }
 
-int Level::replaceTile(int index, std::string name, PolygonDef* top, PolygonDef* side, unsigned int color, Tilemap::TileType type, Tilemap::TopType top_type, float top_height)
+int Level::replaceTile(int index, std::string name, PolygonDef* top, PolygonDef* side, unsigned int color,
+						Tilemap::TileType type,
+						Tilemap::TopType top_type,
+						Tilemap::ShadingType shading_type,
+						float top_height, unsigned int* thumb, int thumb_w, int thumb_h)
 {
 	setModified();
-	return m_tilemap->replaceTile(index, name, top, side, color, type, top_type, top_height);
+	return m_tilemap->replaceTile(index, name, top, side, color, type, top_type, shading_type, top_height, thumb, thumb_w, thumb_h);
 }
 
 void Level::removeTile(int id)

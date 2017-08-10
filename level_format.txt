@@ -51,6 +51,7 @@ n bytes		| Top UV coords [4-6x UV-pairs]
 32 bytes	| Side UV coords [4x UV-pairs]
 4 bytes		| Top type
 4 bytes		| Top height
+4 bytes		| Shading type
 
 Bucket
 ------

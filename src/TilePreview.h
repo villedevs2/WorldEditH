@@ -27,6 +27,13 @@ public:
 	void setTopType(Tilemap::TopType type);
 	void setShadingType(Tilemap::ShadingType type);
 
+	QImage makeThumbnail(PolygonDef* top_points, PolygonDef* side_points,
+						Tilemap::TileType tile_type,
+						Tilemap::TopType top_type,
+						Tilemap::ShadingType shading_type,
+						float top_height,
+						unsigned int color);
+
 protected:
 	void initializeGL();
 	void paintGL();
@@ -48,7 +55,12 @@ private:
 	};
 
 	QString loadShader(QString filename);
-	void updateGeo();
+	void updateGeo(const glm::vec2* top_points, const glm::vec2* side_points,
+					Tilemap::TileType tile_type,
+					Tilemap::TopType top_type,
+					Tilemap::ShadingType shading_type,
+					float top_height,
+					unsigned int color);
 
 	float m_viewport_width;
 	float m_viewport_height;

@@ -129,8 +129,16 @@ public:
 	float getTileHeight();
 //	float* getTilemapVBO(int bx, int by);
 //	int numTilemapTris(int bx, int by);
-	int insertTile(std::string name, PolygonDef* top, PolygonDef* side, unsigned int color, Tilemap::TileType type, Tilemap::TopType top_type, float top_height);
-	int replaceTile(int index, std::string name, PolygonDef* top, PolygonDef* side, unsigned int color, Tilemap::TileType type, Tilemap::TopType top_type, float top_height);
+	int insertTile(std::string name, PolygonDef* top, PolygonDef* side, unsigned int color,
+					Tilemap::TileType type,
+					Tilemap::TopType top_type,
+					Tilemap::ShadingType shading_type,
+					float top_height, unsigned int* thumb, int thumb_w, int thumb_h);
+	int replaceTile(int index, std::string name, PolygonDef* top, PolygonDef* side, unsigned int color,
+					Tilemap::TileType type,
+					Tilemap::TopType top_type,
+					Tilemap::ShadingType shading_type,
+					float top_height, unsigned int* thumb, int thumb_w, int thumb_h);
 	void removeTile(int id);
 	void removeTiles();
 	int getNumTiles();

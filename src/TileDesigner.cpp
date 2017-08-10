@@ -512,8 +512,29 @@ void TileDesignerWidget::resetObject(int objects)
 
 void TileDesignerWidget::insertTile(QString& name)
 {
-	int id = m_level->insertTile(name.toStdString(), m_poly[0], m_poly[1], m_color, m_current_tile_type, m_top_type, m_top_height);
+	QImage thumb_image = m_preview->makeThumbnail(m_poly[0], m_poly[1], m_current_tile_type, m_top_type, m_shading_type, m_top_height, m_color);
+
+	int thumb_w = thumb_image.width();
+	int thumb_h = thumb_image.height();
+
+	unsigned int* thumb = new unsigned int[thumb_w * thumb_h];
+	for (int j = 0; j < thumb_h; j++)
+	{
+		QRgb* line = (QRgb*)thumb_image.scanLine(j);
+		for (int i = 0; i < thumb_w; i++)
+		{
+			thumb[(j * thumb_w) + i] = line[i];
+		}
+	}
+
+	int id = m_level->insertTile(name.toStdString(), m_poly[0], m_poly[1], m_color,
+								m_current_tile_type,
+								m_top_type,
+								m_shading_type,
+								m_top_height, thumb, thumb_w, thumb_h);
 	emit onInsertTile(id);
+
+	delete[] thumb;
 
 	resetObject(POLY_TOP | POLY_SIDE);
 	update();
@@ -521,8 +542,29 @@ void TileDesignerWidget::insertTile(QString& name)
 
 void TileDesignerWidget::replaceTile(QString& name, int index)
 {
-	int id = m_level->replaceTile(index, name.toStdString(), m_poly[0], m_poly[1], m_color, m_current_tile_type, m_top_type, m_top_height);
+	QImage thumb_image = m_preview->makeThumbnail(m_poly[0], m_poly[1], m_current_tile_type, m_top_type, m_shading_type, m_top_height, m_color);
+
+	int thumb_w = thumb_image.width();
+	int thumb_h = thumb_image.height();
+
+	unsigned int* thumb = new unsigned int[thumb_w * thumb_h];
+	for (int j = 0; j < thumb_h; j++)
+	{
+		QRgb* line = (QRgb*)thumb_image.scanLine(j);
+		for (int i = 0; i < thumb_w; i++)
+		{
+			thumb[(j * thumb_w) + i] = line[i];
+		}
+	}
+
+	int id = m_level->replaceTile(index, name.toStdString(), m_poly[0], m_poly[1], m_color,
+								m_current_tile_type,
+								m_top_type,
+								m_shading_type,
+								m_top_height, thumb, thumb_w, thumb_h);
 	emit onReplaceTile(id);
+
+	delete[] thumb;
 
 	resetObject(POLY_TOP | POLY_SIDE);
 	update();

@@ -62,6 +62,10 @@ public:
 		int side_bits;
 		Tilemap::TopType top_type;
 		float top_height;
+		Tilemap::ShadingType shading_type;
+		unsigned int* thumbnail;
+		int thumb_width;
+		int thumb_height;
 
 		int numTopPoints()
 		{
@@ -118,8 +122,16 @@ public:
 	int getZ(int x, int y);	
 	void edit(int x, int y, int tile);
 	void editZ(int x, int y, int z);
-	int insertTile(std::string name, PolygonDef* top, PolygonDef* side, unsigned int color, Tilemap::TileType type, Tilemap::TopType top_type, float top_height);
-	int replaceTile(int index, std::string name, PolygonDef* top, PolygonDef* side, unsigned int color, Tilemap::TileType type, Tilemap::TopType top_type, float top_height);
+	int insertTile(std::string name, PolygonDef* top, PolygonDef* side, unsigned int color,
+					Tilemap::TileType type,
+					Tilemap::TopType top_type,
+					Tilemap::ShadingType shading_type,
+					float top_height, unsigned int* thumb, int thumb_w, int thumb_h);
+	int replaceTile(int index, std::string name, PolygonDef* top, PolygonDef* side, unsigned int color,
+					Tilemap::TileType type,
+					Tilemap::TopType top_type,
+					Tilemap::ShadingType shading_type,
+					float top_height, unsigned int* thumb, int thumb_w, int thumb_h);
 	bool removeTile(int id);
 	void removeTiles();
 	int getNumTiles();
