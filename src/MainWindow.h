@@ -24,7 +24,6 @@
 #include "BinaryFile.h"
 #include "VisboxConf.h"
 #include "TileDesigner.h"
-#include "TilemapWidget.h"
 #include "Tileset.h"
 #include "LevelConf.h"
 
