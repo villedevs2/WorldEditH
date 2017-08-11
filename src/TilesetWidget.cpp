@@ -1,4 +1,4 @@
-#include "Tileset.h"
+#include "TilesetWidget.h"
 
 
 TilesetWidget::TilesetWidget(QWidget* parent, Level* level, QImage* texture) : QListWidget(parent)

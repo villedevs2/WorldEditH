@@ -1,7 +1,9 @@
 #include "Tilemap.h"
 
-Tilemap::Tilemap()
+Tilemap::Tilemap(Tilemap::EditCallback* edit_callback)
 {
+	m_edit_callback = edit_callback;
+
 	m_tile_width = 1.0f;
 	m_tile_height = 1.4f;
 
@@ -642,6 +644,8 @@ void Tilemap::edit(int x, int y, int tile)
 	{
 		deallocBucket(bin);
 	}
+
+	m_edit_callback->tilemapModified();
 }
 
 void Tilemap::editZ(int x, int y, int z)
@@ -662,6 +666,8 @@ void Tilemap::editZ(int x, int y, int z)
 		m_buckets[bin]->map[index] |= (z << Z_SHIFT) & Z_MASK;
 
 		tesselateTile(m_buckets[bin], ix, iy);
+
+		m_edit_callback->tilemapModified();
 	}
 }
 
@@ -789,6 +795,9 @@ int Tilemap::insertTile(std::string name, PolygonDef* top, PolygonDef* side, uns
 	}
 
 	m_tiles.push_back(tile);
+
+	m_edit_callback->tilemapModified();
+
 	return tile.id;
 }
 
@@ -832,6 +841,8 @@ int Tilemap::replaceTile(int index, std::string name, PolygonDef* top, PolygonDe
 
 	tesselateAllByTile(index);
 
+	m_edit_callback->tilemapModified();
+
 	return tile->id;
 }
 
@@ -844,6 +855,8 @@ bool Tilemap::removeTile(int id)
 		if (tile->id == id)
 		{
 			m_tiles.erase(m_tiles.begin() + i);
+
+			m_edit_callback->tilemapModified();
 			return true;
 		}
 	}

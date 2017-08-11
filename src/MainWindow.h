@@ -24,7 +24,7 @@
 #include "BinaryFile.h"
 #include "VisboxConf.h"
 #include "TileDesigner.h"
-#include "Tileset.h"
+#include "TilesetWidget.h"
 #include "LevelConf.h"
 
 class MainWindow : public QMainWindow

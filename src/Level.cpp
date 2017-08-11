@@ -310,7 +310,7 @@ void Level::Object::copy(const Level::Object& source)
 
 Level::Level()
 {
-	m_tilemap = new Tilemap();
+	m_tilemap = new Tilemap(this);
 
 	for (int i=0; i < NUM_VBOS; i++)
 	{
@@ -329,6 +329,12 @@ Level::~Level()
 	{
 		delete [] m_vbo[i];
 	}
+}
+
+
+void Level::tilemapModified()
+{
+	setModified();
 }
 
 
@@ -650,6 +656,7 @@ int Level::getNumTriggers()
 	return (int)m_trigger_list.size();
 }
 
+/*
 float Level::getTileWidth()
 {
 	return m_tilemap->getTileWidth();
@@ -682,7 +689,7 @@ void Level::editTilemapZ(int x, int y, int z)
 	setModified();
 }
 
-/*
+
 float* Level::getTilemapVBO(int bx, int by)
 {
 	return m_tilemap->getVBO(bx, by);
@@ -692,7 +699,7 @@ int Level::numTilemapTris(int bx, int by)
 {
 	return m_tilemap->numTris(bx, by);
 }
-*/
+
 
 int Level::insertTile(std::string name, PolygonDef* top, PolygonDef* side, unsigned int color,
 					Tilemap::TileType type,
@@ -756,3 +763,4 @@ Tilemap::Bucket* Level::getTileBucket(int index)
 {
 	return m_tilemap->getTileBucket(index);
 }
+*/

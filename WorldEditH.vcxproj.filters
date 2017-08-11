@@ -82,9 +82,6 @@
     <ClCompile Include="src\Tilemap.cpp">
       <Filter>Source Files\src</Filter>
     </ClCompile>
-    <ClCompile Include="src\Tileset.cpp">
-      <Filter>Source Files\src</Filter>
-    </ClCompile>
     <ClCompile Include="src\VisboxConf.cpp">
       <Filter>Source Files\src</Filter>
     </ClCompile>
@@ -145,12 +142,6 @@
     <ClCompile Include="GeneratedFiles\Release\moc_ObjectBrowser.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_Tileset.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_Tileset.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_WorldEditH.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
@@ -168,6 +159,15 @@
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_TilePreview.cpp">
       <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_TilesetWidget.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_TilesetWidget.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TilesetWidget.cpp">
+      <Filter>Source Files\src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -198,9 +198,6 @@
     <CustomBuild Include="src\TextureEdit.h">
       <Filter>Header Files\src</Filter>
     </CustomBuild>
-    <CustomBuild Include="src\Tileset.h">
-      <Filter>Header Files\src</Filter>
-    </CustomBuild>
     <CustomBuild Include="src\VisboxConf.h">
       <Filter>Header Files\src</Filter>
     </CustomBuild>
@@ -208,6 +205,9 @@
       <Filter>Header Files\src</Filter>
     </CustomBuild>
     <CustomBuild Include="src\TilePreview.h">
+      <Filter>Header Files\src</Filter>
+    </CustomBuild>
+    <CustomBuild Include="src\TilesetWidget.h">
       <Filter>Header Files\src</Filter>
     </CustomBuild>
   </ItemGroup>

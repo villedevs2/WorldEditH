@@ -11,6 +11,12 @@
 class Tilemap
 {
 public:
+	class EditCallback
+	{
+	public:
+		virtual void tilemapModified() = 0;
+	};
+
 	static const int MAX_VERTS = 18;
 
 	enum TileType
@@ -115,7 +121,7 @@ public:
 
 
 
-	Tilemap();
+	Tilemap(Tilemap::EditCallback* edit_callback);
 	~Tilemap();
 
 	void reset();
@@ -161,4 +167,6 @@ private:
 
 	int m_cumulative_tile_id;
 	std::vector<Tile> m_tiles;
+
+	Tilemap::EditCallback* m_edit_callback;
 };
