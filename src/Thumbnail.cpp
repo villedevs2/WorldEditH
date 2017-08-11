@@ -184,7 +184,7 @@ void Thumbnail::fromRect(QImage* image, QImage* texture, const glm::vec2* points
 	fillTriangle(image, texture, p[0], p[1], p[2]);
 	fillTriangle(image, texture, p[0], p[2], p[3]);
 }
-
+/*
 void Thumbnail::fromTileType(QImage* image, QImage* texture, const glm::vec2* top, int numtop, const glm::vec2* side, int numside, Tilemap::TileType type)
 {
 	float texwidth = (float)texture->width();
@@ -241,3 +241,4 @@ void Thumbnail::fromTileType(QImage* image, QImage* texture, const glm::vec2* to
 		fillTriangle(image, texture, p[0], p[i - 1], p[i]);
 	}
 }
+*/

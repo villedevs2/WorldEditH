@@ -169,6 +169,9 @@
     <ClCompile Include="src\TilesetWidget.cpp">
       <Filter>Source Files\src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Tileset.cpp">
+      <Filter>Source Files\src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="WorldEditH.h">
@@ -235,6 +238,9 @@
     </ClInclude>
     <ClInclude Include="GeneratedFiles\ui_WorldEditH.h">
       <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Tileset.h">
+      <Filter>Header Files\src</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

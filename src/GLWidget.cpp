@@ -301,7 +301,7 @@ void GLWidget::setObjectColor(QColor color)
 
 void GLWidget::setTileBrush(int tile)
 {
-	assert(tile >= -1 && tile < m_level->getNumTiles());
+	assert(tile >= -1 && tile < m_level->getTileset()->getNumTiles());
 
 	m_tile_brush = tile;
 }
@@ -2064,11 +2064,11 @@ void GLWidget::renderTilemapPointer(QPainter& painter)
 			xxe += tile_width / 2;
 		}
 
-		Tilemap::TileType brush_type = Tilemap::TILE_FULL;
+		Tileset::TileType brush_type = Tileset::TILE_FULL;
 
 		if (m_tile_brush >= 0)
 		{
-			const Tilemap::Tile* tile = m_level->getTile(m_tile_brush);
+			const Tileset::Tile* tile = m_level->getTileset()->getTile(m_tile_brush);
 			brush_type = tile->type;
 		}
 
@@ -2104,7 +2104,7 @@ void GLWidget::renderTilemapPointer(QPainter& painter)
 
 		switch (brush_type)
 		{
-			case Tilemap::TILE_FULL:
+			case Tileset::TILE_FULL:
 			{
 				pts[0] = QPoint(txl, ty2);
 				pts[1] = QPoint(txl, ty3);
@@ -2115,7 +2115,7 @@ void GLWidget::renderTilemapPointer(QPainter& painter)
 				painter.drawPolygon(pts, 6);
 				break;
 			}
-			case Tilemap::TILE_LEFT:
+			case Tileset::TILE_LEFT:
 			{
 				pts[0] = QPoint(txl, ty2);
 				pts[1] = QPoint(txl, ty3);
@@ -2124,7 +2124,7 @@ void GLWidget::renderTilemapPointer(QPainter& painter)
 				painter.drawPolygon(pts, 4);
 				break;
 			}
-			case Tilemap::TILE_RIGHT:
+			case Tileset::TILE_RIGHT:
 			{
 				pts[0] = QPoint(txm, ty1);
 				pts[1] = QPoint(txm, ty4);
@@ -2133,7 +2133,7 @@ void GLWidget::renderTilemapPointer(QPainter& painter)
 				painter.drawPolygon(pts, 4);
 				break;
 			}
-			case Tilemap::TILE_TOP:
+			case Tileset::TILE_TOP:
 			{
 				pts[0] = QPoint(txl, ty2);
 				pts[1] = QPoint(txr, ty2);
@@ -2141,7 +2141,7 @@ void GLWidget::renderTilemapPointer(QPainter& painter)
 				painter.drawPolygon(pts, 3);
 				break;
 			}
-			case Tilemap::TILE_BOTTOM:
+			case Tileset::TILE_BOTTOM:
 			{
 				pts[0] = QPoint(txl, ty3);
 				pts[1] = QPoint(txm, ty4);
@@ -2149,7 +2149,7 @@ void GLWidget::renderTilemapPointer(QPainter& painter)
 				painter.drawPolygon(pts, 3);
 				break;
 			}
-			case Tilemap::TILE_MID:
+			case Tileset::TILE_MID:
 			{
 				pts[0] = QPoint(txl, ty2);
 				pts[1] = QPoint(txl, ty3);
@@ -2158,7 +2158,7 @@ void GLWidget::renderTilemapPointer(QPainter& painter)
 				painter.drawPolygon(pts, 4);
 				break;
 			}
-			case Tilemap::TILE_CORNER_TL:
+			case Tileset::TILE_CORNER_TL:
 			{
 				pts[0] = QPoint(txm, ty1);
 				pts[1] = QPoint(txl, ty2);
@@ -2166,7 +2166,7 @@ void GLWidget::renderTilemapPointer(QPainter& painter)
 				painter.drawPolygon(pts, 3);
 				break;
 			}
-			case Tilemap::TILE_CORNER_TR:
+			case Tileset::TILE_CORNER_TR:
 			{
 				pts[0] = QPoint(txm, ty1);
 				pts[1] = QPoint(txr, ty3);
@@ -2174,7 +2174,7 @@ void GLWidget::renderTilemapPointer(QPainter& painter)
 				painter.drawPolygon(pts, 3);
 				break;
 			}
-			case Tilemap::TILE_CORNER_BL:
+			case Tileset::TILE_CORNER_BL:
 			{
 				pts[0] = QPoint(txl, ty2);
 				pts[1] = QPoint(txl, ty3);
@@ -2182,7 +2182,7 @@ void GLWidget::renderTilemapPointer(QPainter& painter)
 				painter.drawPolygon(pts, 3);
 				break;
 			}
-			case Tilemap::TILE_CORNER_BR:
+			case Tileset::TILE_CORNER_BR:
 			{
 				pts[0] = QPoint(txm, ty4);
 				pts[1] = QPoint(txr, ty3);

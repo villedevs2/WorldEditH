@@ -310,7 +310,8 @@ void Level::Object::copy(const Level::Object& source)
 
 Level::Level()
 {
-	m_tilemap = new Tilemap(this);
+	m_tileset = new Tileset(this);
+	m_tilemap = new Tilemap(m_tileset, this);
 
 	for (int i=0; i < NUM_VBOS; i++)
 	{
@@ -333,6 +334,23 @@ Level::~Level()
 
 
 void Level::tilemapModified()
+{
+	setModified();
+}
+
+void Level::tileAdded(int index)
+{
+	setModified();
+}
+
+void Level::tileReplaced(int index)
+{
+	// TODO: retesselate all
+	m_tilemap->tileChanged(index);
+	setModified();
+}
+
+void Level::tileRemoved(int index)
 {
 	setModified();
 }

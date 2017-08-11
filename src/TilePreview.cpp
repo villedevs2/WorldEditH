@@ -13,8 +13,8 @@ TilePreview::TilePreview(QWidget* parent, Level* level) : QGLWidget(QGLFormat(QG
 	m_top_height = 1.0f;
 	m_color = 0xff808080;
 
-	m_tile_type = Tilemap::TILE_FULL;
-	m_top_type = Tilemap::TOP_FLAT;
+	m_tile_type = Tileset::TILE_FULL;
+	m_top_type = Tileset::TOP_FLAT;
 	updateGeo(m_top_points, m_side_points, m_tile_type, m_top_type, m_shading_type, m_top_height, m_color);
 }
 
@@ -219,7 +219,7 @@ void TilePreview::setTexture(QImage* texture)
 	updateGeo(m_top_points, m_side_points, m_tile_type, m_top_type, m_shading_type, m_top_height, m_color);
 }
 
-void TilePreview::setTileType(Tilemap::TileType type)
+void TilePreview::setTileType(Tileset::TileType type)
 {
 	if (type != m_tile_type)
 	{
@@ -228,7 +228,7 @@ void TilePreview::setTileType(Tilemap::TileType type)
 	}
 }
 
-void TilePreview::setTopType(Tilemap::TopType type)
+void TilePreview::setTopType(Tileset::TopType type)
 {
 	if (type != m_top_type)
 	{
@@ -237,7 +237,7 @@ void TilePreview::setTopType(Tilemap::TopType type)
 	}
 }
 
-void TilePreview::setShadingType(Tilemap::ShadingType type)
+void TilePreview::setShadingType(Tileset::ShadingType type)
 {
 	if (type != m_shading_type)
 	{
@@ -247,9 +247,9 @@ void TilePreview::setShadingType(Tilemap::ShadingType type)
 }
 
 void TilePreview::updateGeo(const glm::vec2* top_points, const glm::vec2* side_points,
-							Tilemap::TileType tile_type,
-							Tilemap::TopType top_type,
-							Tilemap::ShadingType shading_type,
+							Tileset::TileType tile_type,
+							Tileset::TopType top_type,
+							Tileset::ShadingType shading_type,
 							float top_height,
 							unsigned int color)
 {
@@ -279,9 +279,9 @@ void TilePreview::updateGeo(const glm::vec2* top_points, const glm::vec2* side_p
 	float z = 1.0f;
 
 	float midz = 0.0f;
-	if (top_type == Tilemap::TOP_POINTY)
+	if (top_type == Tileset::TOP_POINTY)
 		midz = z + (top_height * 0.1f);
-	else if (top_type == Tilemap::TOP_FLAT)
+	else if (top_type == Tileset::TOP_FLAT)
 		midz = z;
 
 	glm::vec3 p1 = glm::vec3(0.0f, 0.3f, z);
@@ -414,7 +414,7 @@ void TilePreview::updateGeo(const glm::vec2* top_points, const glm::vec2* side_p
 
 	switch (tile_type)
 	{
-		case Tilemap::TILE_FULL:
+		case Tileset::TILE_FULL:
 		{
 			/*
 			     /\
@@ -440,7 +440,7 @@ void TilePreview::updateGeo(const glm::vec2* top_points, const glm::vec2* side_p
 			render_sides |= RENDER_BOTLEFT;
 			break;
 		}
-		case Tilemap::TILE_LEFT:
+		case Tileset::TILE_LEFT:
 		{
 			/*
 			      /|
@@ -460,7 +460,7 @@ void TilePreview::updateGeo(const glm::vec2* top_points, const glm::vec2* side_p
 			render_sides |= RENDER_SIDELEFT;
 			break;
 		}
-		case Tilemap::TILE_RIGHT:
+		case Tileset::TILE_RIGHT:
 		{
 			/*
 			    |\
@@ -480,7 +480,7 @@ void TilePreview::updateGeo(const glm::vec2* top_points, const glm::vec2* side_p
 			render_sides |= RENDER_SIDERIGHT;
 			break;
 		}
-		case Tilemap::TILE_TOP:
+		case Tileset::TILE_TOP:
 		{
 			/*
 			     /\
@@ -494,7 +494,7 @@ void TilePreview::updateGeo(const glm::vec2* top_points, const glm::vec2* side_p
 			render_sides |= RENDER_MIDTOP;
 			break;
 		}
-		case Tilemap::TILE_BOTTOM:
+		case Tileset::TILE_BOTTOM:
 		{
 			/*  ____
 			    \  /
@@ -508,7 +508,7 @@ void TilePreview::updateGeo(const glm::vec2* top_points, const glm::vec2* side_p
 			render_sides |= RENDER_MIDBOT;
 			break;
 		}
-		case Tilemap::TILE_MID:
+		case Tileset::TILE_MID:
 		{
 			/*  ______
 			    |    |
@@ -524,7 +524,7 @@ void TilePreview::updateGeo(const glm::vec2* top_points, const glm::vec2* side_p
 			render_sides |= RENDER_CENTER_BOT;
 			break;
 		}
-		case Tilemap::TILE_CORNER_TL:
+		case Tileset::TILE_CORNER_TL:
 		{
 			/*
 			     /.
@@ -540,7 +540,7 @@ void TilePreview::updateGeo(const glm::vec2* top_points, const glm::vec2* side_p
 			render_sides |= RENDER_CORNER_TL;
 			break;
 		}
-		case Tilemap::TILE_CORNER_TR:
+		case Tileset::TILE_CORNER_TR:
 		{
 			/*
 			    .\
@@ -556,7 +556,7 @@ void TilePreview::updateGeo(const glm::vec2* top_points, const glm::vec2* side_p
 			render_sides |= RENDER_CORNER_TR;
 			break;
 		}
-		case Tilemap::TILE_CORNER_BL:
+		case Tileset::TILE_CORNER_BL:
 		{
 			/*
 			    |.
@@ -572,7 +572,7 @@ void TilePreview::updateGeo(const glm::vec2* top_points, const glm::vec2* side_p
 			render_sides |= RENDER_CORNER_BL;
 			break;
 		}
-		case Tilemap::TILE_CORNER_BR:
+		case Tileset::TILE_CORNER_BR:
 		{
 			/*
 			     .|
@@ -669,9 +669,9 @@ void TilePreview::setSideUVs(PolygonDef* uvs)
 
 
 QImage TilePreview::makeThumbnail(PolygonDef* top_points, PolygonDef* side_points,
-								Tilemap::TileType tile_type,
-								Tilemap::TopType top_type,
-								Tilemap::ShadingType shading_type,
+								Tileset::TileType tile_type,
+								Tileset::TopType top_type,
+								Tileset::ShadingType shading_type,
 								float top_height,
 								unsigned int color)
 {

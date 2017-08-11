@@ -755,7 +755,7 @@ bool MainWindow::edgify(std::vector<std::vector<int>>& ptlist)
 					int iy = (bucket->y * Tilemap::BUCKET_HEIGHT) + y;
 
 					int ti = m_level->readTilemapTile(ix, iy);
-					const Tilemap::Tile* tile = nullptr;
+					const Tileset::Tile* tile = nullptr;
 					if (ti != Tilemap::TILE_EMPTY)
 					{
 						tile = m_level->getTile(ti);
@@ -859,43 +859,43 @@ bool MainWindow::edgify(std::vector<std::vector<int>>& ptlist)
 								int ctile = m_level->readTilemapTile(tx, ty);
 								if (ctile != Tilemap::TILE_EMPTY)
 								{
-									const Tilemap::Tile* tt = m_level->getTile(ctile);
+									const Tileset::Tile* tt = m_level->getTileset()->getTile(ctile);
 
 									switch (i)
 									{
 										case 0:		// LEFT
 										{
-											if ((tt->side_bits & Tilemap::SIDE_RIGHT) && (tile->side_bits & Tilemap::SIDE_LEFT))
+											if ((tt->side_bits & Tileset::SIDE_RIGHT) && (tile->side_bits & Tileset::SIDE_LEFT))
 												tilecon[i] = 1;
 											break;
 										}
 										case 1:		// TOPLEFT
 										{
-											if ((tt->side_bits & Tilemap::SIDE_BOT_RIGHT) && (tile->side_bits & Tilemap::SIDE_TOP_LEFT))
+											if ((tt->side_bits & Tileset::SIDE_BOT_RIGHT) && (tile->side_bits & Tileset::SIDE_TOP_LEFT))
 												tilecon[i] = 1;
 											break;
 										}
 										case 2:		// TOPRIGHT
 										{
-											if ((tt->side_bits & Tilemap::SIDE_BOT_LEFT) && (tile->side_bits & Tilemap::SIDE_TOP_RIGHT))
+											if ((tt->side_bits & Tileset::SIDE_BOT_LEFT) && (tile->side_bits & Tileset::SIDE_TOP_RIGHT))
 												tilecon[i] = 1;
 											break;
 										}
 										case 3:		// RIGHT
 										{
-											if ((tt->side_bits & Tilemap::SIDE_LEFT) && (tile->side_bits & Tilemap::SIDE_RIGHT))
+											if ((tt->side_bits & Tileset::SIDE_LEFT) && (tile->side_bits & Tileset::SIDE_RIGHT))
 												tilecon[i] = 1;
 											break;
 										}
 										case 4:		// BOTTOM RIGHT
 										{
-											if ((tt->side_bits & Tilemap::SIDE_TOP_LEFT) && (tile->side_bits & Tilemap::SIDE_BOT_RIGHT))
+											if ((tt->side_bits & Tileset::SIDE_TOP_LEFT) && (tile->side_bits & Tileset::SIDE_BOT_RIGHT))
 												tilecon[i] = 1;
 											break;
 										}
 										case 5:		// BOTTOM LEFT
 										{
-											if ((tt->side_bits & Tilemap::SIDE_TOP_RIGHT) && (tile->side_bits & Tilemap::SIDE_BOT_LEFT))
+											if ((tt->side_bits & Tileset::SIDE_TOP_RIGHT) && (tile->side_bits & Tileset::SIDE_BOT_LEFT))
 												tilecon[i] = 1;
 											break;
 										}
@@ -914,7 +914,7 @@ bool MainWindow::edgify(std::vector<std::vector<int>>& ptlist)
 
 						switch (tile->type)
 						{
-							case Tilemap::TILE_FULL:
+							case Tileset::TILE_FULL:
 							{
 								// LEFT
 								if (tilecon[0] == 0)
@@ -948,7 +948,7 @@ bool MainWindow::edgify(std::vector<std::vector<int>>& ptlist)
 								}
 								break;
 							}
-							case Tilemap::TILE_LEFT:
+							case Tileset::TILE_LEFT:
 							{
 								// LEFT
 								if (tilecon[0] == 0)
@@ -969,7 +969,7 @@ bool MainWindow::edgify(std::vector<std::vector<int>>& ptlist)
 								edgify_fill_point(fout, points, p[4], p[1]);
 								break;
 							}
-							case Tilemap::TILE_RIGHT:
+							case Tileset::TILE_RIGHT:
 							{
 								// TOPRIGHT
 								if (tilecon[2] == 0)
@@ -990,7 +990,7 @@ bool MainWindow::edgify(std::vector<std::vector<int>>& ptlist)
 								edgify_fill_point(fout, points, p[4], p[1]);
 								break;
 							}
-							case Tilemap::TILE_TOP:
+							case Tileset::TILE_TOP:
 							{
 								// TOPLEFT
 								if (tilecon[1] == 0)
@@ -1006,7 +1006,7 @@ bool MainWindow::edgify(std::vector<std::vector<int>>& ptlist)
 								edgify_fill_point(fout, points, p[0], p[2]);
 								break;
 							}
-							case Tilemap::TILE_BOTTOM:
+							case Tileset::TILE_BOTTOM:
 							{
 								// BOTTOM RIGHT
 								if (tilecon[4] == 0)
@@ -1022,7 +1022,7 @@ bool MainWindow::edgify(std::vector<std::vector<int>>& ptlist)
 								edgify_fill_point(fout, points, p[5], p[3]);
 								break;
 							}
-							case Tilemap::TILE_MID:
+							case Tileset::TILE_MID:
 							{
 								// LEFT
 								if (tilecon[0] == 0)
@@ -1039,7 +1039,7 @@ bool MainWindow::edgify(std::vector<std::vector<int>>& ptlist)
 								edgify_fill_point(fout, points, p[5], p[3]);
 								break;
 							}
-							case Tilemap::TILE_CORNER_TL:
+							case Tileset::TILE_CORNER_TL:
 							{
 								// LEFT
 								if (tilecon[0] == 0)
@@ -1055,7 +1055,7 @@ bool MainWindow::edgify(std::vector<std::vector<int>>& ptlist)
 								edgify_fill_point(fout, points, p[5], p[1]);
 								break;
 							}
-							case Tilemap::TILE_CORNER_TR:
+							case Tileset::TILE_CORNER_TR:
 							{
 								// RIGHT
 								if (tilecon[3] == 0)
@@ -1071,7 +1071,7 @@ bool MainWindow::edgify(std::vector<std::vector<int>>& ptlist)
 								edgify_fill_point(fout, points, p[1], p[3]);
 								break;
 							}
-							case Tilemap::TILE_CORNER_BL:
+							case Tileset::TILE_CORNER_BL:
 							{
 								// LEFT
 								if (tilecon[0] == 0)
@@ -1087,7 +1087,7 @@ bool MainWindow::edgify(std::vector<std::vector<int>>& ptlist)
 								edgify_fill_point(fout, points, p[0], p[4]);
 								break;
 							}
-							case Tilemap::TILE_CORNER_BR:
+							case Tileset::TILE_CORNER_BR:
 							{
 								// RIGHT
 								if (tilecon[3] == 0)
@@ -1999,16 +1999,16 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 			// top UVs
 			switch (type)
 			{
-				case Tilemap::TILE_FULL:		num_top_points = 6; break;
-				case Tilemap::TILE_LEFT:		num_top_points = 4; break;
-				case Tilemap::TILE_RIGHT:		num_top_points = 4; break;
-				case Tilemap::TILE_TOP:			num_top_points = 3; break;
-				case Tilemap::TILE_BOTTOM:		num_top_points = 3; break;
-				case Tilemap::TILE_MID:			num_top_points = 4; break;
-				case Tilemap::TILE_CORNER_TL:	num_top_points = 3; break;
-				case Tilemap::TILE_CORNER_TR:	num_top_points = 3; break;
-				case Tilemap::TILE_CORNER_BL:	num_top_points = 3; break;
-				case Tilemap::TILE_CORNER_BR:	num_top_points = 3; break;
+				case Tileset::TILE_FULL:		num_top_points = 6; break;
+				case Tileset::TILE_LEFT:		num_top_points = 4; break;
+				case Tileset::TILE_RIGHT:		num_top_points = 4; break;
+				case Tileset::TILE_TOP:			num_top_points = 3; break;
+				case Tileset::TILE_BOTTOM:		num_top_points = 3; break;
+				case Tileset::TILE_MID:			num_top_points = 4; break;
+				case Tileset::TILE_CORNER_TL:	num_top_points = 3; break;
+				case Tileset::TILE_CORNER_TR:	num_top_points = 3; break;
+				case Tileset::TILE_CORNER_BL:	num_top_points = 3; break;
+				case Tileset::TILE_CORNER_BR:	num_top_points = 3; break;
 			}
 
 			for (int j = 0; j < num_top_points; j++)
@@ -2061,11 +2061,11 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 				}
 			}
 
-			int id = m_level->insertTile(tile_name.toStdString(), top, side, tile_color,
-										(Tilemap::TileType)type,
-										(Tilemap::TopType)top_type,
-										(Tilemap::ShadingType)shading_type,
-										top_height, thumb, thumb_w, thumb_h);
+			int id = m_level->getTileset()->insertTile(tile_name.toStdString(), top, side, tile_color,
+														(Tileset::TileType)type,
+														(Tileset::TopType)top_type,
+														(Tileset::ShadingType)shading_type,
+														top_height, thumb, thumb_w, thumb_h);
 			emit m_tileset_window->add(id);
 
 			delete[] thumb;
@@ -2212,12 +2212,12 @@ bool MainWindow::writeBinaryProjectFile(QString& filename)
 		
 
 		// tiles
-		int num_tiles = m_level->getNumTiles();
+		int num_tiles = m_level->getTileset()->getNumTiles();
 		output.write_dword(num_tiles);
 
 		for (int i=0; i < num_tiles; i++)
 		{
-			Tilemap::Tile* tile  = m_level->getTile(i);
+			Tileset::Tile* tile  = m_level->getTileset()->getTile(i);
 
 			// tile name
 			std::string name = tile->name;
@@ -2357,7 +2357,7 @@ void MainWindow::writeLevelFile(QString& filename)
 	const unsigned int level_version = 0x10003;
 
 	int num_objects = m_level->numObjects();
-	int num_tiles = m_level->getNumTiles();
+	int num_tiles = m_level->getTileset()->getNumTiles();
 
 	try
 	{
@@ -2446,7 +2446,7 @@ void MainWindow::writeLevelFile(QString& filename)
 
 		for (int i=0; i < num_tiles; i++)
 		{
-			Tilemap::Tile* tile = m_level->getTile(i);	
+			Tileset::Tile* tile = m_level->getTileset()->getTile(i);	
 
 			// tile color
 			output.write_dword(tile->color);

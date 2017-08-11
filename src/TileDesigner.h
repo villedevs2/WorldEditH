@@ -55,12 +55,12 @@ public slots:
 	void insertTile(QString& name);
 	void replaceTile(QString& name, int index);
 	void setColor(QColor color);
-	void setTileType(Tilemap::TileType type);
+	void setTileType(Tileset::TileType type);
 	void setScale(double scale);
 	void setRotate(int angle);
-	void setTopType(Tilemap::TopType type);
+	void setTopType(Tileset::TopType type);
 	void setTopHeight(double height);
-	void setShadingType(Tilemap::ShadingType type);
+	void setShadingType(Tileset::ShadingType type);
 
 protected:
 	void paintEvent(QPaintEvent* event);
@@ -127,7 +127,7 @@ private:
 	QGLShaderProgram* m_level_program;
 	Shader m_level_shader;
 
-	Tilemap::TileType m_current_tile_type;
+	Tileset::TileType m_current_tile_type;
 	int m_selected_poly;
 
 	PolygonDef* m_poly[2];
@@ -159,8 +159,8 @@ private:
 	bool m_show_grid;
 	int m_grid_size;
 
-	Tilemap::ShadingType m_shading_type;
-	Tilemap::TopType m_top_type;
+	Tileset::ShadingType m_shading_type;
+	Tileset::TopType m_top_type;
 	float m_top_height;
 
 	TilePreview* m_preview;
@@ -179,9 +179,9 @@ public:
 	void setTexture(QImage* texture);
 
 	QImage makeThumbnail(PolygonDef* top_points, PolygonDef* side_points,
-						Tilemap::TileType tile_type,
-						Tilemap::TopType top_type,
-						Tilemap::ShadingType shading_type,
+						Tileset::TileType tile_type,
+						Tileset::TopType top_type,
+						Tileset::ShadingType shading_type,
 						float top_height,
 						unsigned int color);
 

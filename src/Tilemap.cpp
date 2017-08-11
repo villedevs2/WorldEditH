@@ -1,13 +1,12 @@
 #include "Tilemap.h"
 
-Tilemap::Tilemap(Tilemap::EditCallback* edit_callback)
+Tilemap::Tilemap(Tileset* tileset, Tilemap::EditCallback* edit_callback)
 {
+	m_tileset = tileset;
 	m_edit_callback = edit_callback;
 
 	m_tile_width = 1.0f;
 	m_tile_height = 1.4f;
-
-	m_cumulative_tile_id = 1;
 
 	m_buckets = new Bucket*[(AREA_WIDTH / BUCKET_WIDTH) * (AREA_HEIGHT / BUCKET_HEIGHT)];
 	int size = (AREA_WIDTH / BUCKET_WIDTH) * (AREA_HEIGHT / BUCKET_HEIGHT);
@@ -34,8 +33,6 @@ Tilemap::~Tilemap()
 
 void Tilemap::reset()
 {
-	removeTiles();
-
 	int size = (AREA_WIDTH / BUCKET_WIDTH) * (AREA_HEIGHT / BUCKET_HEIGHT);
 	for (int i = 0; i < size; i++)
 	{
@@ -101,7 +98,7 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 	}
 	else
 	{
-		const Tilemap::Tile* tiledata = getTile(ctile);
+		const Tileset::Tile* tiledata = m_tileset->getTile(ctile);
 
 		glm::vec2 uv1 = tiledata->top_points[0];
 		glm::vec2 uv2 = tiledata->top_points[1];
@@ -300,7 +297,7 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 
 		switch (tiledata->type)
 		{
-			case Tilemap::TILE_FULL:
+			case Tileset::TILE_FULL:
 			{
 				/*
 					  /\
@@ -318,7 +315,7 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 				vbo3d->makeTri(vbo3d_index++, tv1, tv3, tv2);
 				*/
 
-				if (tiledata->top_type == Tilemap::TOP_POINTY)
+				if (tiledata->top_type == Tileset::TOP_POINTY)
 				{
 					vbo->makeTriPolyNorm(vbo_index++, tv1, tv6, tvcen);
 					vbo->makeTriPolyNorm(vbo_index++, tv6, tv5, tvcen);
@@ -327,7 +324,7 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 					vbo->makeTriPolyNorm(vbo_index++, tv3, tv2, tvcen);
 					vbo->makeTriPolyNorm(vbo_index++, tv2, tv1, tvcen);
 				}
-				else if (tiledata->top_type == Tilemap::TOP_FLAT)
+				else if (tiledata->top_type == Tileset::TOP_FLAT)
 				{
 					vbo->makeTriPolyNorm(vbo_index++, tv1, tv6, tv5);
 					vbo->makeTriPolyNorm(vbo_index++, tv1, tv5, tv4);
@@ -343,7 +340,7 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 				render_sides |= RENDER_BOTLEFT;
 				break;
 			}
-			case Tilemap::TILE_LEFT:
+			case Tileset::TILE_LEFT:
 			{
 				/*
 				      /|
@@ -363,7 +360,7 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 				render_sides |= RENDER_SIDELEFT;
 				break;
 			}
-			case Tilemap::TILE_RIGHT:
+			case Tileset::TILE_RIGHT:
 			{
 				/*
 				    |\
@@ -383,7 +380,7 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 				render_sides |= RENDER_SIDERIGHT;
 				break;
 			}
-			case Tilemap::TILE_TOP:
+			case Tileset::TILE_TOP:
 			{
 				/*
 				     /\
@@ -397,7 +394,7 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 				render_sides |= RENDER_MIDTOP;
 				break;
 			}
-			case Tilemap::TILE_BOTTOM:
+			case Tileset::TILE_BOTTOM:
 			{
 				/*  ____
 				    \  /
@@ -411,7 +408,7 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 				render_sides |= RENDER_MIDBOT;
 				break;
 			}
-			case Tilemap::TILE_MID:
+			case Tileset::TILE_MID:
 			{
 				/*  ______
 				    |    |
@@ -427,7 +424,7 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 				render_sides |= RENDER_CENTER_BOT;
 				break;
 			}
-			case Tilemap::TILE_CORNER_TL:
+			case Tileset::TILE_CORNER_TL:
 			{
 				/*
 				      /.
@@ -443,7 +440,7 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 				render_sides |= RENDER_CORNER_TL;
 				break;
 			}
-			case Tilemap::TILE_CORNER_TR:
+			case Tileset::TILE_CORNER_TR:
 			{
 				/*
 				    .\
@@ -459,7 +456,7 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 				render_sides |= RENDER_CORNER_TR;
 				break;
 			}
-			case Tilemap::TILE_CORNER_BL:
+			case Tileset::TILE_CORNER_BL:
 			{
 				/*
 				    |.  
@@ -475,7 +472,7 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 				render_sides |= RENDER_CORNER_BL;
 				break;
 			}
-			case Tilemap::TILE_CORNER_BR:
+			case Tileset::TILE_CORNER_BR:
 			{
 				/*
 			  	      .|
@@ -671,85 +668,7 @@ void Tilemap::editZ(int x, int y, int z)
 	}
 }
 
-int Tilemap::getSideBits(Tilemap::TileType type)
-{
-	int bits = 0;
-
-	switch (type)
-	{
-		case TILE_FULL:
-		{
-			bits |= SIDE_LEFT;
-			bits |= SIDE_TOP_LEFT;
-			bits |= SIDE_TOP_RIGHT;
-			bits |= SIDE_RIGHT;
-			bits |= SIDE_BOT_RIGHT;
-			bits |= SIDE_BOT_LEFT;
-			break;
-		}
-		case TILE_LEFT:
-		{
-			bits |= SIDE_LEFT;
-			bits |= SIDE_TOP_LEFT;
-			bits |= SIDE_BOT_LEFT;
-			bits |= SIDE_MID;
-			break;
-		}
-		case TILE_RIGHT:
-		{
-			bits |= SIDE_RIGHT;
-			bits |= SIDE_TOP_RIGHT;
-			bits |= SIDE_BOT_RIGHT;
-			bits |= SIDE_MID;
-			break;
-		}
-		case TILE_TOP:
-		{
-			bits |= SIDE_TOP_RIGHT;
-			bits |= SIDE_TOP_LEFT;
-			break;
-		}
-		case TILE_BOTTOM:
-		{
-			bits |= SIDE_BOT_RIGHT;
-			bits |= SIDE_BOT_LEFT;
-			break;
-		}
-		case TILE_MID:
-		{
-			bits |= SIDE_LEFT;
-			bits |= SIDE_RIGHT;
-			break;
-		}
-		case TILE_CORNER_TL:
-		{
-			bits |= SIDE_LEFT;
-			bits |= SIDE_TOP_LEFT;
-			break;
-		}
-		case TILE_CORNER_TR:
-		{
-			bits |= SIDE_RIGHT;
-			bits |= SIDE_TOP_RIGHT;
-			break;
-		}
-		case TILE_CORNER_BL:
-		{
-			bits |= SIDE_LEFT;
-			bits |= SIDE_BOT_LEFT;
-			break;
-		}
-		case TILE_CORNER_BR:
-		{
-			bits |= SIDE_RIGHT;
-			bits |= SIDE_BOT_RIGHT;
-			break;
-		}
-	}
-
-	return bits;
-}
-
+#if 0
 int Tilemap::insertTile(std::string name, PolygonDef* top, PolygonDef* side, unsigned int color,
 						Tilemap::TileType type,
 						Tilemap::TopType top_type,
@@ -908,6 +827,7 @@ int Tilemap::getTileIndexById(int id)
 	}
 	return -1;
 }
+#endif
 
 void Tilemap::allocBucket(int bin)
 {
@@ -978,4 +898,9 @@ void Tilemap::tesselateAllByTile(int tile)
 			}
 		}
 	}
+}
+
+void Tilemap::tileChanged(int index)
+{
+	tesselateAllByTile(index);
 }

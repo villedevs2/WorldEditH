@@ -7,6 +7,7 @@
 
 #include "PolygonDef.h"
 #include "VBO.h"
+#include "Tileset.h"
 
 class Tilemap
 {
@@ -19,6 +20,7 @@ public:
 
 	static const int MAX_VERTS = 18;
 
+	/*
 	enum TileType
 	{
 		TILE_FULL = 0,
@@ -92,6 +94,7 @@ public:
 			return numtop;
 		}
 	};
+	*/
 
 	struct Bucket
 	{
@@ -121,32 +124,16 @@ public:
 
 
 
-	Tilemap(Tilemap::EditCallback* edit_callback);
+	Tilemap(Tileset* tileset, Tilemap::EditCallback* edit_callback);
 	~Tilemap();
 
+	void tileChanged(int index);
+
 	void reset();
-	//float* getVBO(int bx, int by);
-	//int numTris(int bx, int by);
 	int get(int x, int y);
 	int getZ(int x, int y);	
 	void edit(int x, int y, int tile);
 	void editZ(int x, int y, int z);
-	int insertTile(std::string name, PolygonDef* top, PolygonDef* side, unsigned int color,
-					Tilemap::TileType type,
-					Tilemap::TopType top_type,
-					Tilemap::ShadingType shading_type,
-					float top_height, unsigned int* thumb, int thumb_w, int thumb_h);
-	int replaceTile(int index, std::string name, PolygonDef* top, PolygonDef* side, unsigned int color,
-					Tilemap::TileType type,
-					Tilemap::TopType top_type,
-					Tilemap::ShadingType shading_type,
-					float top_height, unsigned int* thumb, int thumb_w, int thumb_h);
-	bool removeTile(int id);
-	void removeTiles();
-	int getNumTiles();
-	Tilemap::Tile* getTile(int index);
-	Tilemap::Tile* getTileById(int id);
-	int getTileIndexById(int id);
 	float getTileWidth();
 	float getTileHeight();
 	Tilemap::Bucket* getTileBucket(int bx, int by);
@@ -156,7 +143,6 @@ private:
 	void tesselateTile(Bucket* bucket, int bx, int by);
 	void allocBucket(int bin);
 	void deallocBucket(int bin);
-	int getSideBits(Tilemap::TileType type);
 	void tesselateAllByTile(int tile);
 	unsigned int getTileColor(unsigned int basecolor, float lum);
 
@@ -165,8 +151,6 @@ private:
 
 	Bucket** m_buckets;
 
-	int m_cumulative_tile_id;
-	std::vector<Tile> m_tiles;
-
+	Tileset* m_tileset;
 	Tilemap::EditCallback* m_edit_callback;
 };

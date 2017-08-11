@@ -159,6 +159,7 @@
     <ClCompile Include="src\Thumbnail.cpp" />
     <ClCompile Include="src\Tilemap.cpp" />
     <ClCompile Include="src\TilePreview.cpp" />
+    <ClCompile Include="src\Tileset.cpp" />
     <ClCompile Include="src\TilesetWidget.cpp" />
     <ClCompile Include="src\VBO.cpp" />
     <ClCompile Include="src\VisboxConf.cpp" />
@@ -205,6 +206,7 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DWIN64 -DQT_DLL -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_OPENGL_LIB -DQT_WIDGETS_LIB -DQT_XML_LIB -DQT_XMLPATTERNS_LIB "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtXmlPatterns" "-I$(ProjectDir)glm"</Command>
     </CustomBuild>
+    <ClInclude Include="src\Tileset.h" />
     <ClInclude Include="src\VBO.h" />
     <ClInclude Include="src\Thumbnail.h" />
     <ClInclude Include="src\Tilemap.h" />

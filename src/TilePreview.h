@@ -10,6 +10,7 @@
 
 #include "Level.h"
 #include "VBO.h"
+#include "Tileset.h"
 
 class TilePreview : public QGLWidget
 {
@@ -22,15 +23,15 @@ public:
 	void setTexture(QImage* texture);
 	void setTopUVs(PolygonDef* uvs);
 	void setSideUVs(PolygonDef* uvs);
-	void setTileType(Tilemap::TileType type);
+	void setTileType(Tileset::TileType type);
 	void setTopHeight(float height);
-	void setTopType(Tilemap::TopType type);
-	void setShadingType(Tilemap::ShadingType type);
+	void setTopType(Tileset::TopType type);
+	void setShadingType(Tileset::ShadingType type);
 
 	QImage makeThumbnail(PolygonDef* top_points, PolygonDef* side_points,
-						Tilemap::TileType tile_type,
-						Tilemap::TopType top_type,
-						Tilemap::ShadingType shading_type,
+						Tileset::TileType tile_type,
+						Tileset::TopType top_type,
+						Tileset::ShadingType shading_type,
 						float top_height,
 						unsigned int color);
 
@@ -56,9 +57,9 @@ private:
 
 	QString loadShader(QString filename);
 	void updateGeo(const glm::vec2* top_points, const glm::vec2* side_points,
-					Tilemap::TileType tile_type,
-					Tilemap::TopType top_type,
-					Tilemap::ShadingType shading_type,
+					Tileset::TileType tile_type,
+					Tileset::TopType top_type,
+					Tileset::ShadingType shading_type,
 					float top_height,
 					unsigned int color);
 
@@ -72,9 +73,9 @@ private:
 	VBO* m_vbo;
 	GLuint m_base_tex;
 
-	Tilemap::TileType m_tile_type;
-	Tilemap::TopType m_top_type;
-	Tilemap::ShadingType m_shading_type;
+	Tileset::TileType m_tile_type;
+	Tileset::TopType m_top_type;
+	Tileset::ShadingType m_shading_type;
 
 	glm::vec2 m_top_points[6];
 	glm::vec2 m_side_points[4];

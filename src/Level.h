@@ -7,8 +7,9 @@
 
 #include "Tilemap.h"
 #include "PolygonDef.h"
+#include "Tileset.h"
 
-class Level : public Tilemap::EditCallback
+class Level : public Tilemap::EditCallback, Tileset::EditCallback
 {
 public:
 	enum ObjectType
@@ -99,6 +100,11 @@ public:
 	~Level();
 
 	void tilemapModified();
+	void tileAdded(int index);
+	void tileReplaced(int index);
+	void tileRemoved(int index);
+
+	Tileset* getTileset();
 
 	int insertObject(glm::vec2* points, glm::vec2* uvs, int num_points, ObjectType type, std::string name, unsigned int color);
 	void editObjectGeo(int object, glm::vec2* points, glm::vec2* uvs);
@@ -166,5 +172,6 @@ private:
 
 	std::vector<std::string> m_trigger_list;
 
+	Tileset* m_tileset;
 	Tilemap* m_tilemap;
 };
