@@ -51,7 +51,7 @@ void TilesetWidget::reset()
 
 void TilesetWidget::add(int tile_id)
 {
-	Tilemap::Tile* tile = m_level->getTileById(tile_id);
+	Tileset::Tile* tile = m_level->getTileset()->getTileById(tile_id);
 	assert(tile != NULL);
 
 	if (tile != nullptr)
@@ -101,7 +101,7 @@ void TilesetWidget::replace(int tile_id)
 
 
 
-			Tilemap::Tile* tile = m_level->getTileById(tile_id);
+			Tileset::Tile* tile = m_level->getTileset()->getTileById(tile_id);
 			assert(tile != nullptr);
 
 			image = new QImage(tile->thumb_width, tile->thumb_height, QImage::Format_ARGB32);
@@ -166,13 +166,18 @@ void TilesetWidget::setTexture(QImage* texture)
 		QImage* image = obj->data(Qt::UserRole + 1).value<QImage*>();
 		int id = obj->data(Qt::UserRole + 2).toInt();
 		
-		Tilemap::Tile* tile = m_level->getTileById(id);
+		Tileset::Tile* tile = m_level->getTileset()->getTileById(id);
+		
+		// TODO: update thumbnails...
+
+		/*
 		if (tile != nullptr)
 		{
 			int numtop = tile->numTopPoints();
 
 			Thumbnail::fromTileType(image, m_texture, tile->top_points, numtop, tile->side_points, 4, tile->type);
 		}
+		*/
 	};
 
 	update();
@@ -251,7 +256,7 @@ void TilesetWindow::itemSelectionChanged(QListWidgetItem* current, QListWidgetIt
 	if (current)
 	{
 		int id = current->data(Qt::UserRole + 2).toInt();
-		int index = m_level->getTileIndexById(id);
+		int index = m_level->getTileset()->getTileIndexById(id);
 		emit onSelectTile(index);
 	}
 }

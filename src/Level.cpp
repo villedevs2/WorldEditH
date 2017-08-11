@@ -311,7 +311,8 @@ void Level::Object::copy(const Level::Object& source)
 Level::Level()
 {
 	m_tileset = new Tileset(this);
-	m_tilemap = new Tilemap(m_tileset, this);
+	m_tilemap[Level::TILEMAP_NORMAL] = new Tilemap(m_tileset, this);
+	m_tilemap[Level::TILEMAP_FLOOR] = new Tilemap(m_tileset, this);
 
 	for (int i=0; i < NUM_VBOS; i++)
 	{
@@ -324,12 +325,26 @@ Level::Level()
 
 Level::~Level()
 {
-	delete m_tilemap;
+	for (int i = 0; i < Level::NUM_TILEMAP_TYPES; i++)
+	{
+		delete[] m_tilemap[i];
+	}
 
 	for (int i=0; i < NUM_VBOS; i++)
 	{
-		delete [] m_vbo[i];
+		delete[] m_vbo[i];
 	}
+}
+
+
+Tileset* Level::getTileset()
+{
+	return m_tileset;
+}
+
+Tilemap* Level::getTilemap(Level::TilemapType type)
+{
+	return m_tilemap[type];
 }
 
 
@@ -345,8 +360,11 @@ void Level::tileAdded(int index)
 
 void Level::tileReplaced(int index)
 {
-	// TODO: retesselate all
-	m_tilemap->tileChanged(index);
+	for (int i = 0; i < Level::NUM_TILEMAP_TYPES; i++)
+	{
+		m_tilemap[i]->tileChanged(index);
+	}
+
 	setModified();
 }
 
@@ -609,7 +627,10 @@ void Level::reset()
 	}
 	m_cumulative_object_id = 1;
 
-	m_tilemap->reset();
+	for (int i = 0; i < Level::NUM_TILEMAP_TYPES; i++)
+	{
+		m_tilemap[i]->reset();
+	}
 
 	setModified();
 }

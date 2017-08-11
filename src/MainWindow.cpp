@@ -736,6 +736,9 @@ bool MainWindow::edgify(std::vector<std::vector<int>>& ptlist)
 		points[i].con2 = -1;
 	}
 
+	Tileset* tileset = m_level->getTileset();
+	Tilemap* tilemap = m_level->getTilemap(Level::TILEMAP_NORMAL);
+
 	// step 1
 	progress.setValue(1);
 
@@ -743,7 +746,7 @@ bool MainWindow::edgify(std::vector<std::vector<int>>& ptlist)
 
 	for (int b = 0; b < num_buckets; b++)
 	{
-		Tilemap::Bucket* bucket = m_level->getTileBucket(b);
+		Tilemap::Bucket* bucket = tilemap->getTileBucket(b);
 		if (bucket != nullptr)
 		{
 
@@ -754,11 +757,11 @@ bool MainWindow::edgify(std::vector<std::vector<int>>& ptlist)
 					int ix = (bucket->x * Tilemap::BUCKET_WIDTH) + x;
 					int iy = (bucket->y * Tilemap::BUCKET_HEIGHT) + y;
 
-					int ti = m_level->readTilemapTile(ix, iy);
+					int ti = tilemap->get(ix, iy);
 					const Tileset::Tile* tile = nullptr;
 					if (ti != Tilemap::TILE_EMPTY)
 					{
-						tile = m_level->getTile(ti);
+						tile = tileset->getTile(ti);
 
 						bool odd = (iy & 1) != 0;
 
@@ -856,7 +859,7 @@ bool MainWindow::edgify(std::vector<std::vector<int>>& ptlist)
 
 							if (tx >= 0 && ty >= 0 && tx < Tilemap::AREA_WIDTH && ty < Tilemap::AREA_HEIGHT)
 							{
-								int ctile = m_level->readTilemapTile(tx, ty);
+								int ctile = tilemap->get(tx, ty);
 								if (ctile != Tilemap::TILE_EMPTY)
 								{
 									const Tileset::Tile* tt = m_level->getTileset()->getTile(ctile);
@@ -1291,13 +1294,17 @@ void MainWindow::clearEdgify()
 
 void MainWindow::doStats()
 {
+	// TODO: count other tilemaps too !!!
+
+	Tilemap* tilemap = m_level->getTilemap(Level::TILEMAP_NORMAL);
+
 	int total_buckets = (Tilemap::AREA_WIDTH / Tilemap::BUCKET_WIDTH) * (Tilemap::AREA_HEIGHT / Tilemap::BUCKET_HEIGHT);
 	int num_buckets = 0;
 	int used_tiles = 0;
 	int raw_polys = 0;
 	for (int i = 0; i < total_buckets; i++)
 	{
-		Tilemap::Bucket* bucket = m_level->getTileBucket(i);
+		Tilemap::Bucket* bucket = tilemap->getTileBucket(i);
 		if (bucket != nullptr)
 		{
 			num_buckets++;
@@ -1851,6 +1858,8 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 
 	glm::vec4 points[8];
 
+	Tileset* tileset = m_level->getTileset();
+
 	reset();
 
 	try
@@ -2061,11 +2070,11 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 				}
 			}
 
-			int id = m_level->getTileset()->insertTile(tile_name.toStdString(), top, side, tile_color,
-														(Tileset::TileType)type,
-														(Tileset::TopType)top_type,
-														(Tileset::ShadingType)shading_type,
-														top_height, thumb, thumb_w, thumb_h);
+			int id = tileset->insertTile(tile_name.toStdString(), top, side, tile_color,
+										(Tileset::TileType)type,
+										(Tileset::TopType)top_type,
+										(Tileset::ShadingType)shading_type,
+										top_height, thumb, thumb_w, thumb_h);
 			emit m_tileset_window->add(id);
 
 			delete[] thumb;
@@ -2076,6 +2085,10 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 		delete side;
 
 		// ----------------
+
+		// TODO: load all tilemaps!!!
+
+		Tilemap* tilemap = m_level->getTilemap(Level::TILEMAP_NORMAL);
 
 		// buckets
 		int num_buckets = input.read_dword();
@@ -2094,8 +2107,8 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 					int tile = data & Tilemap::TILE_MASK;
 					int z = (data & Tilemap::Z_MASK) >> Tilemap::Z_SHIFT;
 
-					m_level->editTilemapTile(bucket_x + x, bucket_y + y, tile);
-					m_level->editTilemapZ(bucket_x + x, bucket_y + y, z);
+					tilemap->edit(bucket_x + x, bucket_y + y, tile);
+					tilemap->editZ(bucket_x + x, bucket_y + y, z);
 				}
 			}
 		}
@@ -2132,6 +2145,8 @@ bool MainWindow::writeBinaryProjectFile(QString& filename)
 	const unsigned int hspf_version = 0x10004;
 
 	int num_objects = m_level->numObjects();
+
+	Tileset* tileset = m_level->getTileset();
 
 	try
 	{
@@ -2217,7 +2232,7 @@ bool MainWindow::writeBinaryProjectFile(QString& filename)
 
 		for (int i=0; i < num_tiles; i++)
 		{
-			Tileset::Tile* tile  = m_level->getTileset()->getTile(i);
+			Tileset::Tile* tile  = tileset->getTile(i);
 
 			// tile name
 			std::string name = tile->name;
@@ -2281,10 +2296,14 @@ bool MainWindow::writeBinaryProjectFile(QString& filename)
 		// buckets
 		std::vector<Tilemap::Bucket*> buckets;
 
+		// TODO: save all tilemaps!!!
+
+		Tilemap* tilemap = m_level->getTilemap(Level::TILEMAP_NORMAL);
+
 		int total_buckets = (Tilemap::AREA_WIDTH / Tilemap::BUCKET_WIDTH) * (Tilemap::AREA_HEIGHT / Tilemap::BUCKET_HEIGHT);
 		for (int i = 0; i < total_buckets; i++)
 		{
-			Tilemap::Bucket* b = m_level->getTileBucket(i);
+			Tilemap::Bucket* b = tilemap->getTileBucket(i);
 			if (b != nullptr)
 			{
 				buckets.push_back(b);
@@ -2358,6 +2377,8 @@ void MainWindow::writeLevelFile(QString& filename)
 
 	int num_objects = m_level->numObjects();
 	int num_tiles = m_level->getTileset()->getNumTiles();
+
+	Tileset* tileset = m_level->getTileset();
 
 	try
 	{
@@ -2446,7 +2467,7 @@ void MainWindow::writeLevelFile(QString& filename)
 
 		for (int i=0; i < num_tiles; i++)
 		{
-			Tileset::Tile* tile = m_level->getTileset()->getTile(i);	
+			Tileset::Tile* tile = tileset->getTile(i);	
 
 			// tile color
 			output.write_dword(tile->color);
@@ -2477,10 +2498,13 @@ void MainWindow::writeLevelFile(QString& filename)
 		// buckets
 		std::vector<Tilemap::Bucket*> buckets;
 
+		// TODO: save all tilemaps!!!
+		Tilemap* tilemap = m_level->getTilemap(Level::TILEMAP_NORMAL);
+
 		int total_buckets = (Tilemap::AREA_WIDTH / Tilemap::BUCKET_WIDTH) * (Tilemap::AREA_HEIGHT / Tilemap::BUCKET_HEIGHT);
 		for (int i = 0; i < total_buckets; i++)
 		{
-			Tilemap::Bucket* b = m_level->getTileBucket(i);
+			Tilemap::Bucket* b = tilemap->getTileBucket(i);
 			if (b != nullptr)
 			{
 				buckets.push_back(b);

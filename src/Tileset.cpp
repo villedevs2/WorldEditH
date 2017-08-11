@@ -211,6 +211,11 @@ void Tileset::removeTiles()
 	m_tiles.clear();
 }
 
+int Tileset::getNumTiles()
+{
+	return m_tiles.size();
+}
+
 Tileset::Tile* Tileset::getTile(int index)
 {
 	assert(index >= 0 && index < m_tiles.size());
