@@ -316,7 +316,7 @@ void GLWidget::setTileBaseZ(float z)
 
 void GLWidget::selectTilemap(Level::TilemapType type)
 {
-
+	m_edited_tilemap = type;
 }
 
 

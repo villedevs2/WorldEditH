@@ -136,35 +136,6 @@ public:
 	const std::string& getTriggerName(int index);
 	int getNumTriggers();
 
-	/*
-	int readTilemapTile(int x, int y);
-	int readTilemapZ(int x, int y);
-	void editTilemapTile(int x, int y, int tile);
-	void editTilemapZ(int x, int y, int z);
-	float getTileWidth();
-	float getTileHeight();
-//	float* getTilemapVBO(int bx, int by);
-//	int numTilemapTris(int bx, int by);
-	int insertTile(std::string name, PolygonDef* top, PolygonDef* side, unsigned int color,
-					Tilemap::TileType type,
-					Tilemap::TopType top_type,
-					Tilemap::ShadingType shading_type,
-					float top_height, unsigned int* thumb, int thumb_w, int thumb_h);
-	int replaceTile(int index, std::string name, PolygonDef* top, PolygonDef* side, unsigned int color,
-					Tilemap::TileType type,
-					Tilemap::TopType top_type,
-					Tilemap::ShadingType shading_type,
-					float top_height, unsigned int* thumb, int thumb_w, int thumb_h);
-	void removeTile(int id);
-	void removeTiles();
-	int getNumTiles();
-	Tilemap::Tile* getTile(int index);
-	Tilemap::Tile* getTileById(int id);
-	int getTileIndexById(int id);
-	Tilemap::Bucket* getTileBucket(int bx, int by);
-	Tilemap::Bucket* getTileBucket(int index);
-	*/
-
 private:
 	int tesselateObject(int object);
 	void tesselateAllObjects();
