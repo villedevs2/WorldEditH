@@ -26,6 +26,7 @@
 #include "TileDesigner.h"
 #include "TilesetWidget.h"
 #include "LevelConf.h"
+#include "TilemapControl.h"
 
 class MainWindow : public QMainWindow
 {
@@ -111,6 +112,7 @@ private:
 	QAction* m_toggle_objedit;
 	QAction* m_toggle_tiledesigner;
 	QAction* m_toggle_tileset_window;
+	QAction* m_toggle_tilemap_control;
 
 	QAction* m_toggle_visbox;
 	QAction* m_visbox_conf_action;
@@ -144,12 +146,14 @@ private:
 	bool m_objedit_open;
 	bool m_tiledesigner_open;
 	bool m_tileset_window_open;
+	bool m_tilemap_control_open;
 
 	bool m_enable_grid;
 	bool m_snap_grid;
 
 	ObjectEdit* m_objedit;
 	TileDesigner* m_tiledesigner;
+	TilemapControl* m_tilemap_control;
 
 	bool m_enable_visbox;
 	VisboxConf* m_visbox_conf;
@@ -181,6 +185,7 @@ public slots:
 	void tileDesignerClosed();
 	void tilesetWindowClosed();
 	void setColor();
+	void tilemapControlClosed();
 
 private slots:
 	void newFile();
@@ -204,6 +209,7 @@ private slots:
 	void toggleObjEdit();
 	void toggleTileDesigner();
 	void toggleTilesetWindow();
+	void toggleTilemapControl();
 
 	void toggleGrid();
 	void snapGrid();

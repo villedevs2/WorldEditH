@@ -172,6 +172,15 @@
     <ClCompile Include="src\Tileset.cpp">
       <Filter>Source Files\src</Filter>
     </ClCompile>
+    <ClCompile Include="src\TilemapControl.cpp">
+      <Filter>Source Files\src</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_TilemapControl.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_TilemapControl.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="WorldEditH.h">
@@ -211,6 +220,9 @@
       <Filter>Header Files\src</Filter>
     </CustomBuild>
     <CustomBuild Include="src\TilesetWidget.h">
+      <Filter>Header Files\src</Filter>
+    </CustomBuild>
+    <CustomBuild Include="src\TilemapControl.h">
       <Filter>Header Files\src</Filter>
     </CustomBuild>
   </ItemGroup>

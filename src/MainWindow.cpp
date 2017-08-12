@@ -19,8 +19,8 @@ MainWindow::MainWindow()
 	m_objbrowser = new ObjectBrowser(this, m_level);
 	
 	m_texedit = new TextureEdit(this, m_level);
-
 	m_objedit = new ObjectEdit(this, m_level);
+	m_tilemap_control = new TilemapControl(this, m_level);
 	
 	m_tiledesigner = new TileDesigner(this, m_level);
 	
@@ -90,6 +90,7 @@ MainWindow::MainWindow()
 	
 	connect(m_texedit, SIGNAL(onClose()), this, SLOT(texEditClosed()));
 	connect(m_objedit, SIGNAL(onClose()), this, SLOT(objEditClosed()));
+	connect(m_tilemap_control, SIGNAL(onClose()), this, SLOT(tilemapControlClosed()));
 	connect(m_tiledesigner, SIGNAL(onClose()),this, SLOT(tileDesignerClosed()));
 	connect(m_tileset_window, SIGNAL(onClose()), this, SLOT(tilesetWindowClosed()));
 
@@ -101,6 +102,8 @@ MainWindow::MainWindow()
 
 	connect(m_tileset_window, SIGNAL(onSelectTile(int)), m_glwidget, SLOT(setTileBrush(int)));
 	connect(m_tileset_window, SIGNAL(onSelectTile(int)), m_tiledesigner, SLOT(tileSelected(int)));
+
+	connect(m_tilemap_control, SIGNAL(onSelectTilemap(Level::TilemapType)), m_glwidget, SLOT(selectTilemap(Level::TilemapType)));
 
 	// zoom shortcuts
 	m_zoomin_shortcut = new QShortcut(QKeySequence(Qt::Key_Plus), this);
@@ -132,6 +135,9 @@ MainWindow::MainWindow()
 	// tileset window positioning
 	m_tileset_window->move(QPoint(width() + 850, 600));
 
+	// tilemap control positioning
+	m_tilemap_control->move(QPoint(width() - 400, 100));
+
 
 	// tex edit hidden by default
 	m_texedit_open = false;
@@ -152,6 +158,11 @@ MainWindow::MainWindow()
 	m_tileset_window_open = false;
 	m_toggle_tileset_window->setChecked(false);
 	m_tileset_window->setHidden(true);
+
+	// tilemap control shown by default
+	m_tilemap_control_open = true;
+	m_toggle_tilemap_control->setChecked(true);
+	m_tilemap_control->setHidden(false);
 
 	
 	// grid settings
@@ -565,6 +576,28 @@ void MainWindow::tilesetWindowClosed()
 {
 	m_tileset_window_open = false;
 	m_toggle_tileset_window->setChecked(false);
+}
+
+void MainWindow::toggleTilemapControl()
+{
+	if (m_tilemap_control_open)
+	{
+		emit m_tilemap_control->setHidden(true);
+		m_tilemap_control_open = false;
+		m_toggle_tilemap_control->setChecked(false);
+	}
+	else
+	{
+		emit m_tilemap_control->setHidden(false);
+		m_tilemap_control_open = true;
+		m_toggle_tilemap_control->setChecked(true);
+	}
+}
+
+void MainWindow::tilemapControlClosed()
+{
+	m_tilemap_control_open = false;
+	m_toggle_tilemap_control->setChecked(false);
 }
 
 void MainWindow::toggleVisbox()
@@ -1521,6 +1554,10 @@ void MainWindow::createActions()
 	m_toggle_tileset_window->setCheckable(true);
 	connect(m_toggle_tileset_window, SIGNAL(triggered()), this, SLOT(toggleTilesetWindow()));
 
+	m_toggle_tilemap_control = new QAction(QIcon("tilemap.png"), tr("Toggle Tilemap Control"), this);
+	m_toggle_tilemap_control->setCheckable(true);
+	connect(m_toggle_tilemap_control, SIGNAL(triggered()), this, SLOT(toggleTilemapControl()));
+
 
 	// visbox
 	m_toggle_visbox = new QAction(QIcon("visbox.png"), tr("Toggle Visualization Box"), this);
@@ -1672,6 +1709,7 @@ void MainWindow::createToolbars()
 	m_editor_toolbar->addAction(m_toggle_objedit);
 	m_editor_toolbar->addAction(m_toggle_tiledesigner);
 	m_editor_toolbar->addAction(m_toggle_tileset_window);
+	m_editor_toolbar->addAction(m_toggle_tilemap_control);
 
 	m_visbox_toolbar = addToolBar("Visualization Box");
 	m_visbox_toolbar->addAction(m_toggle_visbox);

@@ -313,6 +313,13 @@ void GLWidget::setTileBaseZ(float z)
 	m_tile_basez = z;
 }
 
+
+void GLWidget::selectTilemap(Level::TilemapType type)
+{
+
+}
+
+
 // ----------------------------------------------------------------------------
 
 

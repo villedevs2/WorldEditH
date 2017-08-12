@@ -89,6 +89,7 @@ public slots:
 	void setTileBrush(int tile);
 	void setObjectColor(QColor color);
 	void setTileBaseZ(float z);
+	void selectTilemap(Level::TilemapType type);
 
 protected:
 	void initializeGL();
