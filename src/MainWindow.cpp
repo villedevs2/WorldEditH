@@ -2124,31 +2124,34 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 
 		// ----------------
 
-		// TODO: load all tilemaps!!!
-
-		Tilemap* tilemap = m_level->getTilemap(Level::TILEMAP_NORMAL);
-
-		// buckets
-		int num_buckets = input.read_dword();
-
-		for (int i = 0; i < num_buckets; i++)
+		int num_tmaps = input.read_dword();
+		for (int tmap = 0; tmap < num_tmaps; tmap++)
 		{
-			int bucket_x = input.read_dword() * Tilemap::BUCKET_WIDTH;
-			int bucket_y = input.read_dword() * Tilemap::BUCKET_HEIGHT;
+			Tilemap* tilemap = m_level->getTilemap((Level::TilemapType)tmap);
 
-			for (int y = 0; y < Tilemap::BUCKET_HEIGHT; y++)
+			// buckets
+			int num_buckets = input.read_dword();
+
+			for (int i = 0; i < num_buckets; i++)
 			{
-				for (int x = 0; x < Tilemap::BUCKET_WIDTH; x++)
+				int bucket_x = input.read_dword() * Tilemap::BUCKET_WIDTH;
+				int bucket_y = input.read_dword() * Tilemap::BUCKET_HEIGHT;
+
+				for (int y = 0; y < Tilemap::BUCKET_HEIGHT; y++)
 				{
-					unsigned int data = input.read_dword();
+					for (int x = 0; x < Tilemap::BUCKET_WIDTH; x++)
+					{
+						unsigned int data = input.read_dword();
 
-					int tile = data & Tilemap::TILE_MASK;
-					int z = (data & Tilemap::Z_MASK) >> Tilemap::Z_SHIFT;
+						int tile = data & Tilemap::TILE_MASK;
+						int z = (data & Tilemap::Z_MASK) >> Tilemap::Z_SHIFT;
 
-					tilemap->edit(bucket_x + x, bucket_y + y, tile);
-					tilemap->editZ(bucket_x + x, bucket_y + y, z);
+						tilemap->edit(bucket_x + x, bucket_y + y, tile);
+						tilemap->editZ(bucket_x + x, bucket_y + y, z);
+					}
 				}
 			}
+
 		}
 
 
@@ -2335,32 +2338,37 @@ bool MainWindow::writeBinaryProjectFile(QString& filename)
 		std::vector<Tilemap::Bucket*> buckets;
 
 		// TODO: save all tilemaps!!!
-
-		Tilemap* tilemap = m_level->getTilemap(Level::TILEMAP_NORMAL);
-
-		int total_buckets = (Tilemap::AREA_WIDTH / Tilemap::BUCKET_WIDTH) * (Tilemap::AREA_HEIGHT / Tilemap::BUCKET_HEIGHT);
-		for (int i = 0; i < total_buckets; i++)
+		int num_tmaps = Level::NUM_TILEMAP_TYPES;
+		output.write_dword(num_tmaps);
+		
+		for (int tmap = 0; tmap < num_tmaps; tmap++)
 		{
-			Tilemap::Bucket* b = tilemap->getTileBucket(i);
-			if (b != nullptr)
+			Tilemap* tilemap = m_level->getTilemap((Level::TilemapType)tmap);
+
+			int total_buckets = (Tilemap::AREA_WIDTH / Tilemap::BUCKET_WIDTH) * (Tilemap::AREA_HEIGHT / Tilemap::BUCKET_HEIGHT);
+			for (int i = 0; i < total_buckets; i++)
 			{
-				buckets.push_back(b);
+				Tilemap::Bucket* b = tilemap->getTileBucket(i);
+				if (b != nullptr)
+				{
+					buckets.push_back(b);
+				}
 			}
-		}
 
-		// num buckets
-		output.write_dword(buckets.size());
+			// num buckets
+			output.write_dword(buckets.size());
 
-		for (int i = 0; i < buckets.size(); i++)
-		{
-			Tilemap::Bucket* b = buckets.at(i);
-			output.write_dword(b->x);
-			output.write_dword(b->y);
-
-			for (int t = 0; t < (Tilemap::BUCKET_WIDTH * Tilemap::BUCKET_HEIGHT); t++)
+			for (int i = 0; i < buckets.size(); i++)
 			{
-				unsigned int tiledata = b->map[t];
-				output.write_dword(tiledata);
+				Tilemap::Bucket* b = buckets.at(i);
+				output.write_dword(b->x);
+				output.write_dword(b->y);
+
+				for (int t = 0; t < (Tilemap::BUCKET_WIDTH * Tilemap::BUCKET_HEIGHT); t++)
+				{
+					unsigned int tiledata = b->map[t];
+					output.write_dword(tiledata);
+				}
 			}
 		}
 
@@ -2536,37 +2544,46 @@ void MainWindow::writeLevelFile(QString& filename)
 		// buckets
 		std::vector<Tilemap::Bucket*> buckets;
 
-		// TODO: save all tilemaps!!!
-		Tilemap* tilemap = m_level->getTilemap(Level::TILEMAP_NORMAL);
+		int num_tmaps = Level::NUM_TILEMAP_TYPES;
+		output.write_dword(num_tmaps);
 
-		int total_buckets = (Tilemap::AREA_WIDTH / Tilemap::BUCKET_WIDTH) * (Tilemap::AREA_HEIGHT / Tilemap::BUCKET_HEIGHT);
-		for (int i = 0; i < total_buckets; i++)
+		for (int tmap = 0; tmap < num_tmaps; tmap++)
 		{
-			Tilemap::Bucket* b = tilemap->getTileBucket(i);
-			if (b != nullptr)
+			Tilemap* tilemap = m_level->getTilemap((Level::TilemapType)tmap);
+
+			int total_buckets = (Tilemap::AREA_WIDTH / Tilemap::BUCKET_WIDTH) * (Tilemap::AREA_HEIGHT / Tilemap::BUCKET_HEIGHT);
+			for (int i = 0; i < total_buckets; i++)
 			{
-				buckets.push_back(b);
+				Tilemap::Bucket* b = tilemap->getTileBucket(i);
+				if (b != nullptr)
+				{
+					buckets.push_back(b);
+				}
+			}
+
+			// num buckets
+			output.write_dword(buckets.size());
+
+			for (int i = 0; i < buckets.size(); i++)
+			{
+				Tilemap::Bucket* b = buckets.at(i);
+				output.write_dword(b->x);
+				output.write_dword(b->y);
+
+				for (int t = 0; t < (Tilemap::BUCKET_WIDTH * Tilemap::BUCKET_HEIGHT); t++)
+				{
+					int tile = b->map[t] & Tilemap::TILE_MASK;
+					int z = (b->map[t] & Tilemap::Z_MASK) >> Tilemap::Z_SHIFT;
+					output.write_word(tile);
+					
+					// floor has no z-value
+					if (tmap != Level::TILEMAP_FLOOR)
+					{
+						output.write_byte(z);
+					}
+				}
 			}
 		}
-
-		// num buckets
-		output.write_dword(buckets.size());
-
-		for (int i = 0; i < buckets.size(); i++)
-		{
-			Tilemap::Bucket* b = buckets.at(i);
-			output.write_dword(b->x);
-			output.write_dword(b->y);
-
-			for (int t = 0; t < (Tilemap::BUCKET_WIDTH * Tilemap::BUCKET_HEIGHT); t++)
-			{
-				int tile = b->map[t] & Tilemap::TILE_MASK;
-				int z = (b->map[t] & Tilemap::Z_MASK) >> Tilemap::Z_SHIFT;
-				output.write_word(tile);
-				output.write_byte(z);
-			}
-		}
-		
 
 		/*
 		int tm_width = m_level->getTilemapWidth();
