@@ -1,12 +1,16 @@
 #include "Tilemap.h"
 
-Tilemap::Tilemap(Tileset* tileset, Tilemap::EditCallback* edit_callback)
+Tilemap::Tilemap(Tileset* tileset, Tilemap::EditCallback* edit_callback, float zbase, float zbase_height, unsigned int flags)
 {
 	m_tileset = tileset;
 	m_edit_callback = edit_callback;
 
 	m_tile_width = 1.0f;
 	m_tile_height = 1.4f;
+
+	m_zbase = zbase;
+	m_zbase_height = zbase_height;
+	m_flags = flags;
 
 	m_buckets = new Bucket*[(AREA_WIDTH / BUCKET_WIDTH) * (AREA_HEIGHT / BUCKET_HEIGHT)];
 	int size = (AREA_WIDTH / BUCKET_WIDTH) * (AREA_HEIGHT / BUCKET_HEIGHT);
@@ -146,28 +150,44 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 		         p3
 		*/
 
-		glm::vec3 p1 = glm::vec3(tx1, ty1 + (m_tile_height * (15.0 / 70.0)), z);
-		glm::vec3 p2 = glm::vec3(tx1, ty1 + (m_tile_height * (35.0 / 70.0)), z);
-		glm::vec3 p3 = glm::vec3(tx1 + (m_tile_width * 0.5), ty1 + (m_tile_height * (50.0 / 70.0)), z);
-		glm::vec3 p4 = glm::vec3(tx2, ty1 + (m_tile_height * (35.0 / 70.0)), z);
-		glm::vec3 p5 = glm::vec3(tx2, ty1 + (m_tile_height * (15.0 / 70.0)), z);
-		glm::vec3 p6 = glm::vec3(tx1 + (m_tile_width * 0.5), ty1, z);
+		float bot_z = 0.0f;
+		float top_z = 0.0f;
 
-		glm::vec3 pcen = glm::vec3(tx1 + (m_tile_width * 0.5), ty1 + (m_tile_height * (20.0 / 70.0)), z + (tiledata->top_height * 0.1f));
+		if (m_flags & FLAGS_FIXED_Z)
+		{
+			bot_z = m_zbase * 0.1f;
+			top_z = (m_zbase + m_zbase_height) * 0.1f;
+		}
+		else
+		{
+			bot_z = m_zbase * 0.1f;
+			top_z = (m_zbase * 0.1f) + z;
+		}
 
-		glm::vec3 bp1 = glm::vec3(tx1, ty1 + (m_tile_height * (15.0 / 70.0)), 0.0f);
-		glm::vec3 bp2 = glm::vec3(tx1, ty1 + (m_tile_height * (35.0 / 70.0)), 0.0f);
-		glm::vec3 bp3 = glm::vec3(tx1 + (m_tile_width * 0.5), ty1 + (m_tile_height * (50.0 / 70.0)), 0.0f);
-		glm::vec3 bp4 = glm::vec3(tx2, ty1 + (m_tile_height * (35.0 / 70.0)), 0.0f);
-		glm::vec3 bp5 = glm::vec3(tx2, ty1 + (m_tile_height * (15.0 / 70.0)), 0.0f);
-		glm::vec3 bp6 = glm::vec3(tx1 + (m_tile_width * 0.5), ty1, 0.0f);
+		glm::vec3 p1 = glm::vec3(tx1, ty1 + (m_tile_height * (15.0 / 70.0)), top_z);
+		glm::vec3 p2 = glm::vec3(tx1, ty1 + (m_tile_height * (35.0 / 70.0)), top_z);
+		glm::vec3 p3 = glm::vec3(tx1 + (m_tile_width * 0.5), ty1 + (m_tile_height * (50.0 / 70.0)), top_z);
+		glm::vec3 p4 = glm::vec3(tx2, ty1 + (m_tile_height * (35.0 / 70.0)), top_z);
+		glm::vec3 p5 = glm::vec3(tx2, ty1 + (m_tile_height * (15.0 / 70.0)), top_z);
+		glm::vec3 p6 = glm::vec3(tx1 + (m_tile_width * 0.5), ty1, top_z);
 
+		glm::vec3 pcen = glm::vec3(tx1 + (m_tile_width * 0.5), ty1 + (m_tile_height * (20.0 / 70.0)), top_z + (tiledata->top_height * 0.1f));
+
+		glm::vec3 bp1 = glm::vec3(tx1, ty1 + (m_tile_height * (15.0 / 70.0)), bot_z);
+		glm::vec3 bp2 = glm::vec3(tx1, ty1 + (m_tile_height * (35.0 / 70.0)), bot_z);
+		glm::vec3 bp3 = glm::vec3(tx1 + (m_tile_width * 0.5), ty1 + (m_tile_height * (50.0 / 70.0)), bot_z);
+		glm::vec3 bp4 = glm::vec3(tx2, ty1 + (m_tile_height * (35.0 / 70.0)), bot_z);
+		glm::vec3 bp5 = glm::vec3(tx2, ty1 + (m_tile_height * (15.0 / 70.0)), bot_z);
+		glm::vec3 bp6 = glm::vec3(tx1 + (m_tile_width * 0.5), ty1, bot_z);
+
+		/*
 		glm::vec3 tp1 = glm::vec3(tx1, ty1 + (m_tile_height * (15.0 / 70.0)), 100.0f);
 		glm::vec3 tp2 = glm::vec3(tx1, ty1 + (m_tile_height * (35.0 / 70.0)), 100.0f);
 		glm::vec3 tp3 = glm::vec3(tx1 + (m_tile_width * 0.5), ty1 + (m_tile_height * (50.0 / 70.0)), 100.0f);
 		glm::vec3 tp4 = glm::vec3(tx2, ty1 + (m_tile_height * (35.0 / 70.0)), 100.0f);
 		glm::vec3 tp5 = glm::vec3(tx2, ty1 + (m_tile_height * (15.0 / 70.0)), 100.0f);
 		glm::vec3 tp6 = glm::vec3(tx1 + (m_tile_width * 0.5), ty1, 100.0f);
+		*/
 
 		glm::vec3 top_norm(0.0f, 0.0f, 1.0f);
 

@@ -443,7 +443,6 @@ void GLWidget::tilemapDraw(Level::TilemapType map)
 
 		tilemap->edit(m_tile_selx, m_tile_sely, brush);
 		tilemap->editZ(m_tile_selx, m_tile_sely, m_tile_basez);
-//		emit onTileUpdate(map, m_tile_selx, m_tile_sely);
 	}
 }
 
@@ -1576,7 +1575,9 @@ void GLWidget::initializeGL()
 	m_3d_shader.position = m_3d_program->attributeLocation("a_position");
 	m_3d_shader.tex_coord = m_3d_program->attributeLocation("a_texcoord");
 	m_3d_shader.color = m_3d_program->attributeLocation("a_color");
+	m_3d_shader.normal = m_3d_program->attributeLocation("a_normal");
 	m_3d_shader.vp_matrix = m_3d_program->uniformLocation("m_vp_matrix");
+	m_3d_shader.v_matrix = m_3d_program->uniformLocation("m_v_matrix");
 
 
 	m_selflum_program = new QGLShaderProgram(this);
@@ -2418,10 +2419,9 @@ void GLWidget::paintGL()
 	}
 
 	// 3d tilemap
-
-	// TODO: render all
 	{
-		Tilemap* tilemap = m_level->getTilemap(Level::TILEMAP_NORMAL);
+		QGLShaderProgram* program = m_3d_program;
+		Shader* shader = &m_3d_shader;
 
 		glDisable(GL_CULL_FACE);
 
@@ -2429,7 +2429,6 @@ void GLWidget::paintGL()
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_ALPHA_TEST);
 
-		float aspect = (float)(width()) / (float)(height());
 		float halfw = (float)((LEVEL_VIS_WIDTH / GLWidget::ZOOM_LEVELS[m_zoom_level]) / 2);
 		float halfh = halfw / aspect;
 
@@ -2451,76 +2450,85 @@ void GLWidget::paintGL()
 		glm::mat4 camera_view_matrix = glm::lookAt(pos, eye, glm::vec3(0.0f, 1.0f, 0.0));
 		glm::mat4 camera_vp_matrix = camera_proj_matrix * camera_view_matrix;
 
-
 		QMatrix4x4 vp_mat = QMatrix4x4(glm::value_ptr(camera_vp_matrix));
 		QMatrix4x4 v_mat = QMatrix4x4(glm::value_ptr(camera_view_matrix));
 
-		m_reflect_program->bind();
+		float aspect = (float)(width()) / (float)(height());
 
-		m_reflect_program->setUniformValue(m_reflect_shader.vp_matrix, vp_mat);
-		m_reflect_program->setUniformValue(m_reflect_shader.v_matrix, v_mat);
+		program->bind();
 
-		m_reflect_program->setUniformValue(m_reflect_shader.cam_pos, QVector3D(pos.x, pos.y, pos.z));
+		program->setUniformValue(shader->vp_matrix, vp_mat);
+		program->setUniformValue(shader->v_matrix, v_mat);
+
+//		program->setUniformValue(shader->cam_pos, QVector3D(pos.x, pos.y, pos.z));
 
 		glEnable(GL_DEPTH_TEST);
 		glDepthMask(GL_TRUE);
 
 
 		glBindTexture(GL_TEXTURE_2D, m_base_tex);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, m_env_tex);
+//		glBindTexture(GL_TEXTURE_CUBE_MAP, m_env_tex);
 
-		glm::vec2 tilemap_tl = toLevelCoords(glm::vec2(0, 0));
-		glm::vec2 tilemap_br = toLevelCoords(glm::vec2(width(), height()));
-
-		tilemap_tl.x *= tilemap->getTileWidth();
-		tilemap_tl.y *= tilemap->getTileHeight();
-		tilemap_br.x *= tilemap->getTileWidth();
-		tilemap_br.y *= tilemap->getTileHeight();
-
-		int xs = (int)(floor(tilemap_tl.x / Tilemap::BUCKET_WIDTH));
-		int ys = (int)(floor(tilemap_tl.y / Tilemap::BUCKET_HEIGHT));
-		int xe = (int)(ceil(tilemap_br.x / Tilemap::BUCKET_WIDTH));
-		int ye = (int)(ceil(tilemap_br.y / Tilemap::BUCKET_HEIGHT));
-
-		if (xs < 0)
-			xs = 0;
-		if (ys < 0)
-			ys = 0;
-		if (xe >(Tilemap::AREA_WIDTH / Tilemap::BUCKET_WIDTH))
-			xe = Tilemap::AREA_WIDTH / Tilemap::BUCKET_WIDTH;
-		if (ye >(Tilemap::AREA_HEIGHT / Tilemap::BUCKET_HEIGHT))
-			ye = Tilemap::AREA_HEIGHT / Tilemap::BUCKET_HEIGHT;
-
-		for (int j = ys; j < ye; j++)
+		// TODO: render all
+		for (int tmap = 0; tmap < Level::NUM_TILEMAP_TYPES; tmap++)
 		{
-			for (int i = xs; i < xe; i++)
+			Tilemap* tilemap = m_level->getTilemap((Level::TilemapType)tmap);
+
+			// TODO: filter if needed
+
+			glm::vec2 tilemap_tl = toLevelCoords(glm::vec2(0, 0));
+			glm::vec2 tilemap_br = toLevelCoords(glm::vec2(width(), height()));
+
+			tilemap_tl.x *= tilemap->getTileWidth();
+			tilemap_tl.y *= tilemap->getTileHeight();
+			tilemap_br.x *= tilemap->getTileWidth();
+			tilemap_br.y *= tilemap->getTileHeight();
+
+			int xs = (int)(floor(tilemap_tl.x / Tilemap::BUCKET_WIDTH));
+			int ys = (int)(floor(tilemap_tl.y / Tilemap::BUCKET_HEIGHT));
+			int xe = (int)(ceil(tilemap_br.x / Tilemap::BUCKET_WIDTH));
+			int ye = (int)(ceil(tilemap_br.y / Tilemap::BUCKET_HEIGHT));
+
+			if (xs < 0)
+				xs = 0;
+			if (ys < 0)
+				ys = 0;
+			if (xe > (Tilemap::AREA_WIDTH / Tilemap::BUCKET_WIDTH))
+				xe = Tilemap::AREA_WIDTH / Tilemap::BUCKET_WIDTH;
+			if (ye > (Tilemap::AREA_HEIGHT / Tilemap::BUCKET_HEIGHT))
+				ye = Tilemap::AREA_HEIGHT / Tilemap::BUCKET_HEIGHT;
+
+			for (int j = ys; j < ye; j++)
 			{
-				const Tilemap::Bucket* bucket = tilemap->getTileBucket(i, j);
-				if (bucket != nullptr)
+				for (int i = xs; i < xe; i++)
 				{
-					float* geo = (float*)bucket->tiles->getPointer();
-					int vbsize = bucket->tiles->getVertexSize();
+					const Tilemap::Bucket* bucket = tilemap->getTileBucket(i, j);
+					if (bucket != nullptr)
+					{
+						float* geo = (float*)bucket->tiles->getPointer();
+						int vbsize = bucket->tiles->getVertexSize();
 
-					m_reflect_program->enableAttributeArray(m_reflect_shader.position);
-					m_reflect_program->setAttributeArray(m_reflect_shader.position, (GLfloat*)geo, 3, vbsize);
-					m_reflect_program->enableAttributeArray(m_reflect_shader.tex_coord);
-					m_reflect_program->setAttributeArray(m_reflect_shader.tex_coord, (GLfloat*)geo + 3, 2, vbsize);
-					m_reflect_program->enableAttributeArray(m_reflect_shader.normal);
-					m_reflect_program->setAttributeArray(m_reflect_shader.normal, (GLfloat*)geo + 5, 3, vbsize);
-					m_reflect_program->enableAttributeArray(m_reflect_shader.color);
-					m_reflect_program->setAttributeArray(m_reflect_shader.color, GL_UNSIGNED_BYTE, (GLbyte*)geo + 32, 4, vbsize);
+						program->enableAttributeArray(shader->position);
+						program->setAttributeArray(shader->position, (GLfloat*)geo, 3, vbsize);
+						program->enableAttributeArray(shader->tex_coord);
+						program->setAttributeArray(shader->tex_coord, (GLfloat*)geo + 3, 2, vbsize);
+						program->enableAttributeArray(shader->normal);
+						program->setAttributeArray(shader->normal, (GLfloat*)geo + 5, 3, vbsize);
+						program->enableAttributeArray(shader->color);
+						program->setAttributeArray(shader->color, GL_UNSIGNED_BYTE, (GLbyte*)geo + 32, 4, vbsize);
 
-					glDrawArrays(GL_TRIANGLES, 0, Tilemap::BUCKET_WIDTH*Tilemap::BUCKET_HEIGHT * Tilemap::MAX_VERTS * 3);
+						glDrawArrays(GL_TRIANGLES, 0, Tilemap::BUCKET_WIDTH*Tilemap::BUCKET_HEIGHT * Tilemap::MAX_VERTS * 3);
 
-					m_reflect_program->disableAttributeArray(m_reflect_shader.position);
-					m_reflect_program->disableAttributeArray(m_reflect_shader.tex_coord);
-					m_reflect_program->disableAttributeArray(m_reflect_shader.normal);
-					m_reflect_program->disableAttributeArray(m_reflect_shader.color);
+						program->disableAttributeArray(shader->position);
+						program->disableAttributeArray(shader->tex_coord);
+						program->disableAttributeArray(shader->normal);
+						program->disableAttributeArray(shader->color);
+					}
 				}
 			}
 		}
-	}
 
+	}
 
 
 

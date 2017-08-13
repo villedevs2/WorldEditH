@@ -29,6 +29,11 @@ public:
 		int y;
 	};
 
+	enum Flags
+	{
+		FLAGS_FIXED_Z = 0x00000001,
+	};
+
 	static const unsigned int TILE_MASK = 0xffff;
 	static const unsigned int TILE_EMPTY = 0xffff;
 	static const unsigned int Z_MASK = 0xff0000;
@@ -48,7 +53,7 @@ public:
 
 
 
-	Tilemap(Tileset* tileset, Tilemap::EditCallback* edit_callback);
+	Tilemap(Tileset* tileset, Tilemap::EditCallback* edit_callback, float zbase, float zbase_height, unsigned int flags);
 	~Tilemap();
 
 	void tileChanged(int index);
@@ -72,6 +77,10 @@ private:
 
 	float m_tile_width;
 	float m_tile_height;
+
+	float m_zbase;
+	float m_zbase_height;
+	unsigned int m_flags;
 
 	Bucket** m_buckets;
 

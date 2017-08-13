@@ -311,8 +311,8 @@ void Level::Object::copy(const Level::Object& source)
 Level::Level()
 {
 	m_tileset = new Tileset(this);
-	m_tilemap[Level::TILEMAP_NORMAL] = new Tilemap(m_tileset, this);
-	m_tilemap[Level::TILEMAP_FLOOR] = new Tilemap(m_tileset, this);
+	m_tilemap[Level::TILEMAP_NORMAL] = new Tilemap(m_tileset, this, 0.0f, 100.0f, 0);
+	m_tilemap[Level::TILEMAP_FLOOR] = new Tilemap(m_tileset, this, -10.0f, 10.0f, Tilemap::FLAGS_FIXED_Z);
 
 	for (int i=0; i < NUM_VBOS; i++)
 	{
