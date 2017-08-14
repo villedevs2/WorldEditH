@@ -152,6 +152,7 @@
     <ClCompile Include="GeneratedFiles\Release\moc_WorldEditH.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\AmbientOcclusion.cpp" />
     <ClCompile Include="src\BinaryFile.cpp" />
     <ClCompile Include="src\GLWidget.cpp" />
     <ClCompile Include="src\Level.cpp" />
@@ -200,6 +201,7 @@
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_WorldEditH.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="src\AmbientOcclusion.h" />
     <ClInclude Include="src\BinaryFile.h" />
     <ClInclude Include="src\Level.h" />
     <ClInclude Include="src\PolygonDef.h" />

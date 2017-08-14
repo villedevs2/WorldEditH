@@ -1885,7 +1885,7 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 	BinaryFile input;
 
 	const unsigned int hspf_id = 0x48535046;
-	const unsigned int hspf_version = 0x10004;
+	const unsigned int hspf_version = 0x10005;
 	
 	Level::Object::Param params[Level::Object::NUM_PARAMS];
 	QString object_name = "";
@@ -2183,7 +2183,7 @@ bool MainWindow::writeBinaryProjectFile(QString& filename)
 	BinaryFile output;
 
 	const char hspf_id[4] = { 0x48, 0x53, 0x50, 0x46 };
-	const unsigned int hspf_version = 0x10004;
+	const unsigned int hspf_version = 0x10005;
 
 	int num_objects = m_level->numObjects();
 
@@ -2337,7 +2337,6 @@ bool MainWindow::writeBinaryProjectFile(QString& filename)
 		// buckets
 		std::vector<Tilemap::Bucket*> buckets;
 
-		// TODO: save all tilemaps!!!
 		int num_tmaps = Level::NUM_TILEMAP_TYPES;
 		output.write_dword(num_tmaps);
 		
@@ -2419,7 +2418,7 @@ void MainWindow::writeLevelFile(QString& filename)
 	BinaryFile output;
 
 	const char hslx_id[4] = { 0x48, 0x53, 0x4c, 0x58 };
-	const unsigned int level_version = 0x10003;
+	const unsigned int level_version = 0x10005;
 
 	int num_objects = m_level->numObjects();
 	int num_tiles = m_level->getTileset()->getNumTiles();

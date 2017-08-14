@@ -181,6 +181,9 @@
     <ClCompile Include="GeneratedFiles\Release\moc_TilemapControl.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="src\AmbientOcclusion.cpp">
+      <Filter>Source Files\src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="WorldEditH.h">
@@ -252,6 +255,9 @@
       <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Tileset.h">
+      <Filter>Header Files\src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AmbientOcclusion.h">
       <Filter>Header Files\src</Filter>
     </ClInclude>
   </ItemGroup>
