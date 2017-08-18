@@ -27,6 +27,7 @@
 #include "TilesetWidget.h"
 #include "LevelConf.h"
 #include "TilemapControl.h"
+#include "AmbientOcclusion.h"
 
 class MainWindow : public QMainWindow
 {
@@ -169,6 +170,8 @@ private:
 	TilesetWindow* m_tileset_window;
 
 	LevelConf* m_level_conf;
+
+	AmbientOcclusion* m_ambient_occlusion;
 
 	struct coord_point
 	{

@@ -12,6 +12,9 @@ MainWindow::MainWindow()
 
 	QWidget *central_widget = new QWidget();
 
+	m_ambient_occlusion = new AmbientOcclusion();
+	m_ambient_occlusion->calculate();
+
 	// main components
 	// ---------------------------------------------------------------------------
 
