@@ -86,6 +86,7 @@ private:
 	};
 
 	void tesselateTile(Bucket* bucket, int bx, int by);
+	void retesselateTileByCoords(int tx, int ty);
 	void allocBucket(int bin);
 	void deallocBucket(int bin);
 	void tesselateAllByTile(int tile);

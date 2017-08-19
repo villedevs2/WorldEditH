@@ -760,6 +760,26 @@ Tilemap::Bucket* Tilemap::getTileBucket(int index)
 	return m_buckets[index];
 }
 
+void Tilemap::retesselateTileByCoords(int tx, int ty)
+{
+	if (tx >= 0 && tx < (AREA_WIDTH / BUCKET_WIDTH) &&
+		ty >= 0 && ty < (AREA_HEIGHT / BUCKET_HEIGHT))
+	{
+		Tilemap::Bucket* bucket = getTileBucket(tx, ty);
+		if (bucket != nullptr)
+		{
+			int bx = tx % BUCKET_WIDTH;
+			int by = ty % BUCKET_HEIGHT;
+
+			int ctile = bucket->map[by * BUCKET_WIDTH + bx] & TILE_MASK;
+			if (ctile != TILE_EMPTY)
+			{
+				tesselateTile(bucket, bx, by);
+			}
+		}
+	}
+}
+
 void Tilemap::tesselateAllByTile(int tile)
 {
 	int total_buckets = (AREA_WIDTH / BUCKET_WIDTH) * (AREA_HEIGHT / BUCKET_HEIGHT);
