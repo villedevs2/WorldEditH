@@ -1518,8 +1518,65 @@ void GLWidget::loadEnvTexture(QImage** textures)
 	doneCurrent();
 }
 
+void GLWidget::loadAmbientMap(QImage* texture)
+{
+	makeCurrent();
+
+	if (glIsTexture(m_ambient_tex))
+		glDeleteTextures(1, &m_ambient_tex);
+	glGenTextures(1, &m_ambient_tex);
+	glBindTexture(GL_TEXTURE_2D, m_ambient_tex);
+
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+
+	int width = texture->width();
+	int height = texture->height();
+
+	char *pixels = new char[width * height * 4];
+
+	int index = 0;
+	for (int j = 0; j < height; j++)
+	{
+		QRgb *scan = (QRgb*)texture->scanLine(j);
+
+		for (int i = 0; i < width; i++)
+		{
+			int r = qRed(scan[i]);
+			int g = qGreen(scan[i]);
+			int b = qBlue(scan[i]);
+			int a = qAlpha(scan[i]);
+
+			pixels[index + 0] = r;
+			pixels[index + 1] = g;
+			pixels[index + 2] = b;
+			pixels[index + 3] = a;
+			index += 4;
+		}
+	}
+
+	glTexImage2D(GL_TEXTURE_2D,
+		0,
+		GL_RGBA,
+		width,
+		height,
+		0,
+		GL_RGBA,
+		GL_UNSIGNED_BYTE,
+		pixels);
+
+	delete[] pixels;
+
+	doneCurrent();
+}
+
 void GLWidget::initializeGL()
 {
+	initializeOpenGLFunctions();
+
 	QString level_vs_file = loadShader("level_vs.glsl");
 	QString level_fs_file = loadShader("level_fs.glsl");
 	QString grid_vs_file = loadShader("grid_vs.glsl");
@@ -1574,10 +1631,14 @@ void GLWidget::initializeGL()
 
 	m_3d_shader.position = m_3d_program->attributeLocation("a_position");
 	m_3d_shader.tex_coord = m_3d_program->attributeLocation("a_texcoord");
+	m_3d_shader.amb_coord = m_3d_program->attributeLocation("a_ambcoord");
 	m_3d_shader.color = m_3d_program->attributeLocation("a_color");
 	m_3d_shader.normal = m_3d_program->attributeLocation("a_normal");
 	m_3d_shader.vp_matrix = m_3d_program->uniformLocation("m_vp_matrix");
 	m_3d_shader.v_matrix = m_3d_program->uniformLocation("m_v_matrix");
+	m_3d_shader.light = m_3d_program->uniformLocation("u_light");
+	m_3d_shader.diff_sampler = m_3d_program->uniformLocation("s_color_texture");
+	m_3d_shader.amb_sampler = m_3d_program->uniformLocation("s_ambient_texture");
 
 
 	m_selflum_program = new QGLShaderProgram(this);
@@ -2466,8 +2527,17 @@ void GLWidget::paintGL()
 		glDepthMask(GL_TRUE);
 
 
+		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, m_base_tex);
 //		glBindTexture(GL_TEXTURE_CUBE_MAP, m_env_tex);
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, m_ambient_tex);
+
+		glUniform1i(shader->diff_sampler, 0);
+		glUniform1i(shader->amb_sampler, 1);
+
+		glUniform3f(shader->light, 0.7, 0.7, -0.3);
 
 		// TODO: render all
 		for (int tmap = 0; tmap < Level::NUM_TILEMAP_TYPES; tmap++)
@@ -2512,15 +2582,18 @@ void GLWidget::paintGL()
 						program->setAttributeArray(shader->position, (GLfloat*)geo, 3, vbsize);
 						program->enableAttributeArray(shader->tex_coord);
 						program->setAttributeArray(shader->tex_coord, (GLfloat*)geo + 3, 2, vbsize);
+						program->enableAttributeArray(shader->amb_coord);
+						program->setAttributeArray(shader->amb_coord, (GLfloat*)geo + 5, 2, vbsize);
 						program->enableAttributeArray(shader->normal);
-						program->setAttributeArray(shader->normal, (GLfloat*)geo + 5, 3, vbsize);
+						program->setAttributeArray(shader->normal, (GLfloat*)geo + 7, 3, vbsize);
 						program->enableAttributeArray(shader->color);
-						program->setAttributeArray(shader->color, GL_UNSIGNED_BYTE, (GLbyte*)geo + 32, 4, vbsize);
+						program->setAttributeArray(shader->color, GL_UNSIGNED_BYTE, (GLbyte*)geo + 40, 4, vbsize);
 
 						glDrawArrays(GL_TRIANGLES, 0, Tilemap::BUCKET_WIDTH*Tilemap::BUCKET_HEIGHT * Tilemap::MAX_VERTS * 3);
 
 						program->disableAttributeArray(shader->position);
 						program->disableAttributeArray(shader->tex_coord);
+						program->disableAttributeArray(shader->amb_coord);
 						program->disableAttributeArray(shader->normal);
 						program->disableAttributeArray(shader->color);
 					}

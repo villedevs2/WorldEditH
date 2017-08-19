@@ -143,6 +143,8 @@ private:
 	TextureEdit* m_texedit;
 	QImage* m_texture;
 
+	QImage* m_ambient_map;
+
 	bool m_texedit_open;
 	bool m_objedit_open;
 	bool m_tiledesigner_open;

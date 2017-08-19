@@ -25,13 +25,15 @@ public:
 		{
 			this->pos = glm::vec3();
 			this->uv = glm::vec2();
+			this->amb_uv = glm::vec2();
 			this->normal = glm::vec3();
 			this->color = 0;
 		}
-		Vertex::Vertex(const glm::vec3& pos, const glm::vec2& uv, const glm::vec3& normal, unsigned int color)
+		Vertex::Vertex(const glm::vec3& pos, const glm::vec2& uv, const glm::vec2& amb_uv, const glm::vec3& normal, unsigned int color)
 		{
 			this->pos = pos;
 			this->uv = uv;
+			this->amb_uv = amb_uv;
 			this->normal = normal;
 			this->color = color;
 		}
@@ -41,6 +43,7 @@ public:
 
 		glm::vec3 pos;
 		glm::vec2 uv;
+		glm::vec2 amb_uv;
 		glm::vec3 normal;
 		unsigned int color;
 	};

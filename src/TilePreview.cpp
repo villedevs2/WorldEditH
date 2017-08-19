@@ -255,6 +255,11 @@ void TilePreview::updateGeo(const glm::vec2* top_points, const glm::vec2* side_p
 {
 	int vbo_index = 0;
 
+	float amb_tile_w = 1.0 / 8.0;
+	float amb_tile_h = 1.0 / 8.0;
+	float amb_tile_x = 0.0f;
+	float amb_tile_y = 0.0f;
+
 	glm::vec2 uv1 = top_points[0];
 	glm::vec2 uv2 = top_points[1];
 	glm::vec2 uv3 = top_points[2];
@@ -300,95 +305,111 @@ void TilePreview::updateGeo(const glm::vec2* top_points, const glm::vec2* side_p
 	glm::vec3 bp5 = glm::vec3(p5.x, p5.y, 0.0f);
 	glm::vec3 bp6 = glm::vec3(p6.x, p6.y, 0.0f);
 
+
+	glm::vec2 amb_uv1 = glm::vec2(amb_tile_x, amb_tile_y + (0.3f * amb_tile_h));
+	glm::vec2 amb_uv2 = glm::vec2(amb_tile_x, amb_tile_y + (0.7f * amb_tile_h));
+	glm::vec2 amb_uv3 = glm::vec2(amb_tile_x + (0.5f * amb_tile_w), amb_tile_y + amb_tile_h);
+	glm::vec2 amb_uv4 = glm::vec2(amb_tile_x + amb_tile_w, amb_tile_y + (0.7f * amb_tile_h));
+	glm::vec2 amb_uv5 = glm::vec2(amb_tile_x + amb_tile_w, amb_tile_y + (0.3f * amb_tile_h));
+	glm::vec2 amb_uv6 = glm::vec2(amb_tile_x + (0.5f * amb_tile_w), amb_tile_y);
+
+	glm::vec2 amb_uvcen = glm::mix(amb_uv1 + ((amb_uv5 - amb_uv1) * 0.5f), amb_uv2 + ((amb_uv4 - amb_uv2) * 0.5f), 0.5f);
+
+	// TODOOOO
+	glm::vec2 amb_suv1 = glm::vec2(0.0f, 0.0f);
+	glm::vec2 amb_suv2 = glm::vec2(1.0f, 0.0f);
+	glm::vec2 amb_suv3 = glm::vec2(1.0f, 1.0f);
+	glm::vec2 amb_suv4 = glm::vec2(0.0f, 1.0f);
+
 	glm::vec3 top_norm(0.0f, 0.0f, 1.0f);
 
-	VBO::Vertex tv1(p1, uv1, top_norm, color);
-	VBO::Vertex tv2(p2, uv2, top_norm, color);
-	VBO::Vertex tv3(p3, uv3, top_norm, color);
-	VBO::Vertex tv4(p4, uv4, top_norm, color);
-	VBO::Vertex tv5(p5, uv5, top_norm, color);
-	VBO::Vertex tv6(p6, uv6, top_norm, color);
-	VBO::Vertex tvcen(pcen, uvcen, top_norm, color);
+	VBO::Vertex tv1(p1, uv1, amb_uv1, top_norm, color);
+	VBO::Vertex tv2(p2, uv2, amb_uv2, top_norm, color);
+	VBO::Vertex tv3(p3, uv3, amb_uv3, top_norm, color);
+	VBO::Vertex tv4(p4, uv4, amb_uv4, top_norm, color);
+	VBO::Vertex tv5(p5, uv5, amb_uv5, top_norm, color);
+	VBO::Vertex tv6(p6, uv6, amb_uv6, top_norm, color);
+	VBO::Vertex tvcen(pcen, uvcen, amb_uvcen, top_norm, color);
 
-	VBO::Vertex left_v1(p1, suv1, glm::vec3(), color);
-	VBO::Vertex left_v2(p2, suv2, glm::vec3(), color);
-	VBO::Vertex left_v3(bp2, suv3, glm::vec3(), color);
-	VBO::Vertex left_v4(bp1, suv4, glm::vec3(), color);
+	VBO::Vertex left_v1(p1, suv1, amb_suv1, glm::vec3(), color);
+	VBO::Vertex left_v2(p2, suv2, amb_suv2, glm::vec3(), color);
+	VBO::Vertex left_v3(bp2, suv3, amb_suv3, glm::vec3(), color);
+	VBO::Vertex left_v4(bp1, suv4, amb_suv4, glm::vec3(), color);
 
-	VBO::Vertex topleft_v1(p6, suv1, glm::vec3(), color);
-	VBO::Vertex topleft_v2(p1, suv2, glm::vec3(), color);
-	VBO::Vertex topleft_v3(bp1, suv3, glm::vec3(), color);
-	VBO::Vertex topleft_v4(bp6, suv4, glm::vec3(), color);
+	VBO::Vertex topleft_v1(p6, suv1, amb_suv1, glm::vec3(), color);
+	VBO::Vertex topleft_v2(p1, suv2, amb_suv2, glm::vec3(), color);
+	VBO::Vertex topleft_v3(bp1, suv3, amb_suv3, glm::vec3(), color);
+	VBO::Vertex topleft_v4(bp6, suv4, amb_suv4, glm::vec3(), color);
 
-	VBO::Vertex topright_v1(p5, suv1, glm::vec3(), color);
-	VBO::Vertex topright_v2(p6, suv2, glm::vec3(), color);
-	VBO::Vertex topright_v3(bp6, suv3, glm::vec3(), color);
-	VBO::Vertex topright_v4(bp5, suv4, glm::vec3(), color);
+	VBO::Vertex topright_v1(p5, suv1, amb_suv1, glm::vec3(), color);
+	VBO::Vertex topright_v2(p6, suv2, amb_suv2, glm::vec3(), color);
+	VBO::Vertex topright_v3(bp6, suv3, amb_suv3, glm::vec3(), color);
+	VBO::Vertex topright_v4(bp5, suv4, amb_suv4, glm::vec3(), color);
 
-	VBO::Vertex right_v1(p4, suv1, glm::vec3(), color);
-	VBO::Vertex right_v2(p5, suv2, glm::vec3(), color);
-	VBO::Vertex right_v3(bp5, suv3, glm::vec3(), color);
-	VBO::Vertex right_v4(bp4, suv4, glm::vec3(), color);
+	VBO::Vertex right_v1(p4, suv1, amb_suv1, glm::vec3(), color);
+	VBO::Vertex right_v2(p5, suv2, amb_suv2, glm::vec3(), color);
+	VBO::Vertex right_v3(bp5, suv3, amb_suv3, glm::vec3(), color);
+	VBO::Vertex right_v4(bp4, suv4, amb_suv4, glm::vec3(), color);
 
-	VBO::Vertex botright_v1(p3, suv1, glm::vec3(), color);
-	VBO::Vertex botright_v2(p4, suv2, glm::vec3(), color);
-	VBO::Vertex botright_v3(bp4, suv3, glm::vec3(), color);
-	VBO::Vertex botright_v4(bp3, suv4, glm::vec3(), color);
+	VBO::Vertex botright_v1(p3, suv1, amb_suv1, glm::vec3(), color);
+	VBO::Vertex botright_v2(p4, suv2, amb_suv2, glm::vec3(), color);
+	VBO::Vertex botright_v3(bp4, suv3, amb_suv3, glm::vec3(), color);
+	VBO::Vertex botright_v4(bp3, suv4, amb_suv4, glm::vec3(), color);
 
-	VBO::Vertex botleft_v1(p2, suv1, glm::vec3(), color);
-	VBO::Vertex botleft_v2(p3, suv2, glm::vec3(), color);
-	VBO::Vertex botleft_v3(bp3, suv3, glm::vec3(), color);
-	VBO::Vertex botleft_v4(bp2, suv4, glm::vec3(), color);
+	VBO::Vertex botleft_v1(p2, suv1, amb_suv1, glm::vec3(), color);
+	VBO::Vertex botleft_v2(p3, suv2, amb_suv2, glm::vec3(), color);
+	VBO::Vertex botleft_v3(bp3, suv3, amb_suv3, glm::vec3(), color);
+	VBO::Vertex botleft_v4(bp2, suv4, amb_suv4, glm::vec3(), color);
 
-	VBO::Vertex sideleft_v1(p3, suv1, glm::vec3(), color);
-	VBO::Vertex sideleft_v2(p6, suv2, glm::vec3(), color);
-	VBO::Vertex sideleft_v3(bp6, suv3, glm::vec3(), color);
-	VBO::Vertex sideleft_v4(bp3, suv4, glm::vec3(), color);
+	VBO::Vertex sideleft_v1(p3, suv1, amb_suv1, glm::vec3(), color);
+	VBO::Vertex sideleft_v2(p6, suv2, amb_suv2, glm::vec3(), color);
+	VBO::Vertex sideleft_v3(bp6, suv3, amb_suv3, glm::vec3(), color);
+	VBO::Vertex sideleft_v4(bp3, suv4, amb_suv4, glm::vec3(), color);
 
-	VBO::Vertex sideright_v1(p6, suv1, glm::vec3(), color);
-	VBO::Vertex sideright_v2(p3, suv2, glm::vec3(), color);
-	VBO::Vertex sideright_v3(bp3, suv3, glm::vec3(), color);
-	VBO::Vertex sideright_v4(bp6, suv4, glm::vec3(), color);
+	VBO::Vertex sideright_v1(p6, suv1, amb_suv1, glm::vec3(), color);
+	VBO::Vertex sideright_v2(p3, suv2, amb_suv2, glm::vec3(), color);
+	VBO::Vertex sideright_v3(bp3, suv3, amb_suv3, glm::vec3(), color);
+	VBO::Vertex sideright_v4(bp6, suv4, amb_suv4, glm::vec3(), color);
 
-	VBO::Vertex midtop_v1(p1, suv1, glm::vec3(), color);
-	VBO::Vertex midtop_v2(p5, suv2, glm::vec3(), color);
-	VBO::Vertex midtop_v3(bp5, suv3, glm::vec3(), color);
-	VBO::Vertex midtop_v4(bp1, suv4, glm::vec3(), color);
+	VBO::Vertex midtop_v1(p1, suv1, amb_suv1, glm::vec3(), color);
+	VBO::Vertex midtop_v2(p5, suv2, amb_suv2, glm::vec3(), color);
+	VBO::Vertex midtop_v3(bp5, suv3, amb_suv3, glm::vec3(), color);
+	VBO::Vertex midtop_v4(bp1, suv4, amb_suv4, glm::vec3(), color);
 
-	VBO::Vertex midbot_v1(p4, suv1, glm::vec3(), color);
-	VBO::Vertex midbot_v2(p2, suv2, glm::vec3(), color);
-	VBO::Vertex midbot_v3(bp2, suv3, glm::vec3(), color);
-	VBO::Vertex midbot_v4(bp4, suv4, glm::vec3(), color);
+	VBO::Vertex midbot_v1(p4, suv1, amb_suv1, glm::vec3(), color);
+	VBO::Vertex midbot_v2(p2, suv2, amb_suv2, glm::vec3(), color);
+	VBO::Vertex midbot_v3(bp2, suv3, amb_suv3, glm::vec3(), color);
+	VBO::Vertex midbot_v4(bp4, suv4, amb_suv4, glm::vec3(), color);
 
-	VBO::Vertex centtop_v1(p5, suv1, glm::vec3(), color);
-	VBO::Vertex centtop_v2(p1, suv2, glm::vec3(), color);
-	VBO::Vertex centtop_v3(bp1, suv3, glm::vec3(), color);
-	VBO::Vertex centtop_v4(bp5, suv4, glm::vec3(), color);
+	VBO::Vertex centtop_v1(p5, suv1, amb_suv1, glm::vec3(), color);
+	VBO::Vertex centtop_v2(p1, suv2, amb_suv2, glm::vec3(), color);
+	VBO::Vertex centtop_v3(bp1, suv3, amb_suv3, glm::vec3(), color);
+	VBO::Vertex centtop_v4(bp5, suv4, amb_suv4, glm::vec3(), color);
 
-	VBO::Vertex centbot_v1(p2, suv1, glm::vec3(), color);
-	VBO::Vertex centbot_v2(p4, suv2, glm::vec3(), color);
-	VBO::Vertex centbot_v3(bp4, suv3, glm::vec3(), color);
-	VBO::Vertex centbot_v4(bp2, suv4, glm::vec3(), color);
+	VBO::Vertex centbot_v1(p2, suv1, amb_suv1, glm::vec3(), color);
+	VBO::Vertex centbot_v2(p4, suv2, amb_suv2, glm::vec3(), color);
+	VBO::Vertex centbot_v3(bp4, suv3, amb_suv3, glm::vec3(), color);
+	VBO::Vertex centbot_v4(bp2, suv4, amb_suv4, glm::vec3(), color);
 
-	VBO::Vertex corntl_v1(p2, suv1, glm::vec3(), color);
-	VBO::Vertex corntl_v2(p6, suv2, glm::vec3(), color);
-	VBO::Vertex corntl_v3(bp6, suv3, glm::vec3(), color);
-	VBO::Vertex corntl_v4(bp2, suv4, glm::vec3(), color);
+	VBO::Vertex corntl_v1(p2, suv1, amb_suv1, glm::vec3(), color);
+	VBO::Vertex corntl_v2(p6, suv2, amb_suv2, glm::vec3(), color);
+	VBO::Vertex corntl_v3(bp6, suv3, amb_suv3, glm::vec3(), color);
+	VBO::Vertex corntl_v4(bp2, suv4, amb_suv4, glm::vec3(), color);
 
-	VBO::Vertex corntr_v1(p6, suv1, glm::vec3(), color);
-	VBO::Vertex corntr_v2(p4, suv2, glm::vec3(), color);
-	VBO::Vertex corntr_v3(bp4, suv3, glm::vec3(), color);
-	VBO::Vertex corntr_v4(bp6, suv4, glm::vec3(), color);
+	VBO::Vertex corntr_v1(p6, suv1, amb_suv1, glm::vec3(), color);
+	VBO::Vertex corntr_v2(p4, suv2, amb_suv2, glm::vec3(), color);
+	VBO::Vertex corntr_v3(bp4, suv3, amb_suv3, glm::vec3(), color);
+	VBO::Vertex corntr_v4(bp6, suv4, amb_suv4, glm::vec3(), color);
 
-	VBO::Vertex cornbl_v1(p3, suv1, glm::vec3(), color);
-	VBO::Vertex cornbl_v2(p1, suv2, glm::vec3(), color);
-	VBO::Vertex cornbl_v3(bp1, suv3, glm::vec3(), color);
-	VBO::Vertex cornbl_v4(bp3, suv4, glm::vec3(), color);
+	VBO::Vertex cornbl_v1(p3, suv1, amb_suv1, glm::vec3(), color);
+	VBO::Vertex cornbl_v2(p1, suv2, amb_suv2, glm::vec3(), color);
+	VBO::Vertex cornbl_v3(bp1, suv3, amb_suv3, glm::vec3(), color);
+	VBO::Vertex cornbl_v4(bp3, suv4, amb_suv4, glm::vec3(), color);
 	
-	VBO::Vertex cornbr_v1(p5, suv1, glm::vec3(), color);
-	VBO::Vertex cornbr_v2(p3, suv2, glm::vec3(), color);
-	VBO::Vertex cornbr_v3(bp3, suv3, glm::vec3(), color);
-	VBO::Vertex cornbr_v4(bp5, suv4, glm::vec3(), color);
+	VBO::Vertex cornbr_v1(p5, suv1, amb_suv1, glm::vec3(), color);
+	VBO::Vertex cornbr_v2(p3, suv2, amb_suv2, glm::vec3(), color);
+	VBO::Vertex cornbr_v3(bp3, suv3, amb_suv3, glm::vec3(), color);
+	VBO::Vertex cornbr_v4(bp5, suv4, amb_suv4, glm::vec3(), color);
 
 	enum
 	{

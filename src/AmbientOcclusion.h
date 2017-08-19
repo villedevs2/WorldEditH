@@ -24,11 +24,7 @@ public:
 	~AmbientOcclusion();
 
 	void calculate();
-
-private:
-	void makeRaysFloor(std::vector<glm::vec3>& rays, int numrays);
-	void calculateFloor(int sides, int width, int height, int* buffer, std::vector<glm::vec3>& rays);
-	bool sampleFloorHit(const glm::vec2& wall_point1, const glm::vec2& wall_point2, const glm::vec2& sample_point, const glm::vec3& ray);
+	QImage* getMap();
 
 	enum Sides
 	{
@@ -39,4 +35,16 @@ private:
 		SIDE_BOTLEFT = 0x10,
 		SIDE_BOTRIGHT = 0x20,
 	};
+
+	static const int MAP_WIDTH = 32;
+	static const int MAP_HEIGHT = 32;
+	static const int FLOOR_TILES_X = 8;
+	static const int FLOOR_TILES_Y = 8;
+
+private:
+	void makeRaysFloor(std::vector<glm::vec3>& rays, int numrays);
+	void calculateFloor(int sides, int width, int height, int* buffer, std::vector<glm::vec3>& rays);
+	bool sampleFloorHit(const glm::vec2& wall_point1, const glm::vec2& wall_point2, const glm::vec2& sample_point, const glm::vec3& ray);
+
+	QImage* m_map;
 };

@@ -14,13 +14,14 @@ MainWindow::MainWindow()
 
 	m_ambient_occlusion = new AmbientOcclusion();
 	m_ambient_occlusion->calculate();
+	m_ambient_map = m_ambient_occlusion->getMap();
 
 	// main components
 	// ---------------------------------------------------------------------------
 
 	m_glwidget = new GLWidget(this, m_level);
+
 	m_objbrowser = new ObjectBrowser(this, m_level);
-	
 	m_texedit = new TextureEdit(this, m_level);
 	m_objedit = new ObjectEdit(this, m_level);
 	m_tilemap_control = new TilemapControl(this, m_level);
@@ -677,6 +678,8 @@ void MainWindow::changeTexture(QString path)
 	textures[5] = m_texture;
 
 	m_glwidget->loadEnvTexture(textures);
+
+	m_glwidget->loadAmbientMap(m_ambient_map);
 }
 
 

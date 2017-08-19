@@ -2,6 +2,7 @@
 
 #include <QtGui>
 #include <QGLWidget>
+#include <qopenglfunctions.h>
 #include <qglshaderprogram.h>
 
 #include <glm.hpp>
@@ -11,7 +12,7 @@
 #include "PolygonDef.h"
 #include "Level.h"
 
-class GLWidget : public QGLWidget
+class GLWidget : public QGLWidget, private QOpenGLFunctions
 {
 	Q_OBJECT
 
@@ -34,12 +35,16 @@ public:
 		int scale;
 		int position;
 		int tex_coord;
+		int amb_coord;
 		int color;
 		int vp_matrix;
 		int rot_matrix;
 		int v_matrix;
+		int light;
 		int normal;
 		int cam_pos;
+		int diff_sampler;
+		int amb_sampler;
 	};
 
 	static const int NUM_GRID_SIZES = 6;
@@ -57,6 +62,7 @@ public:
 	glm::vec2 toLevelCoords(glm::vec2 point);
 	void loadTexture(QImage* texture);
 	void loadEnvTexture(QImage** textures);
+	void loadAmbientMap(QImage* texture);
 	void enableGrid(bool enable);
 	void setSnapGrid(bool enable);
 	void reset();
@@ -139,6 +145,7 @@ private:
 
 	GLuint m_base_tex;
 	GLuint m_env_tex;
+	GLuint m_ambient_tex;
 
 	float m_viewport_width;
 	float m_viewport_height;

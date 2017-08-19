@@ -8,6 +8,7 @@
 #include "PolygonDef.h"
 #include "VBO.h"
 #include "Tileset.h"
+#include "AmbientOcclusion.h"
 
 class Tilemap
 {
@@ -69,11 +70,27 @@ public:
 	Tilemap::Bucket* getTileBucket(int index);
 
 private:
+	struct TileCoord
+	{
+		int x;
+		int y;
+	};
+	struct AdjacentTiles
+	{
+		TileCoord left;
+		TileCoord right;
+		TileCoord topleft;
+		TileCoord topright;
+		TileCoord botleft;
+		TileCoord botright;
+	};
+
 	void tesselateTile(Bucket* bucket, int bx, int by);
 	void allocBucket(int bin);
 	void deallocBucket(int bin);
 	void tesselateAllByTile(int tile);
 	unsigned int getTileColor(unsigned int basecolor, float lum);
+	void getAdjacentTileCoords(AdjacentTiles* tiles, int tx, int ty);
 
 	float m_tile_width;
 	float m_tile_height;

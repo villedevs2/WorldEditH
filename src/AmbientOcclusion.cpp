@@ -2,12 +2,12 @@
 
 AmbientOcclusion::AmbientOcclusion()
 {
-
+	m_map = new QImage(MAP_WIDTH*FLOOR_TILES_X, MAP_HEIGHT*FLOOR_TILES_Y, QImage::Format_ARGB32);
 }
 
 AmbientOcclusion::~AmbientOcclusion()
 {
-
+	delete m_map;
 }
 
 void AmbientOcclusion::makeRaysFloor(std::vector<glm::vec3>& rays, int numrays)
@@ -36,17 +36,22 @@ bool AmbientOcclusion::sampleFloorHit(const glm::vec2& wall_point1, const glm::v
 	glm::vec2 lv = glm::normalize(wall_point1 - sample_point);
 	glm::vec2 rv = glm::normalize(wall_point2 - sample_point);
 
+	glm::vec2 nlv(-lv.y, lv.x);
+	glm::vec2 nrv(-rv.y, rv.x);
+
 	glm::vec2 ray2d = glm::normalize(glm::vec2(ray));
 
 	glm::vec2 n = glm::vec2(-ray2d.y, ray2d.x);		// normal of 2d ray
 
-	float dot1 = glm::dot(n, lv);
-	float dot2 = glm::dot(n, rv);
+	//float dot1 = glm::dot(n, lv);
+	//float dot2 = glm::dot(n, rv);
+	float dot1 = glm::dot(ray2d, nlv);
+	float dot2 = glm::dot(ray2d, nrv);
 
 	if (dot1 >= 0 && dot2 <= 0)
 	{
 		glm::vec2 plane = wall_point2 - wall_point1;
-		glm::vec2 plane_n(-plane.y, plane.x);
+		glm::vec2 plane_n = glm::normalize(glm::vec2(-plane.y, plane.x));
 
 		
 		glm::vec3 p1(wall_point1.x, wall_point1.y, 0.0f);
@@ -60,7 +65,9 @@ bool AmbientOcclusion::sampleFloorHit(const glm::vec2& wall_point1, const glm::v
 
 		glm::vec3 point = vp + ray * dist;
 
-		if (dist >= 0 && dist < 0.1f && point.z >= 0 && point.z < 0.5f)
+		float raylen = glm::length(point - vp);
+
+		if (raylen >= 0 && raylen < 0.5f && point.z >= 0 && point.z < 0.5f)
 			return true;
 		//if (point.z < 0.5f)
 		//	return true;
@@ -163,13 +170,10 @@ void AmbientOcclusion::calculateFloor(int sides, int width, int height, int* buf
 
 void AmbientOcclusion::calculate()
 {
-	int width = 32;
-	int height = 32;
-
 	int* buffer[64];
 	for (int i = 0; i < 64; i++)
 	{
-		buffer[i] = new int[width * height];
+		buffer[i] = new int[MAP_WIDTH * MAP_HEIGHT];
 	}
 
 	std::vector<glm::vec3> rays;
@@ -178,7 +182,7 @@ void AmbientOcclusion::calculate()
 
 	for (int i = 0; i < 64; i++)
 	{
-		calculateFloor(i, width, height, buffer[i], rays);
+		calculateFloor(i, MAP_WIDTH, MAP_HEIGHT, buffer[i], rays);
 	}
 
 
@@ -208,31 +212,30 @@ void AmbientOcclusion::calculate()
 
 	glm::vec3 point = v + nv * dist;
 	*/
-
-
-
-
-	QImage* img = new QImage(width*8, height*8, QImage::Format_ARGB32);
+	
 	for (int x = 0; x < 64; x++)
 	{
-		int ix = x % 8;
-		int iy = x / 8;
-		for (int j = 0; j < height; j++)
+		int ix = x % FLOOR_TILES_X;
+		int iy = x / FLOOR_TILES_Y;
+		for (int j = 0; j < MAP_HEIGHT; j++)
 		{
-			QRgb* line = (QRgb*)img->scanLine(j+(iy*height));
-			for (int i = 0; i < width; i++)
+			QRgb* line = (QRgb*)m_map->scanLine(j+(iy*MAP_HEIGHT));
+			for (int i = 0; i < MAP_WIDTH; i++)
 			{
-				line[i+(ix*width)] = buffer[x][(j * width) + i];
+				line[i+(ix*MAP_WIDTH)] = buffer[x][(j * MAP_WIDTH) + i];
 			}
 		}
 	}
 
-	img->save("ambient.png", "PNG");
-
-	delete img;
+	m_map->save("ambient.png", "PNG");
 
 	for (int i = 0; i < 64; i++)
 	{
 		delete[] buffer[i];
 	}
+}
+
+QImage* AmbientOcclusion::getMap()
+{
+	return m_map;
 }
