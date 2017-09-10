@@ -2,7 +2,7 @@
 
 AmbientOcclusion::AmbientOcclusion()
 {
-	m_map = new QImage(MAP_WIDTH*FLOOR_TILES_X, MAP_HEIGHT*FLOOR_TILES_Y, QImage::Format_ARGB32);
+	m_map = new QImage(MAP_WIDTH*FLOOR_TILES_X, MAP_HEIGHT*(FLOOR_TILES_Y*2), QImage::Format_ARGB32);
 }
 
 AmbientOcclusion::~AmbientOcclusion()
@@ -10,7 +10,7 @@ AmbientOcclusion::~AmbientOcclusion()
 	delete m_map;
 }
 
-void AmbientOcclusion::makeRaysFloor(std::vector<glm::vec3>& rays, int numrays)
+void AmbientOcclusion::makeRays(std::vector<glm::vec3>& rays, int numrays)
 {
 	std::uniform_real_distribution<float> random_floats(0.0f, 1.0f);
 	std::default_random_engine generator;
@@ -168,23 +168,125 @@ void AmbientOcclusion::calculateFloor(int sides, int width, int height, int* buf
 	}
 }
 
+void AmbientOcclusion::calculateWall(int sides, int width, int height, int* buffer, std::vector<glm::vec3>& rays)
+{
+	glm::vec3 pt_row[4][2];
+
+	pt_row[0][0] = glm::vec3(0.0f, 0.0f, 0.5f);	pt_row[0][1] = glm::vec3(1.0f, 0.0f, 0.5f);
+	pt_row[1][0] = glm::vec3(0.0f, 0.3f, 0.0f); pt_row[1][1] = glm::vec3(1.0f, 0.3f, 0.0f);
+	pt_row[2][0] = glm::vec3(0.0f, 0.7f, 0.0f); pt_row[2][1] = glm::vec3(1.0f, 0.7f, 0.0f);
+	pt_row[3][0] = glm::vec3(0.0f, 1.0f, 0.5f); pt_row[3][1] = glm::vec3(1.0f, 1.0f, 0.5f);
+
+	glm::vec3 pt_top = glm::vec3(1.0f, 0.3f, 1.0f);
+	glm::vec3 pt_bot = glm::vec3(1.0f, 0.7f, 1.0f);
+
+	double oow = (1.0 / width) * 1.0f;
+	double ooh = (1.0 / height) * (0.7f - 0.3f);
+
+	const float RAY_FALLOFF = 0.5f;
+
+	for (int j = 0; j < height; j++)
+	{
+		for (int i = 0; i < width; i++)
+		{
+			int hit_samples = 0;
+
+			glm::vec3 p((float)(i) * oow, ((float)(j)* ooh) + 0.3f, 0.0f);
+			for (int r = 0; r < rays.size(); r++)
+			{
+				glm::vec3 bary_pos;
+				glm::vec3& cr = rays.at(r);
+
+				bool hit = false;
+
+				if (sides & WALLSIDE_LEFT)
+				{
+					if (glm::intersectRayTriangle(p, cr, pt_row[1][0], pt_row[0][0], pt_row[0][1], bary_pos))
+					{
+						if (bary_pos.z < RAY_FALLOFF)
+							hit = true;
+					}
+					if (glm::intersectRayTriangle(p, cr, pt_row[1][0], pt_row[0][1], pt_row[1][1], bary_pos))
+					{
+						if (bary_pos.z < RAY_FALLOFF)
+							hit = true;
+					}
+				}
+				if (sides & WALLSIDE_RIGHT)
+				{
+					if (glm::intersectRayTriangle(p, cr, pt_row[2][1], pt_row[3][1], pt_row[3][0], bary_pos))
+					{
+						if (bary_pos.z < RAY_FALLOFF)
+							hit = true;
+					}
+					if (glm::intersectRayTriangle(p, cr, pt_row[2][1], pt_row[3][0], pt_row[2][0], bary_pos))
+					{
+						if (bary_pos.z < RAY_FALLOFF)
+							hit = true;
+					}
+				}
+				if (sides & WALLSIDE_FLOOR)
+				{
+					if (glm::intersectRayTriangle(p, cr, pt_top, pt_row[1][1], pt_row[0][1], bary_pos))
+					{
+						if (bary_pos.z < RAY_FALLOFF)
+							hit = true;
+					}
+					if (glm::intersectRayTriangle(p, cr, pt_top, pt_bot, pt_row[1][1], bary_pos))
+					{
+						if (bary_pos.z < RAY_FALLOFF)
+							hit = true;
+					}
+					if (glm::intersectRayTriangle(p, cr, pt_bot, pt_row[2][1], pt_row[1][1], bary_pos))
+					{
+						if (bary_pos.z < RAY_FALLOFF)
+							hit = true;
+					}
+					if (glm::intersectRayTriangle(p, cr, pt_bot, pt_row[3][1], pt_row[2][1], bary_pos))
+					{
+						if (bary_pos.z < RAY_FALLOFF)
+							hit = true;
+					}
+				}
+				if (hit)
+					hit_samples++;
+			}
+
+			// monte carlo on ray hits
+			float value = 1.0f - ((float)(hit_samples) / (float)(rays.size()));
+
+			buffer[(j * width) + i] = 0xffff0000 | (int)(value * 255.0f) << 8;
+		}
+	}
+}
+
+
 void AmbientOcclusion::calculate()
 {
-	int* buffer[64];
+	int* floor_buffer[64];
+	int* wall_buffer[8];
 	for (int i = 0; i < 64; i++)
 	{
-		buffer[i] = new int[MAP_WIDTH * MAP_HEIGHT];
+		floor_buffer[i] = new int[MAP_WIDTH * MAP_HEIGHT];
+	}
+	for (int i = 0; i < 8; i++)
+	{
+		wall_buffer[i] = new int[MAP_WIDTH * MAP_HEIGHT];
 	}
 
 	std::vector<glm::vec3> rays;
 
-	makeRaysFloor(rays, 2000);
+	makeRays(rays, 2000);
 
 	for (int i = 0; i < 64; i++)
 	{
-		calculateFloor(i, MAP_WIDTH, MAP_HEIGHT, buffer[i], rays);
+		calculateFloor(i, MAP_WIDTH, MAP_HEIGHT, floor_buffer[i], rays);
 	}
-
+	
+	for (int i = 0; i < 8; i++)
+	{
+		calculateWall(i, MAP_WIDTH, MAP_HEIGHT, wall_buffer[i], rays);
+	}
 
 	
 	/*
@@ -222,7 +324,21 @@ void AmbientOcclusion::calculate()
 			QRgb* line = (QRgb*)m_map->scanLine(j+(iy*MAP_HEIGHT));
 			for (int i = 0; i < MAP_WIDTH; i++)
 			{
-				line[i+(ix*MAP_WIDTH)] = buffer[x][(j * MAP_WIDTH) + i];
+				line[i+(ix*MAP_WIDTH)] = floor_buffer[x][(j * MAP_WIDTH) + i];
+			}
+		}
+	}
+
+	for (int x = 0; x < 8; x++)
+	{
+		int ix = x % FLOOR_TILES_X;
+		int iy = 64 / FLOOR_TILES_Y;
+		for (int j = 0; j < MAP_HEIGHT; j++)
+		{
+			QRgb* line = (QRgb*)m_map->scanLine(j + (iy * MAP_HEIGHT));
+			for (int i = 0; i < MAP_WIDTH; i++)
+			{
+				line[i + (ix * MAP_WIDTH)] = wall_buffer[x][(j * MAP_WIDTH) + i];
 			}
 		}
 	}
@@ -231,7 +347,11 @@ void AmbientOcclusion::calculate()
 
 	for (int i = 0; i < 64; i++)
 	{
-		delete[] buffer[i];
+		delete[] floor_buffer[i];
+	}
+	for (int i = 0; i < 8; i++)
+	{
+		delete[] wall_buffer[i];
 	}
 }
 

@@ -36,15 +36,23 @@ public:
 		SIDE_BOTRIGHT = 0x20,
 	};
 
+	enum WallSides
+	{
+		WALLSIDE_LEFT = 0x1,
+		WALLSIDE_RIGHT = 0x2,
+		WALLSIDE_FLOOR = 0x4,
+	};
+
 	static const int MAP_WIDTH = 32;
 	static const int MAP_HEIGHT = 32;
 	static const int FLOOR_TILES_X = 8;
 	static const int FLOOR_TILES_Y = 8;
 
 private:
-	void makeRaysFloor(std::vector<glm::vec3>& rays, int numrays);
+	void makeRays(std::vector<glm::vec3>& rays, int numrays);
 	void calculateFloor(int sides, int width, int height, int* buffer, std::vector<glm::vec3>& rays);
 	bool sampleFloorHit(const glm::vec2& wall_point1, const glm::vec2& wall_point2, const glm::vec2& sample_point, const glm::vec3& ray);
+	void calculateWall(int sides, int width, int height, int* buffer, std::vector<glm::vec3>& rays);
 
 	QImage* m_map;
 };
