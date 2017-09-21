@@ -13,7 +13,10 @@ MainWindow::MainWindow()
 	QWidget *central_widget = new QWidget();
 
 	m_ambient_occlusion = new AmbientOcclusion();
-	m_ambient_occlusion->calculate();
+	if (!m_ambient_occlusion->load("ambient.png"))
+	{
+		m_ambient_occlusion->calculate();
+	}
 	m_ambient_map = m_ambient_occlusion->getMap();
 
 	// main components

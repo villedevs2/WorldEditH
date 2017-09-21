@@ -25,6 +25,7 @@ public:
 
 	void calculate();
 	QImage* getMap();
+	bool load(QString name);
 
 	enum Sides
 	{
@@ -47,6 +48,8 @@ public:
 	static const int MAP_HEIGHT = 32;
 	static const int FLOOR_TILES_X = 8;
 	static const int FLOOR_TILES_Y = 8;
+
+	static const float RAY_FALLOFF;
 
 private:
 	void makeRays(std::vector<glm::vec3>& rays, int numrays);
