@@ -78,7 +78,7 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 	assert(by >= 0 && by < BUCKET_HEIGHT);
 
 
-	AdjacentTiles adjacent_tiles;
+	AdjacentTileCoords adjacent_tiles;
 	getAdjacentTileCoords(&adjacent_tiles, (bucket->x * BUCKET_WIDTH) + bx, (bucket->y * BUCKET_HEIGHT) + by);
 
 	int z_current = (bucket->map[(by * BUCKET_WIDTH) + bx] & Z_MASK) >> Z_SHIFT;
@@ -680,6 +680,13 @@ void Tilemap::edit(int x, int y, int tile)
 
 	tesselateTile(m_buckets[bin], ix, iy);
 
+	/*
+	AdjacentTileCoords adjacent_tiles;
+	getAdjacentTileCoords(&adjacent_tiles, x, y);
+	if (adjacent_tiles.left >= 0)
+	*/
+
+
 	if (m_buckets[bin]->coverage == 0)
 	{
 		deallocBucket(bin);
@@ -807,7 +814,7 @@ void Tilemap::tileChanged(int index)
 	tesselateAllByTile(index);
 }
 
-void Tilemap::getAdjacentTileCoords(AdjacentTiles* tiles, int tx, int ty)
+void Tilemap::getAdjacentTileCoords(AdjacentTileCoords* tiles, int tx, int ty)
 {
 	tiles->left.x = tx - 1;
 	tiles->left.y = ty;

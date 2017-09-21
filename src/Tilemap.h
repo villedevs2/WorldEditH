@@ -75,7 +75,7 @@ private:
 		int x;
 		int y;
 	};
-	struct AdjacentTiles
+	struct AdjacentTileCoords
 	{
 		TileCoord left;
 		TileCoord right;
@@ -91,7 +91,8 @@ private:
 	void deallocBucket(int bin);
 	void tesselateAllByTile(int tile);
 	unsigned int getTileColor(unsigned int basecolor, float lum);
-	void getAdjacentTileCoords(AdjacentTiles* tiles, int tx, int ty);
+	void getAdjacentTileCoords(AdjacentTileCoords* tiles, int tx, int ty);
+	void getAdjacentTiles();
 
 	float m_tile_width;
 	float m_tile_height;
