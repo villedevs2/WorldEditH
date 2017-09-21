@@ -680,12 +680,17 @@ void Tilemap::edit(int x, int y, int tile)
 
 	tesselateTile(m_buckets[bin], ix, iy);
 
-	/*
-	AdjacentTileCoords adjacent_tiles;
-	getAdjacentTileCoords(&adjacent_tiles, x, y);
-	if (adjacent_tiles.left >= 0)
-	*/
-
+	// retesselate adjacent tiles
+	AdjacentTileCoords adjacent_coords;
+	AdjacentTiles adjacent_tiles;
+	getAdjacentTileCoords(&adjacent_coords, x, y);
+	getAdjacentTiles(&adjacent_tiles, &adjacent_coords, x, y);
+	if (adjacent_tiles.left >= 0) retesselateTileByCoords(adjacent_coords.left.x, adjacent_coords.left.y);
+	if (adjacent_tiles.right >= 0) retesselateTileByCoords(adjacent_coords.right.x, adjacent_coords.right.y);
+	if (adjacent_tiles.topleft >= 0) retesselateTileByCoords(adjacent_coords.topleft.x, adjacent_coords.topleft.y);
+	if (adjacent_tiles.topright >= 0) retesselateTileByCoords(adjacent_coords.topright.x, adjacent_coords.topright.y);
+	if (adjacent_tiles.botleft >= 0) retesselateTileByCoords(adjacent_coords.botleft.x, adjacent_coords.botright.y);
+	if (adjacent_tiles.botright >= 0) retesselateTileByCoords(adjacent_coords.botright.x, adjacent_coords.botright.y);
 
 	if (m_buckets[bin]->coverage == 0)
 	{
@@ -713,6 +718,18 @@ void Tilemap::editZ(int x, int y, int z)
 		m_buckets[bin]->map[index] |= (z << Z_SHIFT) & Z_MASK;
 
 		tesselateTile(m_buckets[bin], ix, iy);
+
+		// retesselate adjacent tiles
+		AdjacentTileCoords adjacent_coords;
+		AdjacentTiles adjacent_tiles;
+		getAdjacentTileCoords(&adjacent_coords, x, y);
+		getAdjacentTiles(&adjacent_tiles, &adjacent_coords, x, y);
+		if (adjacent_tiles.left >= 0) retesselateTileByCoords(adjacent_coords.left.x, adjacent_coords.left.y);
+		if (adjacent_tiles.right >= 0) retesselateTileByCoords(adjacent_coords.right.x, adjacent_coords.right.y);
+		if (adjacent_tiles.topleft >= 0) retesselateTileByCoords(adjacent_coords.topleft.x, adjacent_coords.topleft.y);
+		if (adjacent_tiles.topright >= 0) retesselateTileByCoords(adjacent_coords.topright.x, adjacent_coords.topright.y);
+		if (adjacent_tiles.botleft >= 0) retesselateTileByCoords(adjacent_coords.botleft.x, adjacent_coords.botright.y);
+		if (adjacent_tiles.botright >= 0) retesselateTileByCoords(adjacent_coords.botright.x, adjacent_coords.botright.y);
 
 		m_edit_callback->tilemapModified();
 	}
@@ -844,4 +861,14 @@ void Tilemap::getAdjacentTileCoords(AdjacentTileCoords* tiles, int tx, int ty)
 		tiles->botright.x = tx;		// bottom right
 		tiles->botright.y = ty + 1;
 	}
+}
+
+void Tilemap::getAdjacentTiles(AdjacentTiles* tiles, AdjacentTileCoords* coords, int tx, int ty)
+{
+	tiles->left = get(coords->left.x, coords->left.y);
+	tiles->right = get(coords->right.x, coords->right.y);
+	tiles->topleft = get(coords->topleft.x, coords->topleft.y);
+	tiles->topright = get(coords->topright.x, coords->topright.y);
+	tiles->botleft = get(coords->botleft.x, coords->botleft.y);
+	tiles->botright = get(coords->botright.x, coords->botright.y);
 }
