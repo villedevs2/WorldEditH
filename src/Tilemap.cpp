@@ -81,8 +81,8 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 	AdjacentTileCoords adjacent_coords;
 	getAdjacentTileCoords(&adjacent_coords, (bucket->x * BUCKET_WIDTH) + bx, (bucket->y * BUCKET_HEIGHT) + by);
 	
-	//AdjacentTiles adjacent_tiles;
-	//getAdjacentTiles(&adjacent_tiles, &adjacent_coords);
+	AdjacentTiles adjacent_tiles;
+	getAdjacentTiles(&adjacent_tiles, &adjacent_coords);
 
 	int z_current = (bucket->map[(by * BUCKET_WIDTH) + bx] & Z_MASK) >> Z_SHIFT;
 
