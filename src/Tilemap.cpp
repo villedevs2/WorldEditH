@@ -78,42 +78,49 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 	assert(by >= 0 && by < BUCKET_HEIGHT);
 
 
-	AdjacentTileCoords adjacent_tiles;
-	getAdjacentTileCoords(&adjacent_tiles, (bucket->x * BUCKET_WIDTH) + bx, (bucket->y * BUCKET_HEIGHT) + by);
+	AdjacentTileCoords adjacent_coords;
+	getAdjacentTileCoords(&adjacent_coords, (bucket->x * BUCKET_WIDTH) + bx, (bucket->y * BUCKET_HEIGHT) + by);
+	
+	//AdjacentTiles adjacent_tiles;
+	//getAdjacentTiles(&adjacent_tiles, &adjacent_coords);
 
 	int z_current = (bucket->map[(by * BUCKET_WIDTH) + bx] & Z_MASK) >> Z_SHIFT;
 
-	int z_left = getZ(adjacent_tiles.left.x, adjacent_tiles.left.y);
-	int z_right = getZ(adjacent_tiles.right.x, adjacent_tiles.right.y);
-	int z_topleft = getZ(adjacent_tiles.topleft.x, adjacent_tiles.topleft.y);
-	int z_topright = getZ(adjacent_tiles.topright.x, adjacent_tiles.topright.y);
-	int z_botleft = getZ(adjacent_tiles.botleft.x, adjacent_tiles.botleft.y);
-	int z_botright = getZ(adjacent_tiles.botright.x, adjacent_tiles.botright.y);
+	int z_left = getZ(adjacent_coords.left.x, adjacent_coords.left.y);
+	int z_right = getZ(adjacent_coords.right.x, adjacent_coords.right.y);
+	int z_topleft = getZ(adjacent_coords.topleft.x, adjacent_coords.topleft.y);
+	int z_topright = getZ(adjacent_coords.topright.x, adjacent_coords.topright.y);
+	int z_botleft = getZ(adjacent_coords.botleft.x, adjacent_coords.botleft.y);
+	int z_botright = getZ(adjacent_coords.botright.x, adjacent_coords.botright.y);
 
-	int ao_tile = 0;
+	int floor_ao_tile = 0;
 
-	const int OCCLUSION_THRESHOLD = 10;
+	const int HEIGHT_OCCLUSION_THRESHOLD = 10;
 
-	if ((z_left - z_current) >= OCCLUSION_THRESHOLD)
-		ao_tile |= AmbientOcclusion::SIDE_LEFT;
-	if ((z_right - z_current) >= OCCLUSION_THRESHOLD)
-		ao_tile |= AmbientOcclusion::SIDE_RIGHT;
-	if ((z_topleft - z_current) >= OCCLUSION_THRESHOLD)
-		ao_tile |= AmbientOcclusion::SIDE_TOPLEFT;
-	if ((z_topright - z_current) >= OCCLUSION_THRESHOLD)
-		ao_tile |= AmbientOcclusion::SIDE_TOPRIGHT;
-	if ((z_botleft - z_current) >= OCCLUSION_THRESHOLD)
-		ao_tile |= AmbientOcclusion::SIDE_BOTLEFT;
-	if ((z_botright - z_current) >= OCCLUSION_THRESHOLD)
-		ao_tile |= AmbientOcclusion::SIDE_BOTRIGHT;
+	if ((z_left - z_current) >= HEIGHT_OCCLUSION_THRESHOLD)
+		floor_ao_tile |= AmbientOcclusion::SIDE_LEFT;
+	if ((z_right - z_current) >= HEIGHT_OCCLUSION_THRESHOLD)
+		floor_ao_tile |= AmbientOcclusion::SIDE_RIGHT;
+	if ((z_topleft - z_current) >= HEIGHT_OCCLUSION_THRESHOLD)
+		floor_ao_tile |= AmbientOcclusion::SIDE_TOPLEFT;
+	if ((z_topright - z_current) >= HEIGHT_OCCLUSION_THRESHOLD)
+		floor_ao_tile |= AmbientOcclusion::SIDE_TOPRIGHT;
+	if ((z_botleft - z_current) >= HEIGHT_OCCLUSION_THRESHOLD)
+		floor_ao_tile |= AmbientOcclusion::SIDE_BOTLEFT;
+	if ((z_botright - z_current) >= HEIGHT_OCCLUSION_THRESHOLD)
+		floor_ao_tile |= AmbientOcclusion::SIDE_BOTRIGHT;
 
-	int ao_tile_x = ao_tile % AmbientOcclusion::FLOOR_TILES_X;
-	int ao_tile_y = ao_tile / AmbientOcclusion::FLOOR_TILES_Y;
+	int floor_ao_tile_x = floor_ao_tile % AmbientOcclusion::FLOOR_TILES_X;
+	int floor_ao_tile_y = floor_ao_tile / AmbientOcclusion::FLOOR_TILES_Y;
 
-	float amb_tile_w = 1.0 / 8.0;
-	float amb_tile_h = 1.0 / 8.0;
-	float amb_tile_x = ao_tile_x * amb_tile_w;
-	float amb_tile_y = ao_tile_y * amb_tile_h;
+	float floor_amb_tile_w = 1.0 / 8.0;
+	float floor_amb_tile_h = 1.0 / 8.0;
+	float floor_amb_tile_x = floor_ao_tile_x * floor_amb_tile_w;
+	float floor_amb_tile_y = floor_ao_tile_y * floor_amb_tile_h;
+
+
+	int wall_ao_tile = 0;
+
 
 
 	VBO* vbo = bucket->tiles;
@@ -181,12 +188,12 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 		glm::vec3 uvab6 = glm::vec3(uva6.x, uva6.y, 0.5f);
 
 		// ambient occlusion map uvs
-		glm::vec2 amb_uv1 = glm::vec2(amb_tile_x, amb_tile_y + (0.3f * amb_tile_h));
-		glm::vec2 amb_uv2 = glm::vec2(amb_tile_x, amb_tile_y + (0.7f * amb_tile_h));
-		glm::vec2 amb_uv3 = glm::vec2(amb_tile_x + (0.5f * amb_tile_w), amb_tile_y + amb_tile_h);
-		glm::vec2 amb_uv4 = glm::vec2(amb_tile_x + amb_tile_w, amb_tile_y + (0.7f * amb_tile_h));
-		glm::vec2 amb_uv5 = glm::vec2(amb_tile_x + amb_tile_w, amb_tile_y + (0.3f * amb_tile_h));
-		glm::vec2 amb_uv6 = glm::vec2(amb_tile_x + (0.5f * amb_tile_w), amb_tile_y);
+		glm::vec2 amb_uv1 = glm::vec2(floor_amb_tile_x, floor_amb_tile_y + (0.3f * floor_amb_tile_h));
+		glm::vec2 amb_uv2 = glm::vec2(floor_amb_tile_x, floor_amb_tile_y + (0.7f * floor_amb_tile_h));
+		glm::vec2 amb_uv3 = glm::vec2(floor_amb_tile_x + (0.5f * floor_amb_tile_w), floor_amb_tile_y + floor_amb_tile_h);
+		glm::vec2 amb_uv4 = glm::vec2(floor_amb_tile_x + floor_amb_tile_w, floor_amb_tile_y + (0.7f * floor_amb_tile_h));
+		glm::vec2 amb_uv5 = glm::vec2(floor_amb_tile_x + floor_amb_tile_w, floor_amb_tile_y + (0.3f * floor_amb_tile_h));
+		glm::vec2 amb_uv6 = glm::vec2(floor_amb_tile_x + (0.5f * floor_amb_tile_w), floor_amb_tile_y);
 
 		glm::vec2 amb_uvcen = glm::mix(amb_uv1 + ((amb_uv5 - amb_uv1) * 0.5f), amb_uv2 + ((amb_uv4 - amb_uv2) * 0.5f), 0.5f);
 
@@ -684,7 +691,7 @@ void Tilemap::edit(int x, int y, int tile)
 	AdjacentTileCoords adjacent_coords;
 	AdjacentTiles adjacent_tiles;
 	getAdjacentTileCoords(&adjacent_coords, x, y);
-	getAdjacentTiles(&adjacent_tiles, &adjacent_coords, x, y);
+	getAdjacentTiles(&adjacent_tiles, &adjacent_coords);
 	if (adjacent_tiles.left >= 0) retesselateTileByCoords(adjacent_coords.left.x, adjacent_coords.left.y);
 	if (adjacent_tiles.right >= 0) retesselateTileByCoords(adjacent_coords.right.x, adjacent_coords.right.y);
 	if (adjacent_tiles.topleft >= 0) retesselateTileByCoords(adjacent_coords.topleft.x, adjacent_coords.topleft.y);
@@ -723,7 +730,7 @@ void Tilemap::editZ(int x, int y, int z)
 		AdjacentTileCoords adjacent_coords;
 		AdjacentTiles adjacent_tiles;
 		getAdjacentTileCoords(&adjacent_coords, x, y);
-		getAdjacentTiles(&adjacent_tiles, &adjacent_coords, x, y);
+		getAdjacentTiles(&adjacent_tiles, &adjacent_coords);
 		if (adjacent_tiles.left >= 0) retesselateTileByCoords(adjacent_coords.left.x, adjacent_coords.left.y);
 		if (adjacent_tiles.right >= 0) retesselateTileByCoords(adjacent_coords.right.x, adjacent_coords.right.y);
 		if (adjacent_tiles.topleft >= 0) retesselateTileByCoords(adjacent_coords.topleft.x, adjacent_coords.topleft.y);
@@ -863,7 +870,7 @@ void Tilemap::getAdjacentTileCoords(AdjacentTileCoords* tiles, int tx, int ty)
 	}
 }
 
-void Tilemap::getAdjacentTiles(AdjacentTiles* tiles, AdjacentTileCoords* coords, int tx, int ty)
+void Tilemap::getAdjacentTiles(AdjacentTiles* tiles, AdjacentTileCoords* coords)
 {
 	tiles->left = get(coords->left.x, coords->left.y);
 	tiles->right = get(coords->right.x, coords->right.y);

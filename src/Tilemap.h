@@ -102,7 +102,7 @@ private:
 	void tesselateAllByTile(int tile);
 	unsigned int getTileColor(unsigned int basecolor, float lum);
 	void getAdjacentTileCoords(AdjacentTileCoords* tiles, int tx, int ty);
-	void getAdjacentTiles(AdjacentTiles* tiles, AdjacentTileCoords* coords, int tx, int ty);
+	void getAdjacentTiles(AdjacentTiles* tiles, AdjacentTileCoords* coords);
 
 	float m_tile_width;
 	float m_tile_height;
