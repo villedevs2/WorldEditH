@@ -110,11 +110,11 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 	if ((z_botright - z_current) >= HEIGHT_OCCLUSION_THRESHOLD)
 		floor_ao_tile |= AmbientOcclusion::SIDE_BOTRIGHT;
 
-	int floor_ao_tile_x = floor_ao_tile % AmbientOcclusion::FLOOR_TILES_X;
-	int floor_ao_tile_y = floor_ao_tile / AmbientOcclusion::FLOOR_TILES_Y;
+	int floor_ao_tile_x = floor_ao_tile % AmbientOcclusion::NUM_FLOOR_TILES_X;
+	int floor_ao_tile_y = floor_ao_tile / AmbientOcclusion::NUM_FLOOR_TILES_Y;
 
-	float floor_amb_tile_w = 1.0 / 8.0;
-	float floor_amb_tile_h = 1.0 / 8.0;
+	float floor_amb_tile_w = 1.0 / (float)(AmbientOcclusion::NUM_TOTAL_TILES_X);
+	float floor_amb_tile_h = 1.0 / (float)(AmbientOcclusion::NUM_TOTAL_TILES_Y);
 	float floor_amb_tile_x = floor_ao_tile_x * floor_amb_tile_w;
 	float floor_amb_tile_y = floor_ao_tile_y * floor_amb_tile_h;
 
@@ -625,9 +625,10 @@ int Tilemap::get(int x, int y)
 	int bin = (y / BUCKET_HEIGHT) * (AREA_WIDTH / BUCKET_WIDTH) + (x / BUCKET_WIDTH);
 	if (m_buckets[bin] != nullptr)
 	{
+		Bucket* bucket = m_buckets[bin];
 		int ix = x % BUCKET_WIDTH;
 		int iy = y % BUCKET_HEIGHT;
-		return m_buckets[bin]->map[(iy * BUCKET_WIDTH) + ix] & TILE_MASK;
+		return bucket->map[(iy * BUCKET_WIDTH) + ix] & TILE_MASK;
 	}
 	else
 	{
@@ -643,9 +644,10 @@ int Tilemap::getZ(int x, int y)
 	int bin = (y / BUCKET_HEIGHT) * (AREA_WIDTH / BUCKET_WIDTH) + (x / BUCKET_WIDTH);
 	if (m_buckets[bin] != nullptr)
 	{
+		Bucket* bucket = m_buckets[bin];
 		int ix = x % BUCKET_WIDTH;
 		int iy = y % BUCKET_HEIGHT;
-		return (m_buckets[bin]->map[(iy * BUCKET_WIDTH) + ix] & Z_MASK) >> Z_SHIFT;
+		return (bucket->map[(iy * BUCKET_WIDTH) + ix] & Z_MASK) >> Z_SHIFT;
 	}
 	else
 	{
@@ -692,12 +694,12 @@ void Tilemap::edit(int x, int y, int tile)
 	AdjacentTiles adjacent_tiles;
 	getAdjacentTileCoords(&adjacent_coords, x, y);
 	getAdjacentTiles(&adjacent_tiles, &adjacent_coords);
-	if (adjacent_tiles.left >= 0) retesselateTileByCoords(adjacent_coords.left.x, adjacent_coords.left.y);
-	if (adjacent_tiles.right >= 0) retesselateTileByCoords(adjacent_coords.right.x, adjacent_coords.right.y);
-	if (adjacent_tiles.topleft >= 0) retesselateTileByCoords(adjacent_coords.topleft.x, adjacent_coords.topleft.y);
-	if (adjacent_tiles.topright >= 0) retesselateTileByCoords(adjacent_coords.topright.x, adjacent_coords.topright.y);
-	if (adjacent_tiles.botleft >= 0) retesselateTileByCoords(adjacent_coords.botleft.x, adjacent_coords.botright.y);
-	if (adjacent_tiles.botright >= 0) retesselateTileByCoords(adjacent_coords.botright.x, adjacent_coords.botright.y);
+	if (adjacent_tiles.left != TILE_EMPTY) retesselateTileByCoords(adjacent_coords.left.x, adjacent_coords.left.y);
+	if (adjacent_tiles.right != TILE_EMPTY) retesselateTileByCoords(adjacent_coords.right.x, adjacent_coords.right.y);
+	if (adjacent_tiles.topleft != TILE_EMPTY) retesselateTileByCoords(adjacent_coords.topleft.x, adjacent_coords.topleft.y);
+	if (adjacent_tiles.topright != TILE_EMPTY) retesselateTileByCoords(adjacent_coords.topright.x, adjacent_coords.topright.y);
+	if (adjacent_tiles.botleft != TILE_EMPTY) retesselateTileByCoords(adjacent_coords.botleft.x, adjacent_coords.botright.y);
+	if (adjacent_tiles.botright != TILE_EMPTY) retesselateTileByCoords(adjacent_coords.botright.x, adjacent_coords.botright.y);
 
 	if (m_buckets[bin]->coverage == 0)
 	{
@@ -731,12 +733,12 @@ void Tilemap::editZ(int x, int y, int z)
 		AdjacentTiles adjacent_tiles;
 		getAdjacentTileCoords(&adjacent_coords, x, y);
 		getAdjacentTiles(&adjacent_tiles, &adjacent_coords);
-		if (adjacent_tiles.left >= 0) retesselateTileByCoords(adjacent_coords.left.x, adjacent_coords.left.y);
-		if (adjacent_tiles.right >= 0) retesselateTileByCoords(adjacent_coords.right.x, adjacent_coords.right.y);
-		if (adjacent_tiles.topleft >= 0) retesselateTileByCoords(adjacent_coords.topleft.x, adjacent_coords.topleft.y);
-		if (adjacent_tiles.topright >= 0) retesselateTileByCoords(adjacent_coords.topright.x, adjacent_coords.topright.y);
-		if (adjacent_tiles.botleft >= 0) retesselateTileByCoords(adjacent_coords.botleft.x, adjacent_coords.botright.y);
-		if (adjacent_tiles.botright >= 0) retesselateTileByCoords(adjacent_coords.botright.x, adjacent_coords.botright.y);
+		if (adjacent_tiles.left != TILE_EMPTY) retesselateTileByCoords(adjacent_coords.left.x, adjacent_coords.left.y);
+		if (adjacent_tiles.right != TILE_EMPTY) retesselateTileByCoords(adjacent_coords.right.x, adjacent_coords.right.y);
+		if (adjacent_tiles.topleft != TILE_EMPTY) retesselateTileByCoords(adjacent_coords.topleft.x, adjacent_coords.topleft.y);
+		if (adjacent_tiles.topright != TILE_EMPTY) retesselateTileByCoords(adjacent_coords.topright.x, adjacent_coords.topright.y);
+		if (adjacent_tiles.botleft != TILE_EMPTY) retesselateTileByCoords(adjacent_coords.botleft.x, adjacent_coords.botright.y);
+		if (adjacent_tiles.botright != TILE_EMPTY) retesselateTileByCoords(adjacent_coords.botright.x, adjacent_coords.botright.y);
 
 		m_edit_callback->tilemapModified();
 	}
@@ -796,7 +798,7 @@ void Tilemap::retesselateTileByCoords(int tx, int ty)
 	if (tx >= 0 && tx < (AREA_WIDTH / BUCKET_WIDTH) &&
 		ty >= 0 && ty < (AREA_HEIGHT / BUCKET_HEIGHT))
 	{
-		Tilemap::Bucket* bucket = getTileBucket(tx, ty);
+		Tilemap::Bucket* bucket = getTileBucket(tx / BUCKET_WIDTH, ty / BUCKET_HEIGHT);
 		if (bucket != nullptr)
 		{
 			int bx = tx % BUCKET_WIDTH;

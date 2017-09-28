@@ -4,12 +4,13 @@ const float AmbientOcclusion::RAY_FALLOFF = 0.5f;
 
 AmbientOcclusion::AmbientOcclusion()
 {
-	m_map = new QImage(MAP_WIDTH*FLOOR_TILES_X, MAP_HEIGHT*(FLOOR_TILES_Y*2), QImage::Format_ARGB32);
+	m_map = nullptr;
 }
 
 AmbientOcclusion::~AmbientOcclusion()
 {
-	delete m_map;
+	if (m_map != nullptr)
+		delete m_map;
 }
 
 void AmbientOcclusion::makeRays(std::vector<glm::vec3>& rays, int numrays)
@@ -248,6 +249,8 @@ void AmbientOcclusion::calculateWall(int sides, int width, int height, int* buff
 
 void AmbientOcclusion::calculate()
 {
+	m_map = new QImage(MAP_WIDTH*NUM_FLOOR_TILES_X, MAP_HEIGHT*NUM_TOTAL_TILES_Y, QImage::Format_ARGB32);
+
 	int* floor_buffer[64];
 	int* wall_buffer[8];
 	for (int i = 0; i < 64; i++)
@@ -276,8 +279,8 @@ void AmbientOcclusion::calculate()
 	
 	for (int x = 0; x < 64; x++)
 	{
-		int ix = x % FLOOR_TILES_X;
-		int iy = x / FLOOR_TILES_Y;
+		int ix = x % NUM_FLOOR_TILES_X;
+		int iy = x / NUM_FLOOR_TILES_Y;
 		for (int j = 0; j < MAP_HEIGHT; j++)
 		{
 			QRgb* line = (QRgb*)m_map->scanLine(j+(iy*MAP_HEIGHT));
@@ -290,8 +293,8 @@ void AmbientOcclusion::calculate()
 
 	for (int x = 0; x < 8; x++)
 	{
-		int ix = x % FLOOR_TILES_X;
-		int iy = 64 / FLOOR_TILES_Y;
+		int ix = x % NUM_FLOOR_TILES_X;
+		int iy = 64 / NUM_FLOOR_TILES_Y;
 		for (int j = 0; j < MAP_HEIGHT; j++)
 		{
 			QRgb* line = (QRgb*)m_map->scanLine(j + (iy * MAP_HEIGHT));
@@ -321,5 +324,10 @@ QImage* AmbientOcclusion::getMap()
 
 bool AmbientOcclusion::load(QString name)
 {
-	return m_map->load(name, "PNG");
+	m_map = new QImage();
+	if (m_map->load(name, "PNG"))
+		return true;
+
+	delete m_map;
+	return false;
 }

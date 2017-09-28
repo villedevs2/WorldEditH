@@ -46,8 +46,11 @@ public:
 
 	static const int MAP_WIDTH = 32;
 	static const int MAP_HEIGHT = 32;
-	static const int FLOOR_TILES_X = 8;
-	static const int FLOOR_TILES_Y = 8;
+	static const int WALL_TILES_Y = 8;
+	static const int NUM_TOTAL_TILES_X = 8;
+	static const int NUM_TOTAL_TILES_Y = 16;
+	static const int NUM_FLOOR_TILES_X = 8;
+	static const int NUM_FLOOR_TILES_Y = 8;
 
 	static const float RAY_FALLOFF;
 
