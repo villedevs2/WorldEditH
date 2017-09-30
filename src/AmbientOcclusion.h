@@ -20,12 +20,25 @@
 class AmbientOcclusion
 {
 public:
+	struct AOFloorTile
+	{
+		glm::vec2 uv[6];
+		glm::vec2 center;
+	};
+
+	struct AOWallTile
+	{
+		glm::vec2 uv[4];
+	};
+
 	AmbientOcclusion();
 	~AmbientOcclusion();
 
 	void calculate();
 	QImage* getMap();
 	bool load(QString name);
+	const AmbientOcclusion::AOFloorTile& getFloorTile(int tile);
+	const AmbientOcclusion::AOWallTile& getWallTile(int tile);
 
 	enum Sides
 	{
@@ -61,4 +74,7 @@ private:
 	void calculateWall(int sides, int width, int height, int* buffer, std::vector<glm::vec3>& rays);
 
 	QImage* m_map;
+	
+	AOFloorTile m_floor_tiles[64];
+	AOWallTile m_wall_tiles[8];
 };

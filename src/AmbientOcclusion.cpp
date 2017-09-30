@@ -5,6 +5,42 @@ const float AmbientOcclusion::RAY_FALLOFF = 0.5f;
 AmbientOcclusion::AmbientOcclusion()
 {
 	m_map = nullptr;
+
+	for (int i = 0; i < 64; i++)
+	{
+		int ao_tile_x = i % NUM_FLOOR_TILES_X;
+		int ao_tile_y = i / NUM_FLOOR_TILES_Y;
+
+		float tile_w = 1.0f / (float)(NUM_TOTAL_TILES_X);
+		float tile_h = 1.0f / (float)(NUM_TOTAL_TILES_Y);
+		float tile_x = ao_tile_x * tile_w;
+		float tile_y = ao_tile_y * tile_h;
+
+		m_floor_tiles[i].uv[0] = glm::vec2(tile_x, tile_y + (0.3f * tile_h));
+		m_floor_tiles[i].uv[1] = glm::vec2(tile_x, tile_y + (0.7f * tile_h));
+		m_floor_tiles[i].uv[2] = glm::vec2(tile_x + (0.5f * tile_w), tile_y + tile_h);
+		m_floor_tiles[i].uv[3] = glm::vec2(tile_x + tile_w, tile_y + (0.7f * tile_h));
+		m_floor_tiles[i].uv[4] = glm::vec2(tile_x + tile_w, tile_y + (0.3f * tile_h));
+		m_floor_tiles[i].uv[5] = glm::vec2(tile_x + (0.5f * tile_w), tile_y);
+
+		m_floor_tiles[i].center = glm::vec2(tile_x + (tile_w * 0.5f), tile_y + (tile_h * 0.5f));
+	}
+
+	for (int i = 0; i < 8; i++)
+	{
+		int ao_tile_x = i % NUM_TOTAL_TILES_X;
+		int ao_tile_y = NUM_FLOOR_TILES_Y;
+
+		float tile_w = 1.0f / (float)(NUM_TOTAL_TILES_X);
+		float tile_h = 1.0f / (float)(NUM_TOTAL_TILES_Y);
+		float tile_x = ao_tile_x * tile_w;
+		float tile_y = ao_tile_y * tile_h;
+
+		m_wall_tiles[i].uv[0] = glm::vec2(tile_x, tile_y);
+		m_wall_tiles[i].uv[1] = glm::vec2(tile_x + tile_w, tile_y);
+		m_wall_tiles[i].uv[2] = glm::vec2(tile_x + tile_w, tile_y + tile_h);
+		m_wall_tiles[i].uv[3] = glm::vec2(tile_x, tile_y + tile_h);
+	}
 }
 
 AmbientOcclusion::~AmbientOcclusion()
@@ -330,4 +366,18 @@ bool AmbientOcclusion::load(QString name)
 
 	delete m_map;
 	return false;
+}
+
+const AmbientOcclusion::AOFloorTile& AmbientOcclusion::getFloorTile(int tile)
+{
+	assert(tile >= 0 && tile < 64);
+
+	return m_floor_tiles[tile];
+}
+
+const AmbientOcclusion::AOWallTile& AmbientOcclusion::getWallTile(int tile)
+{
+	assert(tile >= 0 && tile < 8);
+
+	return m_wall_tiles[tile];
 }
