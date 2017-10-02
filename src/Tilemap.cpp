@@ -86,8 +86,14 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 	AdjacentTiles adjacent_tiles;
 	getAdjacentTiles(&adjacent_tiles, &adjacent_coords);
 
+	
 	int z_current = (bucket->map[(by * BUCKET_WIDTH) + bx] & Z_MASK) >> Z_SHIFT;
 
+
+	AOSolution ao_solution;
+	makeAOSolution((bucket->x * BUCKET_WIDTH) + bx, (bucket->y * BUCKET_HEIGHT) + by, &ao_solution);
+
+	/*
 	int z_left = getZ(adjacent_coords.left.x, adjacent_coords.left.y);
 	int z_right = getZ(adjacent_coords.right.x, adjacent_coords.right.y);
 	int z_topleft = getZ(adjacent_coords.topleft.x, adjacent_coords.topleft.y);
@@ -111,7 +117,9 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 		floor_ao_tile |= AmbientOcclusion::SIDE_BOTLEFT;
 	if ((z_botright - z_current) >= HEIGHT_OCCLUSION_THRESHOLD)
 		floor_ao_tile |= AmbientOcclusion::SIDE_BOTRIGHT;
+		*/
 
+	/*
 	int floor_ao_tile_x = floor_ao_tile % AmbientOcclusion::NUM_FLOOR_TILES_X;
 	int floor_ao_tile_y = floor_ao_tile / AmbientOcclusion::NUM_FLOOR_TILES_Y;
 
@@ -119,9 +127,9 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 	float floor_amb_tile_h = 1.0 / (float)(AmbientOcclusion::NUM_TOTAL_TILES_Y);
 	float floor_amb_tile_x = floor_ao_tile_x * floor_amb_tile_w;
 	float floor_amb_tile_y = floor_ao_tile_y * floor_amb_tile_h;
+	*/
 
-
-	int wall_ao_tile = 0;
+	int wall_ao_tile[16];
 
 
 
@@ -173,14 +181,14 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 		glm::vec3 uva4 = glm::vec3(1.0f, 0.0f + (35.0 / 50.0), 1.0f);
 		glm::vec3 uva5 = glm::vec3(1.0f, 0.0f + (15.0 / 50.0), 1.0f);
 		glm::vec3 uva6 = glm::vec3(0.5f, 0.0f, 1.0f);
-		*/		
+		*/
 
 		glm::vec3 uva1 = glm::vec3(-1.0f, -0.4f, 0.0f);
-		glm::vec3 uva2 = glm::vec3(-1.0f,  0.4f, 0.0f);
-		glm::vec3 uva3 = glm::vec3( 0.0f,  1.0f, 0.0f);
-		glm::vec3 uva4 = glm::vec3( 1.0f,  0.4f, 0.0f);
-		glm::vec3 uva5 = glm::vec3( 1.0f, -0.4f, 0.0f);
-		glm::vec3 uva6 = glm::vec3( 0.0f, -1.0f, 0.0f);
+		glm::vec3 uva2 = glm::vec3(-1.0f, 0.4f, 0.0f);
+		glm::vec3 uva3 = glm::vec3(0.0f, 1.0f, 0.0f);
+		glm::vec3 uva4 = glm::vec3(1.0f, 0.4f, 0.0f);
+		glm::vec3 uva5 = glm::vec3(1.0f, -0.4f, 0.0f);
+		glm::vec3 uva6 = glm::vec3(0.0f, -1.0f, 0.0f);
 
 		glm::vec3 uvab1 = glm::vec3(uva1.x, uva1.y, 0.5f);
 		glm::vec3 uvab2 = glm::vec3(uva2.x, uva2.y, 0.5f);
@@ -190,24 +198,24 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 		glm::vec3 uvab6 = glm::vec3(uva6.x, uva6.y, 0.5f);
 
 		// ambient occlusion map uvs
-		/*
-		glm::vec2 amb_uv1 = glm::vec2(floor_amb_tile_x, floor_amb_tile_y + (0.3f * floor_amb_tile_h));
-		glm::vec2 amb_uv2 = glm::vec2(floor_amb_tile_x, floor_amb_tile_y + (0.7f * floor_amb_tile_h));
-		glm::vec2 amb_uv3 = glm::vec2(floor_amb_tile_x + (0.5f * floor_amb_tile_w), floor_amb_tile_y + floor_amb_tile_h);
-		glm::vec2 amb_uv4 = glm::vec2(floor_amb_tile_x + floor_amb_tile_w, floor_amb_tile_y + (0.7f * floor_amb_tile_h));
-		glm::vec2 amb_uv5 = glm::vec2(floor_amb_tile_x + floor_amb_tile_w, floor_amb_tile_y + (0.3f * floor_amb_tile_h));
-		glm::vec2 amb_uv6 = glm::vec2(floor_amb_tile_x + (0.5f * floor_amb_tile_w), floor_amb_tile_y);
+		const AmbientOcclusion::AOFloorTile& floor_tile = m_ao->getFloorTile(ao_solution.floor);
 
-		glm::vec2 amb_uvcen = glm::mix(amb_uv1 + ((amb_uv5 - amb_uv1) * 0.5f), amb_uv2 + ((amb_uv4 - amb_uv2) * 0.5f), 0.5f);
-		*/
-
-		const AmbientOcclusion::AOFloorTile& floor_tile = m_ao->getFloorTile(floor_ao_tile);
-
-		// TODOOOO
-		glm::vec2 amb_suv1 = glm::vec2(0.0f, 0.0375f);
-		glm::vec2 amb_suv2 = glm::vec2(0.125f, 0.0375f);
-		glm::vec2 amb_suv3 = glm::vec2(0.125f, 0.0875f);
-		glm::vec2 amb_suv4 = glm::vec2(0.0f, 0.0875f);
+		const AmbientOcclusion::AOWallTile& wall_tile_l = m_ao->getWallTile(ao_solution.wall_left);
+		const AmbientOcclusion::AOWallTile& wall_tile_tl = m_ao->getWallTile(ao_solution.wall_topleft);
+		const AmbientOcclusion::AOWallTile& wall_tile_tr = m_ao->getWallTile(ao_solution.wall_topright);
+		const AmbientOcclusion::AOWallTile& wall_tile_r = m_ao->getWallTile(ao_solution.wall_right);
+		const AmbientOcclusion::AOWallTile& wall_tile_br = m_ao->getWallTile(ao_solution.wall_botright);
+		const AmbientOcclusion::AOWallTile& wall_tile_bl = m_ao->getWallTile(ao_solution.wall_botleft);
+		const AmbientOcclusion::AOWallTile& wall_tile_sidel = m_ao->getWallTile(0);
+		const AmbientOcclusion::AOWallTile& wall_tile_sider = m_ao->getWallTile(0);
+		const AmbientOcclusion::AOWallTile& wall_tile_midtop = m_ao->getWallTile(0);
+		const AmbientOcclusion::AOWallTile& wall_tile_midbot = m_ao->getWallTile(0);
+		const AmbientOcclusion::AOWallTile& wall_tile_centtop = m_ao->getWallTile(0);
+		const AmbientOcclusion::AOWallTile& wall_tile_centbot = m_ao->getWallTile(0);
+		const AmbientOcclusion::AOWallTile& wall_tile_ctl = m_ao->getWallTile(0);
+		const AmbientOcclusion::AOWallTile& wall_tile_ctr = m_ao->getWallTile(0);
+		const AmbientOcclusion::AOWallTile& wall_tile_cbl = m_ao->getWallTile(0);
+		const AmbientOcclusion::AOWallTile& wall_tile_cbr = m_ao->getWallTile(0);
 
 
 
@@ -267,85 +275,85 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 		VBO::Vertex tv6(p6, uv6, floor_tile.uv[5], top_norm, tiledata->color);
 		VBO::Vertex tvcen(pcen, uvcen, floor_tile.center, top_norm, tiledata->color);
 
-		VBO::Vertex left_v1(p1, suv1, amb_suv1, glm::vec3(), tiledata->color);
-		VBO::Vertex left_v2(p2, suv2, amb_suv2, glm::vec3(), tiledata->color);
-		VBO::Vertex left_v3(bp2, suv3, amb_suv3, glm::vec3(), tiledata->color);
-		VBO::Vertex left_v4(bp1, suv4, amb_suv4, glm::vec3(), tiledata->color);
+		VBO::Vertex left_v1(p1, suv1, wall_tile_l.uv[0], glm::vec3(), tiledata->color);
+		VBO::Vertex left_v2(p2, suv2, wall_tile_l.uv[1], glm::vec3(), tiledata->color);
+		VBO::Vertex left_v3(bp2, suv3, wall_tile_l.uv[2], glm::vec3(), tiledata->color);
+		VBO::Vertex left_v4(bp1, suv4, wall_tile_l.uv[3], glm::vec3(), tiledata->color);
 
-		VBO::Vertex topleft_v1(p6, suv1, amb_suv1, glm::vec3(), tiledata->color);
-		VBO::Vertex topleft_v2(p1, suv2, amb_suv2, glm::vec3(), tiledata->color);
-		VBO::Vertex topleft_v3(bp1, suv3, amb_suv3, glm::vec3(), tiledata->color);
-		VBO::Vertex topleft_v4(bp6, suv4, amb_suv4, glm::vec3(), tiledata->color);
+		VBO::Vertex topleft_v1(p6, suv1, wall_tile_tl.uv[0], glm::vec3(), tiledata->color);
+		VBO::Vertex topleft_v2(p1, suv2, wall_tile_tl.uv[1], glm::vec3(), tiledata->color);
+		VBO::Vertex topleft_v3(bp1, suv3, wall_tile_tl.uv[2], glm::vec3(), tiledata->color);
+		VBO::Vertex topleft_v4(bp6, suv4, wall_tile_tl.uv[3], glm::vec3(), tiledata->color);
 
-		VBO::Vertex topright_v1(p5, suv1, amb_suv1, glm::vec3(), tiledata->color);
-		VBO::Vertex topright_v2(p6, suv2, amb_suv2, glm::vec3(), tiledata->color);
-		VBO::Vertex topright_v3(bp6, suv3, amb_suv3, glm::vec3(), tiledata->color);
-		VBO::Vertex topright_v4(bp5, suv4, amb_suv4, glm::vec3(), tiledata->color);
+		VBO::Vertex topright_v1(p5, suv1, wall_tile_tr.uv[0], glm::vec3(), tiledata->color);
+		VBO::Vertex topright_v2(p6, suv2, wall_tile_tr.uv[1], glm::vec3(), tiledata->color);
+		VBO::Vertex topright_v3(bp6, suv3, wall_tile_tr.uv[2], glm::vec3(), tiledata->color);
+		VBO::Vertex topright_v4(bp5, suv4, wall_tile_tr.uv[3], glm::vec3(), tiledata->color);
 
-		VBO::Vertex right_v1(p4, suv1, amb_suv1, glm::vec3(), tiledata->color);
-		VBO::Vertex right_v2(p5, suv2, amb_suv2, glm::vec3(), tiledata->color);
-		VBO::Vertex right_v3(bp5, suv3, amb_suv3, glm::vec3(), tiledata->color);
-		VBO::Vertex right_v4(bp4, suv4, amb_suv4, glm::vec3(), tiledata->color);
+		VBO::Vertex right_v1(p4, suv1, wall_tile_r.uv[0], glm::vec3(), tiledata->color);
+		VBO::Vertex right_v2(p5, suv2, wall_tile_r.uv[1], glm::vec3(), tiledata->color);
+		VBO::Vertex right_v3(bp5, suv3, wall_tile_r.uv[2], glm::vec3(), tiledata->color);
+		VBO::Vertex right_v4(bp4, suv4, wall_tile_r.uv[3], glm::vec3(), tiledata->color);
 
-		VBO::Vertex botright_v1(p3, suv1, amb_suv1, glm::vec3(), tiledata->color);
-		VBO::Vertex botright_v2(p4, suv2, amb_suv2, glm::vec3(), tiledata->color);
-		VBO::Vertex botright_v3(bp4, suv3, amb_suv3, glm::vec3(), tiledata->color);
-		VBO::Vertex botright_v4(bp3, suv4, amb_suv4, glm::vec3(), tiledata->color);
+		VBO::Vertex botright_v1(p3, suv1, wall_tile_br.uv[0], glm::vec3(), tiledata->color);
+		VBO::Vertex botright_v2(p4, suv2, wall_tile_br.uv[1], glm::vec3(), tiledata->color);
+		VBO::Vertex botright_v3(bp4, suv3, wall_tile_br.uv[2], glm::vec3(), tiledata->color);
+		VBO::Vertex botright_v4(bp3, suv4, wall_tile_br.uv[3], glm::vec3(), tiledata->color);
 
-		VBO::Vertex botleft_v1(p2, suv1, amb_suv1, glm::vec3(), tiledata->color);
-		VBO::Vertex botleft_v2(p3, suv2, amb_suv2, glm::vec3(), tiledata->color);
-		VBO::Vertex botleft_v3(bp3, suv3, amb_suv3, glm::vec3(), tiledata->color);
-		VBO::Vertex botleft_v4(bp2, suv4, amb_suv4, glm::vec3(), tiledata->color);
+		VBO::Vertex botleft_v1(p2, suv1, wall_tile_bl.uv[0], glm::vec3(), tiledata->color);
+		VBO::Vertex botleft_v2(p3, suv2, wall_tile_bl.uv[1], glm::vec3(), tiledata->color);
+		VBO::Vertex botleft_v3(bp3, suv3, wall_tile_bl.uv[2], glm::vec3(), tiledata->color);
+		VBO::Vertex botleft_v4(bp2, suv4, wall_tile_bl.uv[3], glm::vec3(), tiledata->color);
 
-		VBO::Vertex sideleft_v1(p3, suv1, amb_suv1, glm::vec3(), tiledata->color);
-		VBO::Vertex sideleft_v2(p6, suv2, amb_suv2, glm::vec3(), tiledata->color);
-		VBO::Vertex sideleft_v3(bp6, suv3, amb_suv3, glm::vec3(), tiledata->color);
-		VBO::Vertex sideleft_v4(bp3, suv4, amb_suv4, glm::vec3(), tiledata->color);
+		VBO::Vertex sideleft_v1(p3, suv1, wall_tile_sidel.uv[0], glm::vec3(), tiledata->color);
+		VBO::Vertex sideleft_v2(p6, suv2, wall_tile_sidel.uv[1], glm::vec3(), tiledata->color);
+		VBO::Vertex sideleft_v3(bp6, suv3, wall_tile_sidel.uv[2], glm::vec3(), tiledata->color);
+		VBO::Vertex sideleft_v4(bp3, suv4, wall_tile_sidel.uv[3], glm::vec3(), tiledata->color);
 
-		VBO::Vertex sideright_v1(p6, suv1, amb_suv1, glm::vec3(), tiledata->color);
-		VBO::Vertex sideright_v2(p3, suv2, amb_suv2, glm::vec3(), tiledata->color);
-		VBO::Vertex sideright_v3(bp3, suv3, amb_suv3, glm::vec3(), tiledata->color);
-		VBO::Vertex sideright_v4(bp6, suv4, amb_suv4, glm::vec3(), tiledata->color);
+		VBO::Vertex sideright_v1(p6, suv1, wall_tile_sider.uv[0], glm::vec3(), tiledata->color);
+		VBO::Vertex sideright_v2(p3, suv2, wall_tile_sider.uv[1], glm::vec3(), tiledata->color);
+		VBO::Vertex sideright_v3(bp3, suv3, wall_tile_sider.uv[2], glm::vec3(), tiledata->color);
+		VBO::Vertex sideright_v4(bp6, suv4, wall_tile_sider.uv[3], glm::vec3(), tiledata->color);
 
-		VBO::Vertex midtop_v1(p1, suv1, amb_suv1, glm::vec3(), tiledata->color);
-		VBO::Vertex midtop_v2(p5, suv2, amb_suv2, glm::vec3(), tiledata->color);
-		VBO::Vertex midtop_v3(bp5, suv3, amb_suv3, glm::vec3(), tiledata->color);
-		VBO::Vertex midtop_v4(bp1, suv4, amb_suv4, glm::vec3(), tiledata->color);
+		VBO::Vertex midtop_v1(p1, suv1, wall_tile_midtop.uv[0], glm::vec3(), tiledata->color);
+		VBO::Vertex midtop_v2(p5, suv2, wall_tile_midtop.uv[1], glm::vec3(), tiledata->color);
+		VBO::Vertex midtop_v3(bp5, suv3, wall_tile_midtop.uv[2], glm::vec3(), tiledata->color);
+		VBO::Vertex midtop_v4(bp1, suv4, wall_tile_midtop.uv[3], glm::vec3(), tiledata->color);
 
-		VBO::Vertex midbot_v1(p4, suv1, amb_suv1, glm::vec3(), tiledata->color);
-		VBO::Vertex midbot_v2(p2, suv2, amb_suv2, glm::vec3(), tiledata->color);
-		VBO::Vertex midbot_v3(bp2, suv3, amb_suv3, glm::vec3(), tiledata->color);
-		VBO::Vertex midbot_v4(bp4, suv4, amb_suv4, glm::vec3(), tiledata->color);
+		VBO::Vertex midbot_v1(p4, suv1, wall_tile_midbot.uv[0], glm::vec3(), tiledata->color);
+		VBO::Vertex midbot_v2(p2, suv2, wall_tile_midbot.uv[1], glm::vec3(), tiledata->color);
+		VBO::Vertex midbot_v3(bp2, suv3, wall_tile_midbot.uv[2], glm::vec3(), tiledata->color);
+		VBO::Vertex midbot_v4(bp4, suv4, wall_tile_midbot.uv[3], glm::vec3(), tiledata->color);
 
-		VBO::Vertex centtop_v1(p5, suv1, amb_suv1, glm::vec3(), tiledata->color);
-		VBO::Vertex centtop_v2(p1, suv2, amb_suv2, glm::vec3(), tiledata->color);
-		VBO::Vertex centtop_v3(bp1, suv3, amb_suv3, glm::vec3(), tiledata->color);
-		VBO::Vertex centtop_v4(bp5, suv4, amb_suv4, glm::vec3(), tiledata->color);
+		VBO::Vertex centtop_v1(p5, suv1, wall_tile_centtop.uv[0], glm::vec3(), tiledata->color);
+		VBO::Vertex centtop_v2(p1, suv2, wall_tile_centtop.uv[1], glm::vec3(), tiledata->color);
+		VBO::Vertex centtop_v3(bp1, suv3, wall_tile_centtop.uv[2], glm::vec3(), tiledata->color);
+		VBO::Vertex centtop_v4(bp5, suv4, wall_tile_centtop.uv[3], glm::vec3(), tiledata->color);
 
-		VBO::Vertex centbot_v1(p2, suv1, amb_suv1, glm::vec3(), tiledata->color);
-		VBO::Vertex centbot_v2(p4, suv2, amb_suv2, glm::vec3(), tiledata->color);
-		VBO::Vertex centbot_v3(bp4, suv3, amb_suv3, glm::vec3(), tiledata->color);
-		VBO::Vertex centbot_v4(bp2, suv4, amb_suv4, glm::vec3(), tiledata->color);
+		VBO::Vertex centbot_v1(p2, suv1, wall_tile_centbot.uv[0], glm::vec3(), tiledata->color);
+		VBO::Vertex centbot_v2(p4, suv2, wall_tile_centbot.uv[1], glm::vec3(), tiledata->color);
+		VBO::Vertex centbot_v3(bp4, suv3, wall_tile_centbot.uv[2], glm::vec3(), tiledata->color);
+		VBO::Vertex centbot_v4(bp2, suv4, wall_tile_centbot.uv[3], glm::vec3(), tiledata->color);
 
-		VBO::Vertex corntl_v1(p2, suv1, amb_suv1, glm::vec3(), tiledata->color);
-		VBO::Vertex corntl_v2(p6, suv2, amb_suv2, glm::vec3(), tiledata->color);
-		VBO::Vertex corntl_v3(bp6, suv3, amb_suv3, glm::vec3(), tiledata->color);
-		VBO::Vertex corntl_v4(bp2, suv4, amb_suv4, glm::vec3(), tiledata->color);
+		VBO::Vertex corntl_v1(p2, suv1, wall_tile_ctl.uv[0], glm::vec3(), tiledata->color);
+		VBO::Vertex corntl_v2(p6, suv2, wall_tile_ctl.uv[1], glm::vec3(), tiledata->color);
+		VBO::Vertex corntl_v3(bp6, suv3, wall_tile_ctl.uv[2], glm::vec3(), tiledata->color);
+		VBO::Vertex corntl_v4(bp2, suv4, wall_tile_ctl.uv[3], glm::vec3(), tiledata->color);
 
-		VBO::Vertex corntr_v1(p6, suv1, amb_suv1, glm::vec3(), tiledata->color);
-		VBO::Vertex corntr_v2(p4, suv2, amb_suv2, glm::vec3(), tiledata->color);
-		VBO::Vertex corntr_v3(bp4, suv3, amb_suv3, glm::vec3(), tiledata->color);
-		VBO::Vertex corntr_v4(bp6, suv4, amb_suv4, glm::vec3(), tiledata->color);
+		VBO::Vertex corntr_v1(p6, suv1, wall_tile_ctr.uv[0], glm::vec3(), tiledata->color);
+		VBO::Vertex corntr_v2(p4, suv2, wall_tile_ctr.uv[1], glm::vec3(), tiledata->color);
+		VBO::Vertex corntr_v3(bp4, suv3, wall_tile_ctr.uv[2], glm::vec3(), tiledata->color);
+		VBO::Vertex corntr_v4(bp6, suv4, wall_tile_ctr.uv[3], glm::vec3(), tiledata->color);
 
-		VBO::Vertex cornbl_v1(p3, suv1, amb_suv1, glm::vec3(), tiledata->color);
-		VBO::Vertex cornbl_v2(p1, suv2, amb_suv2, glm::vec3(), tiledata->color);
-		VBO::Vertex cornbl_v3(bp1, suv3, amb_suv3, glm::vec3(), tiledata->color);
-		VBO::Vertex cornbl_v4(bp3, suv4, amb_suv4, glm::vec3(), tiledata->color);
+		VBO::Vertex cornbl_v1(p3, suv1, wall_tile_cbl.uv[0], glm::vec3(), tiledata->color);
+		VBO::Vertex cornbl_v2(p1, suv2, wall_tile_cbl.uv[1], glm::vec3(), tiledata->color);
+		VBO::Vertex cornbl_v3(bp1, suv3, wall_tile_cbl.uv[2], glm::vec3(), tiledata->color);
+		VBO::Vertex cornbl_v4(bp3, suv4, wall_tile_cbl.uv[3], glm::vec3(), tiledata->color);
 
-		VBO::Vertex cornbr_v1(p5, suv1, amb_suv1, glm::vec3(), tiledata->color);
-		VBO::Vertex cornbr_v2(p3, suv2, amb_suv2, glm::vec3(), tiledata->color);
-		VBO::Vertex cornbr_v3(bp3, suv3, amb_suv3, glm::vec3(), tiledata->color);
-		VBO::Vertex cornbr_v4(bp5, suv4, amb_suv4, glm::vec3(), tiledata->color);
+		VBO::Vertex cornbr_v1(p5, suv1, wall_tile_cbr.uv[0], glm::vec3(), tiledata->color);
+		VBO::Vertex cornbr_v2(p3, suv2, wall_tile_cbr.uv[1], glm::vec3(), tiledata->color);
+		VBO::Vertex cornbr_v3(bp3, suv3, wall_tile_cbr.uv[2], glm::vec3(), tiledata->color);
+		VBO::Vertex cornbr_v4(bp5, suv4, wall_tile_cbr.uv[3], glm::vec3(), tiledata->color);
 
 		enum
 		{
@@ -886,4 +894,174 @@ void Tilemap::getAdjacentTiles(AdjacentTiles* tiles, AdjacentTileCoords* coords)
 	tiles->topright = get(coords->topright.x, coords->topright.y);
 	tiles->botleft = get(coords->botleft.x, coords->botleft.y);
 	tiles->botright = get(coords->botright.x, coords->botright.y);
+}
+
+
+void Tilemap::makeAOSolution(int tx, int ty, AOSolution* ao)
+{
+	const int HEIGHT_OCCLUSION_THRESHOLD = 10;
+
+	AdjacentTileCoords coords;
+	getAdjacentTileCoords(&coords, tx, ty);
+
+	AdjacentTiles tiles;
+	getAdjacentTiles(&tiles, &coords);
+
+	int current_z = getZ(tx, ty);
+
+	int floor_bits = 0;
+
+	int wall_left_bits = 0;
+	int wall_right_bits = 0;
+	int wall_topleft_bits = 0;
+	int wall_topright_bits = 0;
+	int wall_botleft_bits = 0;
+	int wall_botright_bits = 0;
+
+	// left
+	{
+		int z = getZ(coords.left.x, coords.left.y);
+		if ((z - current_z) >= HEIGHT_OCCLUSION_THRESHOLD)
+			floor_bits |= AmbientOcclusion::SIDE_LEFT;
+
+		if (tiles.topleft != TILE_EMPTY)
+		{
+			Tileset::Tile* tile = m_tileset->getTile(tiles.topleft);
+			if (tile->side_bits & Tileset::SIDE_BOT_LEFT)
+				wall_left_bits |= AmbientOcclusion::WALLSIDE_RIGHT;
+		}
+		if (tiles.botleft != TILE_EMPTY)
+		{
+			Tileset::Tile* tile = m_tileset->getTile(tiles.botleft);
+			if (tile->side_bits & Tileset::SIDE_TOP_LEFT)
+				wall_left_bits |= AmbientOcclusion::WALLSIDE_LEFT;
+		}
+		if (tiles.left != TILE_EMPTY)
+		{
+			wall_left_bits |= AmbientOcclusion::WALLSIDE_FLOOR;
+		}
+	}
+	// right
+	{
+		int z = getZ(coords.right.x, coords.right.y);
+		if ((z - current_z) >= HEIGHT_OCCLUSION_THRESHOLD)
+			floor_bits |= AmbientOcclusion::SIDE_RIGHT;
+
+		if (tiles.topright != TILE_EMPTY)
+		{
+			Tileset::Tile* tile = m_tileset->getTile(tiles.topright);
+			if (tile->side_bits & Tileset::SIDE_BOT_RIGHT)
+				wall_right_bits |= AmbientOcclusion::WALLSIDE_LEFT;
+		}
+		if (tiles.botright != TILE_EMPTY)
+		{
+			Tileset::Tile* tile = m_tileset->getTile(tiles.botright);
+			if (tile->side_bits & Tileset::SIDE_TOP_RIGHT)
+				wall_right_bits |= AmbientOcclusion::WALLSIDE_RIGHT;
+		}
+		if (tiles.right != TILE_EMPTY)
+		{
+			wall_right_bits |= AmbientOcclusion::WALLSIDE_FLOOR;
+		}
+	}
+	// top left
+	{
+		int z = getZ(coords.topleft.x, coords.topleft.y);
+		if ((z - current_z) >= HEIGHT_OCCLUSION_THRESHOLD)
+			floor_bits |= AmbientOcclusion::SIDE_TOPLEFT;
+
+		if (tiles.left != TILE_EMPTY)
+		{
+			Tileset::Tile* tile = m_tileset->getTile(tiles.left);
+			if (tile->side_bits & Tileset::SIDE_TOP_RIGHT)
+				wall_topleft_bits |= AmbientOcclusion::WALLSIDE_LEFT;
+		}
+		if (tiles.topright != TILE_EMPTY)
+		{
+			Tileset::Tile* tile = m_tileset->getTile(tiles.topright);
+			if (tile->side_bits & Tileset::SIDE_LEFT)
+				wall_topleft_bits |= AmbientOcclusion::WALLSIDE_RIGHT;
+		}
+		if (tiles.topleft != TILE_EMPTY)
+		{
+			wall_topleft_bits |= AmbientOcclusion::WALLSIDE_FLOOR;
+		}
+	}
+	// top right
+	{
+		int z = getZ(coords.topright.x, coords.topright.y);
+		if ((z - current_z) >= HEIGHT_OCCLUSION_THRESHOLD)
+			floor_bits |= AmbientOcclusion::SIDE_TOPRIGHT;
+
+		if (tiles.topleft != TILE_EMPTY)
+		{
+			Tileset::Tile* tile = m_tileset->getTile(tiles.topleft);
+			if (tile->side_bits & Tileset::SIDE_RIGHT)
+				wall_topright_bits |= AmbientOcclusion::WALLSIDE_LEFT;
+		}
+		if (tiles.right != TILE_EMPTY)
+		{
+			Tileset::Tile* tile = m_tileset->getTile(tiles.right);
+			if (tile->side_bits & Tileset::SIDE_TOP_LEFT)
+				wall_topright_bits |= AmbientOcclusion::WALLSIDE_RIGHT;
+		}
+		if (tiles.topright != TILE_EMPTY)
+		{
+			wall_topright_bits |= AmbientOcclusion::WALLSIDE_FLOOR;
+		}
+	}
+	// bottom left
+	{
+		int z = getZ(coords.botleft.x, coords.botleft.y);
+		if ((z - current_z) >= HEIGHT_OCCLUSION_THRESHOLD)
+			floor_bits |= AmbientOcclusion::SIDE_BOTLEFT;
+
+		if (tiles.botright != TILE_EMPTY)
+		{
+			Tileset::Tile* tile = m_tileset->getTile(tiles.botright);
+			if (tile->side_bits & Tileset::SIDE_LEFT)
+				wall_botleft_bits |= AmbientOcclusion::WALLSIDE_LEFT;
+		}
+		if (tiles.left != TILE_EMPTY)
+		{
+			Tileset::Tile* tile = m_tileset->getTile(tiles.left);
+			if (tile->side_bits & Tileset::SIDE_BOT_RIGHT)
+				wall_botleft_bits |= AmbientOcclusion::WALLSIDE_RIGHT;
+		}
+		if (tiles.botleft != TILE_EMPTY)
+		{
+			wall_botleft_bits |= AmbientOcclusion::WALLSIDE_FLOOR;
+		}
+	}
+	// bottom right
+	{
+		int z = getZ(coords.botright.x, coords.botright.y);
+		if ((z - current_z) >= HEIGHT_OCCLUSION_THRESHOLD)
+			floor_bits |= AmbientOcclusion::SIDE_BOTRIGHT;
+
+		if (tiles.right != TILE_EMPTY)
+		{
+			Tileset::Tile* tile = m_tileset->getTile(tiles.right);
+			if (tile->side_bits & Tileset::SIDE_BOT_LEFT)
+				wall_botright_bits |= AmbientOcclusion::WALLSIDE_LEFT;
+		}
+		if (tiles.botleft != TILE_EMPTY)
+		{
+			Tileset::Tile* tile = m_tileset->getTile(tiles.botleft);
+			if (tile->side_bits & Tileset::SIDE_RIGHT)
+				wall_botright_bits |= AmbientOcclusion::WALLSIDE_RIGHT;
+		}
+		if (tiles.botright != TILE_EMPTY)
+		{
+			wall_botright_bits |= AmbientOcclusion::WALLSIDE_FLOOR;
+		}
+	}
+
+	ao->floor = floor_bits;
+	ao->wall_left = wall_left_bits;
+	ao->wall_right = wall_right_bits;
+	ao->wall_topleft = wall_topleft_bits;
+	ao->wall_topright = wall_topright_bits;
+	ao->wall_botleft = wall_botleft_bits;
+	ao->wall_botright = wall_botright_bits;
 }

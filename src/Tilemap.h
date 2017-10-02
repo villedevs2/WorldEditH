@@ -94,6 +94,17 @@ private:
 		int botright;
 	};
 
+	struct AOSolution
+	{
+		int floor;
+		int wall_left;
+		int wall_right;
+		int wall_topleft;
+		int wall_topright;
+		int wall_botleft;
+		int wall_botright;
+	};
+
 
 	void tesselateTile(Bucket* bucket, int bx, int by);
 	void retesselateTileByCoords(int tx, int ty);
@@ -103,6 +114,7 @@ private:
 	unsigned int getTileColor(unsigned int basecolor, float lum);
 	void getAdjacentTileCoords(AdjacentTileCoords* tiles, int tx, int ty);
 	void getAdjacentTiles(AdjacentTiles* tiles, AdjacentTileCoords* coords);
+	void makeAOSolution(int tx, int ty, AOSolution* ao);
 
 	float m_tile_width;
 	float m_tile_height;
