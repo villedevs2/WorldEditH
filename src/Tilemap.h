@@ -54,7 +54,7 @@ public:
 
 
 
-	Tilemap(Tileset* tileset, Tilemap::EditCallback* edit_callback, float zbase, float zbase_height, unsigned int flags);
+	Tilemap(Tileset* tileset, Tilemap::EditCallback* edit_callback, float zbase, float zbase_height, unsigned int flags, AmbientOcclusion* ao);
 	~Tilemap();
 
 	void tileChanged(int index);
@@ -115,4 +115,6 @@ private:
 
 	Tileset* m_tileset;
 	Tilemap::EditCallback* m_edit_callback;
+
+	AmbientOcclusion* m_ao;
 };

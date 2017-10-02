@@ -7,17 +7,19 @@ MainWindow::MainWindow()
 {
 	m_texture = new QImage();
 
-	m_level = new Level();
-	readConfigFile(tr("config.xml"));
-
-	QWidget *central_widget = new QWidget();
-
 	m_ambient_occlusion = new AmbientOcclusion();
 	if (!m_ambient_occlusion->load("ambient.png"))
 	{
 		m_ambient_occlusion->calculate();
 	}
 	m_ambient_map = m_ambient_occlusion->getMap();
+
+	m_level = new Level(m_ambient_occlusion);
+	readConfigFile(tr("config.xml"));
+
+	QWidget *central_widget = new QWidget();
+
+
 
 	// main components
 	// ---------------------------------------------------------------------------

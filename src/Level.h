@@ -8,6 +8,7 @@
 #include "Tilemap.h"
 #include "PolygonDef.h"
 #include "Tileset.h"
+#include "AmbientOcclusion.h"
 
 class Level : public Tilemap::EditCallback, Tileset::EditCallback
 {
@@ -103,7 +104,7 @@ public:
 		unsigned int color;
 	};
 
-	Level();
+	Level(AmbientOcclusion* ao);
 	~Level();
 
 	void tilemapModified();
@@ -153,4 +154,6 @@ private:
 
 	Tileset* m_tileset;
 	Tilemap* m_tilemap[Level::NUM_TILEMAP_TYPES];
+
+	AmbientOcclusion* m_ao;
 };

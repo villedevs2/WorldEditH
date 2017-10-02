@@ -1,7 +1,9 @@
 #include "Tilemap.h"
 
-Tilemap::Tilemap(Tileset* tileset, Tilemap::EditCallback* edit_callback, float zbase, float zbase_height, unsigned int flags)
+Tilemap::Tilemap(Tileset* tileset, Tilemap::EditCallback* edit_callback, float zbase, float zbase_height, unsigned int flags, AmbientOcclusion* ao)
 {
+	m_ao = ao;
+
 	m_tileset = tileset;
 	m_edit_callback = edit_callback;
 
@@ -188,6 +190,7 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 		glm::vec3 uvab6 = glm::vec3(uva6.x, uva6.y, 0.5f);
 
 		// ambient occlusion map uvs
+		/*
 		glm::vec2 amb_uv1 = glm::vec2(floor_amb_tile_x, floor_amb_tile_y + (0.3f * floor_amb_tile_h));
 		glm::vec2 amb_uv2 = glm::vec2(floor_amb_tile_x, floor_amb_tile_y + (0.7f * floor_amb_tile_h));
 		glm::vec2 amb_uv3 = glm::vec2(floor_amb_tile_x + (0.5f * floor_amb_tile_w), floor_amb_tile_y + floor_amb_tile_h);
@@ -196,6 +199,9 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 		glm::vec2 amb_uv6 = glm::vec2(floor_amb_tile_x + (0.5f * floor_amb_tile_w), floor_amb_tile_y);
 
 		glm::vec2 amb_uvcen = glm::mix(amb_uv1 + ((amb_uv5 - amb_uv1) * 0.5f), amb_uv2 + ((amb_uv4 - amb_uv2) * 0.5f), 0.5f);
+		*/
+
+		const AmbientOcclusion::AOFloorTile& floor_tile = m_ao->getFloorTile(floor_ao_tile);
 
 		// TODOOOO
 		glm::vec2 amb_suv1 = glm::vec2(0.0f, 0.0375f);
@@ -253,13 +259,13 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 
 		glm::vec3 top_norm(0.0f, 0.0f, 1.0f);
 
-		VBO::Vertex tv1(p1, uv1, amb_uv1, top_norm, tiledata->color);
-		VBO::Vertex tv2(p2, uv2, amb_uv2, top_norm, tiledata->color);
-		VBO::Vertex tv3(p3, uv3, amb_uv3, top_norm, tiledata->color);
-		VBO::Vertex tv4(p4, uv4, amb_uv4, top_norm, tiledata->color);
-		VBO::Vertex tv5(p5, uv5, amb_uv5, top_norm, tiledata->color);
-		VBO::Vertex tv6(p6, uv6, amb_uv6, top_norm, tiledata->color);
-		VBO::Vertex tvcen(pcen, uvcen, amb_uvcen, top_norm, tiledata->color);
+		VBO::Vertex tv1(p1, uv1, floor_tile.uv[0], top_norm, tiledata->color);
+		VBO::Vertex tv2(p2, uv2, floor_tile.uv[1], top_norm, tiledata->color);
+		VBO::Vertex tv3(p3, uv3, floor_tile.uv[2], top_norm, tiledata->color);
+		VBO::Vertex tv4(p4, uv4, floor_tile.uv[3], top_norm, tiledata->color);
+		VBO::Vertex tv5(p5, uv5, floor_tile.uv[4], top_norm, tiledata->color);
+		VBO::Vertex tv6(p6, uv6, floor_tile.uv[5], top_norm, tiledata->color);
+		VBO::Vertex tvcen(pcen, uvcen, floor_tile.center, top_norm, tiledata->color);
 
 		VBO::Vertex left_v1(p1, suv1, amb_suv1, glm::vec3(), tiledata->color);
 		VBO::Vertex left_v2(p2, suv2, amb_suv2, glm::vec3(), tiledata->color);
