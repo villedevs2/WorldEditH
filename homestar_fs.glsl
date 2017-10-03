@@ -21,4 +21,5 @@ void main()
 	vec4 ao = vec4(aotex.g, aotex.g, aotex.g, 1);
 
 	gl_FragColor = (vec4(col, col, col, 1) + ambient) * ao * (texture2D(s_color_texture, v_texcoord) + vec4(color, 0));
+	//gl_FragColor = (vec4(col, col, col, 1) + ambient) * ao;
 }
