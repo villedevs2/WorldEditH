@@ -24,7 +24,7 @@ public:
 	struct Bucket
 	{
 		unsigned int* map;
-		VBO* tiles;
+		VBO<HSVertex>* tiles;
 		uint64_t coverage;
 		int x;
 		int y;

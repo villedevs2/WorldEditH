@@ -8,7 +8,7 @@ TilePreview::TilePreview(QWidget* parent, Level* level) : QGLWidget(QGLFormat(QG
 	setMinimumHeight(300);
 	setMinimumHeight(300);
 
-	m_vbo = new VBO(20);
+	m_vbo = new VBO<HSVertex>(20);
 
 	m_top_height = 1.0f;
 	m_color = 0xff808080;
@@ -41,10 +41,12 @@ void TilePreview::initializeGL()
 
 	m_standard_shader.position = m_standard_program->attributeLocation("a_position");
 	m_standard_shader.tex_coord = m_standard_program->attributeLocation("a_texcoord");
+	m_standard_shader.amb_coord = m_standard_program->attributeLocation("a_ambcoord");
 	m_standard_shader.color = m_standard_program->attributeLocation("a_color");
 	m_standard_shader.normal = m_standard_program->attributeLocation("a_normal");
 	m_standard_shader.vp_matrix = m_standard_program->uniformLocation("m_vp_matrix");
 	m_standard_shader.v_matrix = m_standard_program->uniformLocation("m_v_matrix");
+	m_standard_shader.light = m_standard_program->uniformLocation("u_light");
 }
 
 QString TilePreview::loadShader(QString filename)
@@ -117,7 +119,7 @@ void TilePreview::paintGL()
 	//glBindTexture(GL_TEXTURE_CUBE_MAP, m_env_tex);
 
 	float* geo = (float*)m_vbo->getPointer();
-	int vbsize = m_vbo->getVertexSize();
+	int vbsize = sizeof(HSVertex);
 
 	m_standard_program->enableAttributeArray(m_standard_shader.position);
 	m_standard_program->setAttributeArray(m_standard_shader.position, (GLfloat*)geo, 3, vbsize);
@@ -323,93 +325,93 @@ void TilePreview::updateGeo(const glm::vec2* top_points, const glm::vec2* side_p
 
 	glm::vec3 top_norm(0.0f, 0.0f, 1.0f);
 
-	VBO::Vertex tv1(p1, uv1, amb_uv1, top_norm, color);
-	VBO::Vertex tv2(p2, uv2, amb_uv2, top_norm, color);
-	VBO::Vertex tv3(p3, uv3, amb_uv3, top_norm, color);
-	VBO::Vertex tv4(p4, uv4, amb_uv4, top_norm, color);
-	VBO::Vertex tv5(p5, uv5, amb_uv5, top_norm, color);
-	VBO::Vertex tv6(p6, uv6, amb_uv6, top_norm, color);
-	VBO::Vertex tvcen(pcen, uvcen, amb_uvcen, top_norm, color);
+	HSVertex tv1(p1, uv1, amb_uv1, top_norm, color);
+	HSVertex tv2(p2, uv2, amb_uv2, top_norm, color);
+	HSVertex tv3(p3, uv3, amb_uv3, top_norm, color);
+	HSVertex tv4(p4, uv4, amb_uv4, top_norm, color);
+	HSVertex tv5(p5, uv5, amb_uv5, top_norm, color);
+	HSVertex tv6(p6, uv6, amb_uv6, top_norm, color);
+	HSVertex tvcen(pcen, uvcen, amb_uvcen, top_norm, color);
 
-	VBO::Vertex left_v1(p1, suv1, amb_suv1, glm::vec3(), color);
-	VBO::Vertex left_v2(p2, suv2, amb_suv2, glm::vec3(), color);
-	VBO::Vertex left_v3(bp2, suv3, amb_suv3, glm::vec3(), color);
-	VBO::Vertex left_v4(bp1, suv4, amb_suv4, glm::vec3(), color);
+	HSVertex left_v1(p1, suv1, amb_suv1, glm::vec3(), color);
+	HSVertex left_v2(p2, suv2, amb_suv2, glm::vec3(), color);
+	HSVertex left_v3(bp2, suv3, amb_suv3, glm::vec3(), color);
+	HSVertex left_v4(bp1, suv4, amb_suv4, glm::vec3(), color);
 
-	VBO::Vertex topleft_v1(p6, suv1, amb_suv1, glm::vec3(), color);
-	VBO::Vertex topleft_v2(p1, suv2, amb_suv2, glm::vec3(), color);
-	VBO::Vertex topleft_v3(bp1, suv3, amb_suv3, glm::vec3(), color);
-	VBO::Vertex topleft_v4(bp6, suv4, amb_suv4, glm::vec3(), color);
+	HSVertex topleft_v1(p6, suv1, amb_suv1, glm::vec3(), color);
+	HSVertex topleft_v2(p1, suv2, amb_suv2, glm::vec3(), color);
+	HSVertex topleft_v3(bp1, suv3, amb_suv3, glm::vec3(), color);
+	HSVertex topleft_v4(bp6, suv4, amb_suv4, glm::vec3(), color);
 
-	VBO::Vertex topright_v1(p5, suv1, amb_suv1, glm::vec3(), color);
-	VBO::Vertex topright_v2(p6, suv2, amb_suv2, glm::vec3(), color);
-	VBO::Vertex topright_v3(bp6, suv3, amb_suv3, glm::vec3(), color);
-	VBO::Vertex topright_v4(bp5, suv4, amb_suv4, glm::vec3(), color);
+	HSVertex topright_v1(p5, suv1, amb_suv1, glm::vec3(), color);
+	HSVertex topright_v2(p6, suv2, amb_suv2, glm::vec3(), color);
+	HSVertex topright_v3(bp6, suv3, amb_suv3, glm::vec3(), color);
+	HSVertex topright_v4(bp5, suv4, amb_suv4, glm::vec3(), color);
 
-	VBO::Vertex right_v1(p4, suv1, amb_suv1, glm::vec3(), color);
-	VBO::Vertex right_v2(p5, suv2, amb_suv2, glm::vec3(), color);
-	VBO::Vertex right_v3(bp5, suv3, amb_suv3, glm::vec3(), color);
-	VBO::Vertex right_v4(bp4, suv4, amb_suv4, glm::vec3(), color);
+	HSVertex right_v1(p4, suv1, amb_suv1, glm::vec3(), color);
+	HSVertex right_v2(p5, suv2, amb_suv2, glm::vec3(), color);
+	HSVertex right_v3(bp5, suv3, amb_suv3, glm::vec3(), color);
+	HSVertex right_v4(bp4, suv4, amb_suv4, glm::vec3(), color);
 
-	VBO::Vertex botright_v1(p3, suv1, amb_suv1, glm::vec3(), color);
-	VBO::Vertex botright_v2(p4, suv2, amb_suv2, glm::vec3(), color);
-	VBO::Vertex botright_v3(bp4, suv3, amb_suv3, glm::vec3(), color);
-	VBO::Vertex botright_v4(bp3, suv4, amb_suv4, glm::vec3(), color);
+	HSVertex botright_v1(p3, suv1, amb_suv1, glm::vec3(), color);
+	HSVertex botright_v2(p4, suv2, amb_suv2, glm::vec3(), color);
+	HSVertex botright_v3(bp4, suv3, amb_suv3, glm::vec3(), color);
+	HSVertex botright_v4(bp3, suv4, amb_suv4, glm::vec3(), color);
 
-	VBO::Vertex botleft_v1(p2, suv1, amb_suv1, glm::vec3(), color);
-	VBO::Vertex botleft_v2(p3, suv2, amb_suv2, glm::vec3(), color);
-	VBO::Vertex botleft_v3(bp3, suv3, amb_suv3, glm::vec3(), color);
-	VBO::Vertex botleft_v4(bp2, suv4, amb_suv4, glm::vec3(), color);
+	HSVertex botleft_v1(p2, suv1, amb_suv1, glm::vec3(), color);
+	HSVertex botleft_v2(p3, suv2, amb_suv2, glm::vec3(), color);
+	HSVertex botleft_v3(bp3, suv3, amb_suv3, glm::vec3(), color);
+	HSVertex botleft_v4(bp2, suv4, amb_suv4, glm::vec3(), color);
 
-	VBO::Vertex sideleft_v1(p3, suv1, amb_suv1, glm::vec3(), color);
-	VBO::Vertex sideleft_v2(p6, suv2, amb_suv2, glm::vec3(), color);
-	VBO::Vertex sideleft_v3(bp6, suv3, amb_suv3, glm::vec3(), color);
-	VBO::Vertex sideleft_v4(bp3, suv4, amb_suv4, glm::vec3(), color);
+	HSVertex sideleft_v1(p3, suv1, amb_suv1, glm::vec3(), color);
+	HSVertex sideleft_v2(p6, suv2, amb_suv2, glm::vec3(), color);
+	HSVertex sideleft_v3(bp6, suv3, amb_suv3, glm::vec3(), color);
+	HSVertex sideleft_v4(bp3, suv4, amb_suv4, glm::vec3(), color);
 
-	VBO::Vertex sideright_v1(p6, suv1, amb_suv1, glm::vec3(), color);
-	VBO::Vertex sideright_v2(p3, suv2, amb_suv2, glm::vec3(), color);
-	VBO::Vertex sideright_v3(bp3, suv3, amb_suv3, glm::vec3(), color);
-	VBO::Vertex sideright_v4(bp6, suv4, amb_suv4, glm::vec3(), color);
+	HSVertex sideright_v1(p6, suv1, amb_suv1, glm::vec3(), color);
+	HSVertex sideright_v2(p3, suv2, amb_suv2, glm::vec3(), color);
+	HSVertex sideright_v3(bp3, suv3, amb_suv3, glm::vec3(), color);
+	HSVertex sideright_v4(bp6, suv4, amb_suv4, glm::vec3(), color);
 
-	VBO::Vertex midtop_v1(p1, suv1, amb_suv1, glm::vec3(), color);
-	VBO::Vertex midtop_v2(p5, suv2, amb_suv2, glm::vec3(), color);
-	VBO::Vertex midtop_v3(bp5, suv3, amb_suv3, glm::vec3(), color);
-	VBO::Vertex midtop_v4(bp1, suv4, amb_suv4, glm::vec3(), color);
+	HSVertex midtop_v1(p1, suv1, amb_suv1, glm::vec3(), color);
+	HSVertex midtop_v2(p5, suv2, amb_suv2, glm::vec3(), color);
+	HSVertex midtop_v3(bp5, suv3, amb_suv3, glm::vec3(), color);
+	HSVertex midtop_v4(bp1, suv4, amb_suv4, glm::vec3(), color);
 
-	VBO::Vertex midbot_v1(p4, suv1, amb_suv1, glm::vec3(), color);
-	VBO::Vertex midbot_v2(p2, suv2, amb_suv2, glm::vec3(), color);
-	VBO::Vertex midbot_v3(bp2, suv3, amb_suv3, glm::vec3(), color);
-	VBO::Vertex midbot_v4(bp4, suv4, amb_suv4, glm::vec3(), color);
+	HSVertex midbot_v1(p4, suv1, amb_suv1, glm::vec3(), color);
+	HSVertex midbot_v2(p2, suv2, amb_suv2, glm::vec3(), color);
+	HSVertex midbot_v3(bp2, suv3, amb_suv3, glm::vec3(), color);
+	HSVertex midbot_v4(bp4, suv4, amb_suv4, glm::vec3(), color);
 
-	VBO::Vertex centtop_v1(p5, suv1, amb_suv1, glm::vec3(), color);
-	VBO::Vertex centtop_v2(p1, suv2, amb_suv2, glm::vec3(), color);
-	VBO::Vertex centtop_v3(bp1, suv3, amb_suv3, glm::vec3(), color);
-	VBO::Vertex centtop_v4(bp5, suv4, amb_suv4, glm::vec3(), color);
+	HSVertex centtop_v1(p5, suv1, amb_suv1, glm::vec3(), color);
+	HSVertex centtop_v2(p1, suv2, amb_suv2, glm::vec3(), color);
+	HSVertex centtop_v3(bp1, suv3, amb_suv3, glm::vec3(), color);
+	HSVertex centtop_v4(bp5, suv4, amb_suv4, glm::vec3(), color);
 
-	VBO::Vertex centbot_v1(p2, suv1, amb_suv1, glm::vec3(), color);
-	VBO::Vertex centbot_v2(p4, suv2, amb_suv2, glm::vec3(), color);
-	VBO::Vertex centbot_v3(bp4, suv3, amb_suv3, glm::vec3(), color);
-	VBO::Vertex centbot_v4(bp2, suv4, amb_suv4, glm::vec3(), color);
+	HSVertex centbot_v1(p2, suv1, amb_suv1, glm::vec3(), color);
+	HSVertex centbot_v2(p4, suv2, amb_suv2, glm::vec3(), color);
+	HSVertex centbot_v3(bp4, suv3, amb_suv3, glm::vec3(), color);
+	HSVertex centbot_v4(bp2, suv4, amb_suv4, glm::vec3(), color);
 
-	VBO::Vertex corntl_v1(p2, suv1, amb_suv1, glm::vec3(), color);
-	VBO::Vertex corntl_v2(p6, suv2, amb_suv2, glm::vec3(), color);
-	VBO::Vertex corntl_v3(bp6, suv3, amb_suv3, glm::vec3(), color);
-	VBO::Vertex corntl_v4(bp2, suv4, amb_suv4, glm::vec3(), color);
+	HSVertex corntl_v1(p2, suv1, amb_suv1, glm::vec3(), color);
+	HSVertex corntl_v2(p6, suv2, amb_suv2, glm::vec3(), color);
+	HSVertex corntl_v3(bp6, suv3, amb_suv3, glm::vec3(), color);
+	HSVertex corntl_v4(bp2, suv4, amb_suv4, glm::vec3(), color);
 
-	VBO::Vertex corntr_v1(p6, suv1, amb_suv1, glm::vec3(), color);
-	VBO::Vertex corntr_v2(p4, suv2, amb_suv2, glm::vec3(), color);
-	VBO::Vertex corntr_v3(bp4, suv3, amb_suv3, glm::vec3(), color);
-	VBO::Vertex corntr_v4(bp6, suv4, amb_suv4, glm::vec3(), color);
+	HSVertex corntr_v1(p6, suv1, amb_suv1, glm::vec3(), color);
+	HSVertex corntr_v2(p4, suv2, amb_suv2, glm::vec3(), color);
+	HSVertex corntr_v3(bp4, suv3, amb_suv3, glm::vec3(), color);
+	HSVertex corntr_v4(bp6, suv4, amb_suv4, glm::vec3(), color);
 
-	VBO::Vertex cornbl_v1(p3, suv1, amb_suv1, glm::vec3(), color);
-	VBO::Vertex cornbl_v2(p1, suv2, amb_suv2, glm::vec3(), color);
-	VBO::Vertex cornbl_v3(bp1, suv3, amb_suv3, glm::vec3(), color);
-	VBO::Vertex cornbl_v4(bp3, suv4, amb_suv4, glm::vec3(), color);
+	HSVertex cornbl_v1(p3, suv1, amb_suv1, glm::vec3(), color);
+	HSVertex cornbl_v2(p1, suv2, amb_suv2, glm::vec3(), color);
+	HSVertex cornbl_v3(bp1, suv3, amb_suv3, glm::vec3(), color);
+	HSVertex cornbl_v4(bp3, suv4, amb_suv4, glm::vec3(), color);
 	
-	VBO::Vertex cornbr_v1(p5, suv1, amb_suv1, glm::vec3(), color);
-	VBO::Vertex cornbr_v2(p3, suv2, amb_suv2, glm::vec3(), color);
-	VBO::Vertex cornbr_v3(bp3, suv3, amb_suv3, glm::vec3(), color);
-	VBO::Vertex cornbr_v4(bp5, suv4, amb_suv4, glm::vec3(), color);
+	HSVertex cornbr_v1(p5, suv1, amb_suv1, glm::vec3(), color);
+	HSVertex cornbr_v2(p3, suv2, amb_suv2, glm::vec3(), color);
+	HSVertex cornbr_v3(bp3, suv3, amb_suv3, glm::vec3(), color);
+	HSVertex cornbr_v4(bp5, suv4, amb_suv4, glm::vec3(), color);
 
 	enum
 	{

@@ -260,6 +260,9 @@
     <ClInclude Include="GeneratedFiles\ui_WorldEditH.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Shaders.h">
+      <Filter>Header Files\src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="WorldEditH.rc" />

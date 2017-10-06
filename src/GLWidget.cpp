@@ -1650,7 +1650,7 @@ void GLWidget::initializeGL()
 	errors = error.toStdString();
 
 	m_selflum_shader.position = m_selflum_program->attributeLocation("a_position");
-	m_selflum_shader.tex_coord = m_selflum_program->attributeLocation("a_texcoord");
+	m_selflum_shader.texcoord = m_selflum_program->attributeLocation("a_texcoord");
 	m_selflum_shader.normal = m_selflum_program->attributeLocation("a_normal");
 	m_selflum_shader.color = m_selflum_program->attributeLocation("a_color");
 	m_selflum_shader.vp_matrix = m_selflum_program->uniformLocation("m_vp_matrix");
@@ -1665,7 +1665,7 @@ void GLWidget::initializeGL()
 	errors = error.toStdString();
 
 	m_reflect_shader.position = m_reflect_program->attributeLocation("a_position");
-	m_reflect_shader.tex_coord = m_reflect_program->attributeLocation("a_texcoord");
+	m_reflect_shader.texcoord = m_reflect_program->attributeLocation("a_texcoord");
 	m_reflect_shader.normal = m_reflect_program->attributeLocation("a_normal");
 	m_reflect_shader.color = m_reflect_program->attributeLocation("a_color");
 	m_reflect_shader.vp_matrix = m_reflect_program->uniformLocation("m_vp_matrix");
@@ -2482,7 +2482,7 @@ void GLWidget::paintGL()
 	// 3d tilemap
 	{
 		QGLShaderProgram* program = m_3d_program;
-		Shader* shader = &m_3d_shader;
+		Shaders::HomestarShader* shader = &m_3d_shader;
 
 		glDisable(GL_CULL_FACE);
 
@@ -2576,7 +2576,8 @@ void GLWidget::paintGL()
 					if (bucket != nullptr)
 					{
 						float* geo = (float*)bucket->tiles->getPointer();
-						int vbsize = bucket->tiles->getVertexSize();
+						//int vbsize = bucket->tiles->getVertexSize();
+						int vbsize = sizeof(HSVertex);
 
 						program->enableAttributeArray(shader->position);
 						program->setAttributeArray(shader->position, (GLfloat*)geo, 3, vbsize);

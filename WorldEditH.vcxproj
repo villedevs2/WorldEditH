@@ -225,6 +225,7 @@
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
     </CustomBuild>
+    <ClInclude Include="src\Shaders.h" />
     <ClInclude Include="src\Tileset.h" />
     <ClInclude Include="src\VBO.h" />
     <ClInclude Include="src\Thumbnail.h" />

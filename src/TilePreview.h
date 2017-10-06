@@ -11,6 +11,7 @@
 #include "Level.h"
 #include "VBO.h"
 #include "Tileset.h"
+#include "Shaders.h"
 
 class TilePreview : public QGLWidget
 {
@@ -68,9 +69,9 @@ private:
 	float m_viewport_aspect;
 
 	QGLShaderProgram* m_standard_program;
-	Shader m_standard_shader;
+	Shaders::HomestarShader m_standard_shader;
 
-	VBO* m_vbo;
+	VBO<HSVertex>* m_vbo;
 	GLuint m_base_tex;
 
 	Tileset::TileType m_tile_type;

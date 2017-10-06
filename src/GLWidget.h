@@ -9,8 +9,10 @@
 #include <gtx/rotate_vector.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "VBO.h"
 #include "PolygonDef.h"
 #include "Level.h"
+#include "Shaders.h"
 
 class GLWidget : public QGLWidget, private QOpenGLFunctions
 {
@@ -29,6 +31,7 @@ public:
 		MODE_TILE_ZEDIT,
 	};
 
+	/*
 	struct Shader
 	{
 		int location;
@@ -46,6 +49,7 @@ public:
 		int diff_sampler;
 		int amb_sampler;
 	};
+	*/
 
 	static const int NUM_GRID_SIZES = 6;
 	static const float GRID_SIZE[NUM_GRID_SIZES];
@@ -158,11 +162,11 @@ private:
 	QGLShaderProgram* m_3d_program;
 	QGLShaderProgram* m_selflum_program;
 	QGLShaderProgram* m_reflect_program;
-	Shader m_level_shader;
-	Shader m_grid_shader;
-	Shader m_3d_shader;
-	Shader m_selflum_shader;
-	Shader m_reflect_shader;
+	Shaders::LevelShader m_level_shader;
+	Shaders::GridShader m_grid_shader;
+	Shaders::HomestarShader m_3d_shader;
+	Shaders::SelflumShader m_selflum_shader;
+	Shaders::ReflectShader m_reflect_shader;
 
 	OperationMode m_opmode;
 
