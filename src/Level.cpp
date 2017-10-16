@@ -696,3 +696,9 @@ int Level::getNumTriggers()
 {
 	return (int)m_trigger_list.size();
 }
+
+
+AmbientOcclusion* Level::getAO()
+{
+	return m_ao;
+}

@@ -136,6 +136,7 @@ public:
 	void setTriggerList(std::vector<std::string>& list);
 	const std::string& getTriggerName(int index);
 	int getNumTriggers();
+	AmbientOcclusion* getAO();
 
 private:
 	int tesselateObject(int object);

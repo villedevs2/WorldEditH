@@ -3,6 +3,8 @@
 
 TilePreview::TilePreview(QWidget* parent, Level* level) : QGLWidget(QGLFormat(QGL::SampleBuffers), parent)
 {
+	m_level = level;
+
 	setMinimumWidth(200);
 	setMaximumWidth(200);
 	setMinimumHeight(300);
@@ -15,7 +17,7 @@ TilePreview::TilePreview(QWidget* parent, Level* level) : QGLWidget(QGLFormat(QG
 
 	m_tile_type = Tileset::TILE_FULL;
 	m_top_type = Tileset::TOP_FLAT;
-	updateGeo(m_top_points, m_side_points, m_tile_type, m_top_type, m_shading_type, m_top_height, m_color);
+	updateGeo(m_top_points, m_side_points, m_sidetop_points, m_sidebot_points, m_tile_type, m_top_type, m_shading_type, m_top_height, m_color);
 }
 
 TilePreview::~TilePreview()
@@ -25,6 +27,8 @@ TilePreview::~TilePreview()
 
 void TilePreview::initializeGL()
 {
+	initializeOpenGLFunctions();
+
 	QString error;
 	std::string errors;
 
@@ -47,6 +51,10 @@ void TilePreview::initializeGL()
 	m_standard_shader.vp_matrix = m_standard_program->uniformLocation("m_vp_matrix");
 	m_standard_shader.v_matrix = m_standard_program->uniformLocation("m_v_matrix");
 	m_standard_shader.light = m_standard_program->uniformLocation("u_light");
+	m_standard_shader.diff_sampler = m_standard_program->uniformLocation("s_color_texture");
+	m_standard_shader.amb_sampler = m_standard_program->uniformLocation("s_ambient_texture");
+
+	loadAmbientMap(m_level->getAO()->getMap());
 }
 
 QString TilePreview::loadShader(QString filename)
@@ -115,8 +123,17 @@ void TilePreview::paintGL()
 	glDepthMask(GL_TRUE);
 
 
+	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_base_tex);
-	//glBindTexture(GL_TEXTURE_CUBE_MAP, m_env_tex);
+	//		glBindTexture(GL_TEXTURE_CUBE_MAP, m_env_tex);
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, m_ambient_tex);
+
+	glUniform1i(m_standard_shader.diff_sampler, 0);
+	glUniform1i(m_standard_shader.amb_sampler, 1);
+
+	glUniform3f(m_standard_shader.light, 0.1, -0.7, 0.1);
 
 	float* geo = (float*)m_vbo->getPointer();
 	int vbsize = sizeof(HSVertex);
@@ -125,15 +142,18 @@ void TilePreview::paintGL()
 	m_standard_program->setAttributeArray(m_standard_shader.position, (GLfloat*)geo, 3, vbsize);
 	m_standard_program->enableAttributeArray(m_standard_shader.tex_coord);
 	m_standard_program->setAttributeArray(m_standard_shader.tex_coord, (GLfloat*)geo + 3, 2, vbsize);
+	m_standard_program->enableAttributeArray(m_standard_shader.amb_coord);
+	m_standard_program->setAttributeArray(m_standard_shader.amb_coord, (GLfloat*)geo + 5, 2, vbsize);
 	m_standard_program->enableAttributeArray(m_standard_shader.normal);
-	m_standard_program->setAttributeArray(m_standard_shader.normal, (GLfloat*)geo + 5, 3, vbsize);
+	m_standard_program->setAttributeArray(m_standard_shader.normal, (GLfloat*)geo + 7, 3, vbsize);
 	m_standard_program->enableAttributeArray(m_standard_shader.color);
-	m_standard_program->setAttributeArray(m_standard_shader.color, GL_UNSIGNED_BYTE, (GLbyte*)geo + 32, 4, vbsize);
+	m_standard_program->setAttributeArray(m_standard_shader.color, GL_UNSIGNED_BYTE, (GLbyte*)geo + 40, 4, vbsize);
 
 	glDrawArrays(GL_TRIANGLES, 0, 20 * 3);
-	
+
 	m_standard_program->disableAttributeArray(m_standard_shader.position);
 	m_standard_program->disableAttributeArray(m_standard_shader.tex_coord);
+	m_standard_program->disableAttributeArray(m_standard_shader.amb_coord);
 	m_standard_program->disableAttributeArray(m_standard_shader.normal);
 	m_standard_program->disableAttributeArray(m_standard_shader.color);
 
@@ -218,15 +238,72 @@ void TilePreview::setTexture(QImage* texture)
 
 	doneCurrent();
 
-	updateGeo(m_top_points, m_side_points, m_tile_type, m_top_type, m_shading_type, m_top_height, m_color);
+	updateGeo(m_top_points, m_side_points, m_sidetop_points, m_sidebot_points, m_tile_type, m_top_type, m_shading_type, m_top_height, m_color);
 }
+
+
+void TilePreview::loadAmbientMap(QImage* texture)
+{
+	makeCurrent();
+
+	if (glIsTexture(m_ambient_tex))
+		glDeleteTextures(1, &m_ambient_tex);
+	glGenTextures(1, &m_ambient_tex);
+	glBindTexture(GL_TEXTURE_2D, m_ambient_tex);
+
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+
+	int width = texture->width();
+	int height = texture->height();
+
+	char *pixels = new char[width * height * 4];
+
+	int index = 0;
+	for (int j = 0; j < height; j++)
+	{
+		QRgb *scan = (QRgb*)texture->scanLine(j);
+
+		for (int i = 0; i < width; i++)
+		{
+			int r = qRed(scan[i]);
+			int g = qGreen(scan[i]);
+			int b = qBlue(scan[i]);
+			int a = qAlpha(scan[i]);
+
+			pixels[index + 0] = r;
+			pixels[index + 1] = g;
+			pixels[index + 2] = b;
+			pixels[index + 3] = a;
+			index += 4;
+		}
+	}
+
+	glTexImage2D(GL_TEXTURE_2D,
+		0,
+		GL_RGBA,
+		width,
+		height,
+		0,
+		GL_RGBA,
+		GL_UNSIGNED_BYTE,
+		pixels);
+
+	delete[] pixels;
+
+	doneCurrent();
+}
+
 
 void TilePreview::setTileType(Tileset::TileType type)
 {
 	if (type != m_tile_type)
 	{
 		m_tile_type = type;
-		updateGeo(m_top_points, m_side_points, m_tile_type, m_top_type, m_shading_type, m_top_height, m_color);
+		updateGeo(m_top_points, m_side_points, m_sidetop_points, m_sidebot_points, m_tile_type, m_top_type, m_shading_type, m_top_height, m_color);
 	}
 }
 
@@ -235,7 +312,7 @@ void TilePreview::setTopType(Tileset::TopType type)
 	if (type != m_top_type)
 	{
 		m_top_type = type;
-		updateGeo(m_top_points, m_side_points, m_tile_type, m_top_type, m_shading_type, m_top_height, m_color);
+		updateGeo(m_top_points, m_side_points, m_sidetop_points, m_sidebot_points, m_tile_type, m_top_type, m_shading_type, m_top_height, m_color);
 	}
 }
 
@@ -244,16 +321,17 @@ void TilePreview::setShadingType(Tileset::ShadingType type)
 	if (type != m_shading_type)
 	{
 		m_shading_type = type;
-		updateGeo(m_top_points, m_side_points, m_tile_type, m_top_type, m_shading_type, m_top_height, m_color);
+		updateGeo(m_top_points, m_side_points, m_sidetop_points, m_sidebot_points, m_tile_type, m_top_type, m_shading_type, m_top_height, m_color);
 	}
 }
 
 void TilePreview::updateGeo(const glm::vec2* top_points, const glm::vec2* side_points,
-							Tileset::TileType tile_type,
-							Tileset::TopType top_type,
-							Tileset::ShadingType shading_type,
-							float top_height,
-							unsigned int color)
+	const glm::vec2* sidetop_points, const glm::vec2* sidebot_points,
+	Tileset::TileType tile_type,
+	Tileset::TopType top_type,
+	Tileset::ShadingType shading_type,
+	float top_height,
+	unsigned int color)
 {
 	int vbo_index = 0;
 
@@ -276,6 +354,16 @@ void TilePreview::updateGeo(const glm::vec2* top_points, const glm::vec2* side_p
 	glm::vec2 suv3 = side_points[2];
 	glm::vec2 suv4 = side_points[3];
 
+	glm::vec2 topsuv1 = sidetop_points[0];
+	glm::vec2 topsuv2 = sidetop_points[1];
+	glm::vec2 topsuv3 = sidetop_points[2];
+	glm::vec2 topsuv4 = sidetop_points[3];
+
+	glm::vec2 botsuv1 = sidebot_points[0];
+	glm::vec2 botsuv2 = sidebot_points[1];
+	glm::vec2 botsuv3 = sidebot_points[2];
+	glm::vec2 botsuv4 = sidebot_points[3];
+
 		/*
 		     p6
 		p1         p5
@@ -283,7 +371,9 @@ void TilePreview::updateGeo(const glm::vec2* top_points, const glm::vec2* side_p
 		     p3
 		*/
 
-	float z = 1.0f;
+	float botz = 0.1f;
+	float topz = 0.1f;
+	float z = 1.0f + botz + topz;
 
 	float midz = 0.0f;
 	if (top_type == Tileset::TOP_POINTY)
@@ -291,23 +381,38 @@ void TilePreview::updateGeo(const glm::vec2* top_points, const glm::vec2* side_p
 	else if (top_type == Tileset::TOP_FLAT)
 		midz = z;
 
-	glm::vec3 p1 = glm::vec3(0.0f, 0.3f, z);
-	glm::vec3 p2 = glm::vec3(0.0f, 0.7f, z);
-	glm::vec3 p3 = glm::vec3(0.5f, 1.0f, z);
-	glm::vec3 p4 = glm::vec3(1.0f, 0.7f, z);
-	glm::vec3 p5 = glm::vec3(1.0f, 0.3f, z);
-	glm::vec3 p6 = glm::vec3(0.5f, 0.0f, z);
-
+	glm::vec3 topt_p1 = glm::vec3(0.0f, 0.3f, z);
+	glm::vec3 topt_p2 = glm::vec3(0.0f, 0.7f, z);
+	glm::vec3 topt_p3 = glm::vec3(0.5f, 1.0f, z);
+	glm::vec3 topt_p4 = glm::vec3(1.0f, 0.7f, z);
+	glm::vec3 topt_p5 = glm::vec3(1.0f, 0.3f, z);
+	glm::vec3 topt_p6 = glm::vec3(0.5f, 0.0f, z);
 	glm::vec3 pcen = glm::vec3(0.5f, 0.5f, midz);
 
-	glm::vec3 bp1 = glm::vec3(p1.x, p1.y, 0.0f);
-	glm::vec3 bp2 = glm::vec3(p2.x, p2.y, 0.0f);
-	glm::vec3 bp3 = glm::vec3(p3.x, p3.y, 0.0f);
-	glm::vec3 bp4 = glm::vec3(p4.x, p4.y, 0.0f);
-	glm::vec3 bp5 = glm::vec3(p5.x, p5.y, 0.0f);
-	glm::vec3 bp6 = glm::vec3(p6.x, p6.y, 0.0f);
+	glm::vec3 topb_p1 = glm::vec3(topt_p1.x, topt_p1.y, z - topz);
+	glm::vec3 topb_p2 = glm::vec3(topt_p2.x, topt_p2.y, z - topz);
+	glm::vec3 topb_p3 = glm::vec3(topt_p3.x, topt_p3.y, z - topz);
+	glm::vec3 topb_p4 = glm::vec3(topt_p4.x, topt_p4.y, z - topz);
+	glm::vec3 topb_p5 = glm::vec3(topt_p5.x, topt_p5.y, z - topz);
+	glm::vec3 topb_p6 = glm::vec3(topt_p6.x, topt_p6.y, z - topz);
 
+	glm::vec3 botb_p1 = glm::vec3(topt_p1.x, topt_p1.y, 0.0f);
+	glm::vec3 botb_p2 = glm::vec3(topt_p2.x, topt_p2.y, 0.0f);
+	glm::vec3 botb_p3 = glm::vec3(topt_p3.x, topt_p3.y, 0.0f);
+	glm::vec3 botb_p4 = glm::vec3(topt_p4.x, topt_p4.y, 0.0f);
+	glm::vec3 botb_p5 = glm::vec3(topt_p5.x, topt_p5.y, 0.0f);
+	glm::vec3 botb_p6 = glm::vec3(topt_p6.x, topt_p6.y, 0.0f);
 
+	glm::vec3 bott_p1 = glm::vec3(topt_p1.x, topt_p1.y, 0.0f + botz);
+	glm::vec3 bott_p2 = glm::vec3(topt_p2.x, topt_p2.y, 0.0f + botz);
+	glm::vec3 bott_p3 = glm::vec3(topt_p3.x, topt_p3.y, 0.0f + botz);
+	glm::vec3 bott_p4 = glm::vec3(topt_p4.x, topt_p4.y, 0.0f + botz);
+	glm::vec3 bott_p5 = glm::vec3(topt_p5.x, topt_p5.y, 0.0f + botz);
+	glm::vec3 bott_p6 = glm::vec3(topt_p6.x, topt_p6.y, 0.0f + botz);
+
+	const AmbientOcclusion::AOFloorTile& floorao = m_level->getAO()->getFloorTile(0);
+
+	/*
 	glm::vec2 amb_uv1 = glm::vec2(amb_tile_x, amb_tile_y + (0.3f * amb_tile_h));
 	glm::vec2 amb_uv2 = glm::vec2(amb_tile_x, amb_tile_y + (0.7f * amb_tile_h));
 	glm::vec2 amb_uv3 = glm::vec2(amb_tile_x + (0.5f * amb_tile_w), amb_tile_y + amb_tile_h);
@@ -316,6 +421,7 @@ void TilePreview::updateGeo(const glm::vec2* top_points, const glm::vec2* side_p
 	glm::vec2 amb_uv6 = glm::vec2(amb_tile_x + (0.5f * amb_tile_w), amb_tile_y);
 
 	glm::vec2 amb_uvcen = glm::mix(amb_uv1 + ((amb_uv5 - amb_uv1) * 0.5f), amb_uv2 + ((amb_uv4 - amb_uv2) * 0.5f), 0.5f);
+	*/
 
 	// TODOOOO
 	glm::vec2 amb_suv1 = glm::vec2(0.0f, 0.0f);
@@ -325,93 +431,93 @@ void TilePreview::updateGeo(const glm::vec2* top_points, const glm::vec2* side_p
 
 	glm::vec3 top_norm(0.0f, 0.0f, 1.0f);
 
-	HSVertex tv1(p1, uv1, amb_uv1, top_norm, color);
-	HSVertex tv2(p2, uv2, amb_uv2, top_norm, color);
-	HSVertex tv3(p3, uv3, amb_uv3, top_norm, color);
-	HSVertex tv4(p4, uv4, amb_uv4, top_norm, color);
-	HSVertex tv5(p5, uv5, amb_uv5, top_norm, color);
-	HSVertex tv6(p6, uv6, amb_uv6, top_norm, color);
-	HSVertex tvcen(pcen, uvcen, amb_uvcen, top_norm, color);
+	HSVertex tv1(topt_p1, uv1, floorao.uv[0], top_norm, color);
+	HSVertex tv2(topt_p2, uv2, floorao.uv[1], top_norm, color);
+	HSVertex tv3(topt_p3, uv3, floorao.uv[2], top_norm, color);
+	HSVertex tv4(topt_p4, uv4, floorao.uv[3], top_norm, color);
+	HSVertex tv5(topt_p5, uv5, floorao.uv[4], top_norm, color);
+	HSVertex tv6(topt_p6, uv6, floorao.uv[5], top_norm, color);
+	HSVertex tvcen(pcen, uvcen, floorao.center, top_norm, color);
 
-	HSVertex left_v1(p1, suv1, amb_suv1, glm::vec3(), color);
-	HSVertex left_v2(p2, suv2, amb_suv2, glm::vec3(), color);
-	HSVertex left_v3(bp2, suv3, amb_suv3, glm::vec3(), color);
-	HSVertex left_v4(bp1, suv4, amb_suv4, glm::vec3(), color);
+	HSVertex left_v1(topb_p1, suv1, amb_suv1, glm::vec3(), color);
+	HSVertex left_v2(topb_p2, suv2, amb_suv2, glm::vec3(), color);
+	HSVertex left_v3(bott_p2, suv3, amb_suv3, glm::vec3(), color);
+	HSVertex left_v4(bott_p1, suv4, amb_suv4, glm::vec3(), color);
 
-	HSVertex topleft_v1(p6, suv1, amb_suv1, glm::vec3(), color);
-	HSVertex topleft_v2(p1, suv2, amb_suv2, glm::vec3(), color);
-	HSVertex topleft_v3(bp1, suv3, amb_suv3, glm::vec3(), color);
-	HSVertex topleft_v4(bp6, suv4, amb_suv4, glm::vec3(), color);
+	HSVertex topleft_v1(topb_p6, suv1, amb_suv1, glm::vec3(), color);
+	HSVertex topleft_v2(topb_p1, suv2, amb_suv2, glm::vec3(), color);
+	HSVertex topleft_v3(bott_p1, suv3, amb_suv3, glm::vec3(), color);
+	HSVertex topleft_v4(bott_p6, suv4, amb_suv4, glm::vec3(), color);
 
-	HSVertex topright_v1(p5, suv1, amb_suv1, glm::vec3(), color);
-	HSVertex topright_v2(p6, suv2, amb_suv2, glm::vec3(), color);
-	HSVertex topright_v3(bp6, suv3, amb_suv3, glm::vec3(), color);
-	HSVertex topright_v4(bp5, suv4, amb_suv4, glm::vec3(), color);
+	HSVertex topright_v1(topb_p5, suv1, amb_suv1, glm::vec3(), color);
+	HSVertex topright_v2(topb_p6, suv2, amb_suv2, glm::vec3(), color);
+	HSVertex topright_v3(bott_p6, suv3, amb_suv3, glm::vec3(), color);
+	HSVertex topright_v4(bott_p5, suv4, amb_suv4, glm::vec3(), color);
 
-	HSVertex right_v1(p4, suv1, amb_suv1, glm::vec3(), color);
-	HSVertex right_v2(p5, suv2, amb_suv2, glm::vec3(), color);
-	HSVertex right_v3(bp5, suv3, amb_suv3, glm::vec3(), color);
-	HSVertex right_v4(bp4, suv4, amb_suv4, glm::vec3(), color);
+	HSVertex right_v1(topb_p4, suv1, amb_suv1, glm::vec3(), color);
+	HSVertex right_v2(topb_p5, suv2, amb_suv2, glm::vec3(), color);
+	HSVertex right_v3(bott_p5, suv3, amb_suv3, glm::vec3(), color);
+	HSVertex right_v4(bott_p4, suv4, amb_suv4, glm::vec3(), color);
 
-	HSVertex botright_v1(p3, suv1, amb_suv1, glm::vec3(), color);
-	HSVertex botright_v2(p4, suv2, amb_suv2, glm::vec3(), color);
-	HSVertex botright_v3(bp4, suv3, amb_suv3, glm::vec3(), color);
-	HSVertex botright_v4(bp3, suv4, amb_suv4, glm::vec3(), color);
+	HSVertex botright_v1(topb_p3, suv1, amb_suv1, glm::vec3(), color);
+	HSVertex botright_v2(topb_p4, suv2, amb_suv2, glm::vec3(), color);
+	HSVertex botright_v3(bott_p4, suv3, amb_suv3, glm::vec3(), color);
+	HSVertex botright_v4(bott_p3, suv4, amb_suv4, glm::vec3(), color);
 
-	HSVertex botleft_v1(p2, suv1, amb_suv1, glm::vec3(), color);
-	HSVertex botleft_v2(p3, suv2, amb_suv2, glm::vec3(), color);
-	HSVertex botleft_v3(bp3, suv3, amb_suv3, glm::vec3(), color);
-	HSVertex botleft_v4(bp2, suv4, amb_suv4, glm::vec3(), color);
+	HSVertex botleft_v1(topb_p2, suv1, amb_suv1, glm::vec3(), color);
+	HSVertex botleft_v2(topb_p3, suv2, amb_suv2, glm::vec3(), color);
+	HSVertex botleft_v3(bott_p3, suv3, amb_suv3, glm::vec3(), color);
+	HSVertex botleft_v4(bott_p2, suv4, amb_suv4, glm::vec3(), color);
 
-	HSVertex sideleft_v1(p3, suv1, amb_suv1, glm::vec3(), color);
-	HSVertex sideleft_v2(p6, suv2, amb_suv2, glm::vec3(), color);
-	HSVertex sideleft_v3(bp6, suv3, amb_suv3, glm::vec3(), color);
-	HSVertex sideleft_v4(bp3, suv4, amb_suv4, glm::vec3(), color);
+	HSVertex sideleft_v1(topb_p3, suv1, amb_suv1, glm::vec3(), color);
+	HSVertex sideleft_v2(topb_p6, suv2, amb_suv2, glm::vec3(), color);
+	HSVertex sideleft_v3(bott_p6, suv3, amb_suv3, glm::vec3(), color);
+	HSVertex sideleft_v4(bott_p3, suv4, amb_suv4, glm::vec3(), color);
 
-	HSVertex sideright_v1(p6, suv1, amb_suv1, glm::vec3(), color);
-	HSVertex sideright_v2(p3, suv2, amb_suv2, glm::vec3(), color);
-	HSVertex sideright_v3(bp3, suv3, amb_suv3, glm::vec3(), color);
-	HSVertex sideright_v4(bp6, suv4, amb_suv4, glm::vec3(), color);
+	HSVertex sideright_v1(topb_p6, suv1, amb_suv1, glm::vec3(), color);
+	HSVertex sideright_v2(topb_p3, suv2, amb_suv2, glm::vec3(), color);
+	HSVertex sideright_v3(bott_p3, suv3, amb_suv3, glm::vec3(), color);
+	HSVertex sideright_v4(bott_p6, suv4, amb_suv4, glm::vec3(), color);
 
-	HSVertex midtop_v1(p1, suv1, amb_suv1, glm::vec3(), color);
-	HSVertex midtop_v2(p5, suv2, amb_suv2, glm::vec3(), color);
-	HSVertex midtop_v3(bp5, suv3, amb_suv3, glm::vec3(), color);
-	HSVertex midtop_v4(bp1, suv4, amb_suv4, glm::vec3(), color);
+	HSVertex midtop_v1(topb_p1, suv1, amb_suv1, glm::vec3(), color);
+	HSVertex midtop_v2(topb_p5, suv2, amb_suv2, glm::vec3(), color);
+	HSVertex midtop_v3(bott_p5, suv3, amb_suv3, glm::vec3(), color);
+	HSVertex midtop_v4(bott_p1, suv4, amb_suv4, glm::vec3(), color);
 
-	HSVertex midbot_v1(p4, suv1, amb_suv1, glm::vec3(), color);
-	HSVertex midbot_v2(p2, suv2, amb_suv2, glm::vec3(), color);
-	HSVertex midbot_v3(bp2, suv3, amb_suv3, glm::vec3(), color);
-	HSVertex midbot_v4(bp4, suv4, amb_suv4, glm::vec3(), color);
+	HSVertex midbot_v1(topb_p4, suv1, amb_suv1, glm::vec3(), color);
+	HSVertex midbot_v2(topb_p2, suv2, amb_suv2, glm::vec3(), color);
+	HSVertex midbot_v3(bott_p2, suv3, amb_suv3, glm::vec3(), color);
+	HSVertex midbot_v4(bott_p4, suv4, amb_suv4, glm::vec3(), color);
 
-	HSVertex centtop_v1(p5, suv1, amb_suv1, glm::vec3(), color);
-	HSVertex centtop_v2(p1, suv2, amb_suv2, glm::vec3(), color);
-	HSVertex centtop_v3(bp1, suv3, amb_suv3, glm::vec3(), color);
-	HSVertex centtop_v4(bp5, suv4, amb_suv4, glm::vec3(), color);
+	HSVertex centtop_v1(topb_p5, suv1, amb_suv1, glm::vec3(), color);
+	HSVertex centtop_v2(topb_p1, suv2, amb_suv2, glm::vec3(), color);
+	HSVertex centtop_v3(bott_p1, suv3, amb_suv3, glm::vec3(), color);
+	HSVertex centtop_v4(bott_p5, suv4, amb_suv4, glm::vec3(), color);
 
-	HSVertex centbot_v1(p2, suv1, amb_suv1, glm::vec3(), color);
-	HSVertex centbot_v2(p4, suv2, amb_suv2, glm::vec3(), color);
-	HSVertex centbot_v3(bp4, suv3, amb_suv3, glm::vec3(), color);
-	HSVertex centbot_v4(bp2, suv4, amb_suv4, glm::vec3(), color);
+	HSVertex centbot_v1(topb_p2, suv1, amb_suv1, glm::vec3(), color);
+	HSVertex centbot_v2(topb_p4, suv2, amb_suv2, glm::vec3(), color);
+	HSVertex centbot_v3(bott_p4, suv3, amb_suv3, glm::vec3(), color);
+	HSVertex centbot_v4(bott_p2, suv4, amb_suv4, glm::vec3(), color);
 
-	HSVertex corntl_v1(p2, suv1, amb_suv1, glm::vec3(), color);
-	HSVertex corntl_v2(p6, suv2, amb_suv2, glm::vec3(), color);
-	HSVertex corntl_v3(bp6, suv3, amb_suv3, glm::vec3(), color);
-	HSVertex corntl_v4(bp2, suv4, amb_suv4, glm::vec3(), color);
+	HSVertex corntl_v1(topb_p2, suv1, amb_suv1, glm::vec3(), color);
+	HSVertex corntl_v2(topb_p6, suv2, amb_suv2, glm::vec3(), color);
+	HSVertex corntl_v3(bott_p6, suv3, amb_suv3, glm::vec3(), color);
+	HSVertex corntl_v4(bott_p2, suv4, amb_suv4, glm::vec3(), color);
 
-	HSVertex corntr_v1(p6, suv1, amb_suv1, glm::vec3(), color);
-	HSVertex corntr_v2(p4, suv2, amb_suv2, glm::vec3(), color);
-	HSVertex corntr_v3(bp4, suv3, amb_suv3, glm::vec3(), color);
-	HSVertex corntr_v4(bp6, suv4, amb_suv4, glm::vec3(), color);
+	HSVertex corntr_v1(topb_p6, suv1, amb_suv1, glm::vec3(), color);
+	HSVertex corntr_v2(topb_p4, suv2, amb_suv2, glm::vec3(), color);
+	HSVertex corntr_v3(bott_p4, suv3, amb_suv3, glm::vec3(), color);
+	HSVertex corntr_v4(bott_p6, suv4, amb_suv4, glm::vec3(), color);
 
-	HSVertex cornbl_v1(p3, suv1, amb_suv1, glm::vec3(), color);
-	HSVertex cornbl_v2(p1, suv2, amb_suv2, glm::vec3(), color);
-	HSVertex cornbl_v3(bp1, suv3, amb_suv3, glm::vec3(), color);
-	HSVertex cornbl_v4(bp3, suv4, amb_suv4, glm::vec3(), color);
+	HSVertex cornbl_v1(topb_p3, suv1, amb_suv1, glm::vec3(), color);
+	HSVertex cornbl_v2(topb_p1, suv2, amb_suv2, glm::vec3(), color);
+	HSVertex cornbl_v3(bott_p1, suv3, amb_suv3, glm::vec3(), color);
+	HSVertex cornbl_v4(bott_p3, suv4, amb_suv4, glm::vec3(), color);
 	
-	HSVertex cornbr_v1(p5, suv1, amb_suv1, glm::vec3(), color);
-	HSVertex cornbr_v2(p3, suv2, amb_suv2, glm::vec3(), color);
-	HSVertex cornbr_v3(bp3, suv3, amb_suv3, glm::vec3(), color);
-	HSVertex cornbr_v4(bp5, suv4, amb_suv4, glm::vec3(), color);
+	HSVertex cornbr_v1(topb_p5, suv1, amb_suv1, glm::vec3(), color);
+	HSVertex cornbr_v2(topb_p3, suv2, amb_suv2, glm::vec3(), color);
+	HSVertex cornbr_v3(bott_p3, suv3, amb_suv3, glm::vec3(), color);
+	HSVertex cornbr_v4(bott_p5, suv4, amb_suv4, glm::vec3(), color);
 
 	enum
 	{
@@ -663,7 +769,7 @@ void TilePreview::setTopHeight(float height)
 {
 	m_top_height = height;
 
-	updateGeo(m_top_points, m_side_points, m_tile_type, m_top_type, m_shading_type, m_top_height, m_color);
+	updateGeo(m_top_points, m_side_points, m_sidetop_points, m_sidebot_points, m_tile_type, m_top_type, m_shading_type, m_top_height, m_color);
 }
 
 void TilePreview::setTopUVs(PolygonDef* uvs)
@@ -675,7 +781,7 @@ void TilePreview::setTopUVs(PolygonDef* uvs)
 		m_top_points[i] = uvs->getPoint(i);
 	}
 
-	updateGeo(m_top_points, m_side_points, m_tile_type, m_top_type, m_shading_type, m_top_height, m_color);
+	updateGeo(m_top_points, m_side_points, m_sidetop_points, m_sidebot_points, m_tile_type, m_top_type, m_shading_type, m_top_height, m_color);
 }
 
 void TilePreview::setSideUVs(PolygonDef* uvs)
@@ -687,19 +793,22 @@ void TilePreview::setSideUVs(PolygonDef* uvs)
 		m_side_points[i] = uvs->getPoint(i);
 	}
 
-	updateGeo(m_top_points, m_side_points, m_tile_type, m_top_type, m_shading_type, m_top_height, m_color);
+	updateGeo(m_top_points, m_side_points, m_sidetop_points, m_sidebot_points, m_tile_type, m_top_type, m_shading_type, m_top_height, m_color);
 }
 
 
 QImage TilePreview::makeThumbnail(PolygonDef* top_points, PolygonDef* side_points,
-								Tileset::TileType tile_type,
-								Tileset::TopType top_type,
-								Tileset::ShadingType shading_type,
-								float top_height,
-								unsigned int color)
+	PolygonDef* sidetop_points, PolygonDef* sidebot_points,
+	Tileset::TileType tile_type,
+	Tileset::TopType top_type,
+	Tileset::ShadingType shading_type,
+	float top_height,
+	unsigned int color)
 {
 	glm::vec2 top[6];
 	glm::vec2 side[4];
+	glm::vec2 sidetop[4];
+	glm::vec2 sidebot[4];
 
 	for (int i = 0; i < top_points->getNumPoints(); i++)
 	{
@@ -710,8 +819,16 @@ QImage TilePreview::makeThumbnail(PolygonDef* top_points, PolygonDef* side_point
 	{
 		side[i] = side_points->getPoint(i);
 	}
+	for (int i = 0; i < sidetop_points->getNumPoints(); i++)
+	{
+		sidetop[i] = sidetop_points->getPoint(i);
+	}
+	for (int i = 0; i < sidebot_points->getNumPoints(); i++)
+	{
+		sidebot[i] = sidebot_points->getPoint(i);
+	}
 
-	updateGeo(top, side, tile_type, top_type, shading_type, top_height, color);
+	updateGeo(top, side, sidetop, sidebot, tile_type, top_type, shading_type, top_height, color);
 
 	repaint();
 	return grabFrameBuffer();

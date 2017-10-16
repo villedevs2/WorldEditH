@@ -13,6 +13,12 @@ TileDesignerWidget::TileDesignerWidget(QWidget* parent, Level* level, TilePrevie
 	m_poly[1] = new PolygonDef(4);
 	m_poly[1]->reset();
 
+	m_poly[2] = new PolygonDef(4);
+	m_poly[2]->reset();
+
+	m_poly[3] = new PolygonDef(4);
+	m_poly[3]->reset();
+
 	m_poly_top_default[0] = new PolygonDef(6);
 	m_poly_top_default[1] = new PolygonDef(6);
 	m_poly_top_default[2] = new PolygonDef(6);
@@ -24,6 +30,8 @@ TileDesignerWidget::TileDesignerWidget(QWidget* parent, Level* level, TilePrevie
 	m_poly_top_default[8] = new PolygonDef(6);
 	m_poly_top_default[9] = new PolygonDef(6);
 	m_poly_side_default = new PolygonDef(4);
+	m_poly_sidetop_default = new PolygonDef(4);
+	m_poly_sidebot_default = new PolygonDef(4);
 
 	float tw = 0.125f;
 	float th = 0.125f;
@@ -87,6 +95,16 @@ TileDesignerWidget::TileDesignerWidget(QWidget* parent, Level* level, TilePrevie
 	m_poly_side_default->insertPoint(glm::vec2(0.125f, 0.125f));
 	m_poly_side_default->insertPoint(glm::vec2(0.125f, 0.0f));
 
+	m_poly_sidetop_default->insertPoint(glm::vec2(0.0f, 0.0f));
+	m_poly_sidetop_default->insertPoint(glm::vec2(0.0f, 0.03125f));
+	m_poly_sidetop_default->insertPoint(glm::vec2(0.125f, 0.03125f));
+	m_poly_sidetop_default->insertPoint(glm::vec2(0.125f, 0.0f));
+	
+	m_poly_sidebot_default->insertPoint(glm::vec2(0.0f, 0.0f));
+	m_poly_sidebot_default->insertPoint(glm::vec2(0.0f, 0.03125f));
+	m_poly_sidebot_default->insertPoint(glm::vec2(0.125f, 0.03125f));
+	m_poly_sidebot_default->insertPoint(glm::vec2(0.125f, 0.0f));
+
 	m_zoom = 1.0f;
 	m_scroll = glm::vec2(0.0f, 0.0f);
 
@@ -115,6 +133,8 @@ TileDesignerWidget::TileDesignerWidget(QWidget* parent, Level* level, TilePrevie
 
 	m_poly[0]->copy(m_poly_top_default[0]);
 	m_poly[1]->copy(m_poly_side_default);
+	m_poly[2]->copy(m_poly_sidetop_default);
+	m_poly[3]->copy(m_poly_sidebot_default);
 
 	m_selected_poly = -1;
 	emit onSelectPoly(m_selected_poly);
@@ -131,19 +151,23 @@ TileDesignerWidget::TileDesignerWidget(QWidget* parent, Level* level, TilePrevie
 	m_scale[1] = 1.0f;
 	*/
 
-	resetObject(POLY_TOP | POLY_SIDE);
+	resetObject(POLY_TOP | POLY_SIDE | POLY_SIDETOP | POLY_SIDEBOT);
 }
 
 TileDesignerWidget::~TileDesignerWidget()
 {
 	delete m_poly[0];
 	delete m_poly[1];
+	delete m_poly[2];
+	delete m_poly[3];
 
 	for (int i = 0; i < 6; i++)
 	{
 		delete m_poly_top_default[i];		
 	}
 	delete m_poly_side_default;
+	delete m_poly_sidetop_default;
+	delete m_poly_sidebot_default;
 }
 
 
@@ -345,7 +369,7 @@ void TileDesignerWidget::paintGL()
 	}
 	*/
 
-	for (int i = 0; i < 2; i++)
+	for (int i = 0; i < NUM_POLY_OBJS; i++)
 	{
 		renderPoly(painter, i);
 	}
@@ -472,7 +496,7 @@ void TileDesignerWidget::setTileType(Tileset::TileType type)
 {
 	m_current_tile_type = type;
 
-	resetObject(POLY_TOP | POLY_SIDE);
+	resetObject(POLY_TOP | POLY_SIDE | POLY_SIDETOP | POLY_SIDEBOT);
 
 	update();
 }
@@ -487,21 +511,37 @@ void TileDesignerWidget::resetObject(int objects)
 	{
 		m_poly[1]->copy(m_poly_side_default);
 	}
+	if (objects & POLY_SIDETOP)
+	{
+		m_poly[2]->copy(m_poly_sidetop_default);
+	}
+	if (objects & POLY_SIDEBOT)
+	{
+		m_poly[3]->copy(m_poly_sidebot_default);
+	}
 
 	m_selected_poly = -1;
 	emit onSelectPoly(m_selected_poly);
 
 	m_position[0] = glm::vec2(0.0f, 0.0f);
-	m_position[1] = glm::vec2(0.5f, 0.0f);
+	m_position[1] = glm::vec2(0.5f, 0.0625f);
+	m_position[2] = glm::vec2(0.5f, 0.0f);
+	m_position[3] = glm::vec2(0.5f, 0.21875f);
 
 	m_angle[0] = 0.0f;
 	m_angle[1] = 0.0f;
+	m_angle[2] = 0.0f;
+	m_angle[3] = 0.0f;
 
 	m_scale[0] = 1.0f;
 	m_scale[1] = 1.0f;
+	m_scale[2] = 1.0f;
+	m_scale[3] = 1.0f;
 
 	transformPoly(m_poly[0], m_poly_top_default[m_current_tile_type], m_position[0], m_angle[0], m_scale[0]);
 	transformPoly(m_poly[1], m_poly_side_default, m_position[1], m_angle[1], m_scale[1]);
+	transformPoly(m_poly[2], m_poly_sidetop_default, m_position[2], m_angle[2], m_scale[2]);
+	transformPoly(m_poly[3], m_poly_sidebot_default, m_position[3], m_angle[3], m_scale[3]);
 
 	m_top_height = 2.0f;
 	m_top_type = Tileset::TOP_FLAT;
@@ -512,7 +552,8 @@ void TileDesignerWidget::resetObject(int objects)
 
 void TileDesignerWidget::insertTile(QString& name)
 {
-	QImage thumb_image = m_preview->makeThumbnail(m_poly[0], m_poly[1], m_current_tile_type, m_top_type, m_shading_type, m_top_height, m_color);
+	QImage thumb_image = m_preview->makeThumbnail(m_poly[0], m_poly[1], m_poly[2], m_poly[3],
+		m_current_tile_type, m_top_type, m_shading_type, m_top_height, m_color);
 
 	QImage t2img = thumb_image.scaled(Tilemap::THUMB_WIDTH, Tilemap::THUMB_HEIGHT, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 
@@ -544,7 +585,8 @@ void TileDesignerWidget::insertTile(QString& name)
 
 void TileDesignerWidget::replaceTile(QString& name, int index)
 {
-	QImage thumb_image = m_preview->makeThumbnail(m_poly[0], m_poly[1], m_current_tile_type, m_top_type, m_shading_type, m_top_height, m_color);
+	QImage thumb_image = m_preview->makeThumbnail(m_poly[0], m_poly[1], m_poly[2], m_poly[3],
+		m_current_tile_type, m_top_type, m_shading_type, m_top_height, m_color);
 
 	QImage t2img = thumb_image.scaled(Tilemap::THUMB_WIDTH, Tilemap::THUMB_HEIGHT, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 
@@ -616,6 +658,16 @@ void TileDesignerWidget::mouseReleaseEvent(QMouseEvent* event)
 				m_position[1] += delta;
 				transformPoly(m_poly[1], m_poly_side_default, m_position[1], m_angle[1], m_scale[1]);
 			}
+			else if (m_selected_poly == 2)
+			{
+				m_position[2] += delta;
+				transformPoly(m_poly[2], m_poly_sidetop_default, m_position[2], m_angle[2], m_scale[2]);
+			}
+			else if (m_selected_poly == 3)
+			{
+				m_position[3] += delta;
+				transformPoly(m_poly[3], m_poly_sidebot_default, m_position[3], m_angle[3], m_scale[3]);
+			}
 		}
 
 		m_move_dragging = false;
@@ -651,7 +703,7 @@ void TileDesignerWidget::mousePressEvent(QMouseEvent* event)
 
 			m_selected_poly = -1;
 
-			for (int i = 0; i < 2; i++)
+			for (int i = 0; i < NUM_POLY_OBJS; i++)
 			{
 				bool inside = m_poly[i]->isPointInside(mp);
 				if (inside)
@@ -696,6 +748,8 @@ void TileDesignerWidget::keyReleaseEvent(QKeyEvent* event)
 
 void TileDesignerWidget::renderPoly(QPainter& painter, int polynum)
 {
+	static char* polytext[4] = { "FLOOR", "SIDE", "TOP", "BOT" };
+
 	QPoint mouse_p = this->mapFromGlobal(QCursor::pos());
 	glm::vec2 mouse_lp = toUVCoords(glm::vec2(mouse_p.x(), mouse_p.y()));
 
@@ -704,19 +758,28 @@ void TileDesignerWidget::renderPoly(QPainter& painter, int polynum)
 
 	int num_points = m_poly[polynum]->getNumPoints();
 
+	glm::vec2 mouse_delta(0.0f, 0.0f);
+	if (m_move_dragging && polynum == m_selected_poly)
+	{
+		mouse_delta = toScreenCoords(m_move_reference) - glm::vec2(toScreenCoords(mouse_lp));
+	}
+
 	if (num_points >= 3)
 	{
 		QPointF ppoints[8];
-		for (int i=0; i < num_points; i++)
+		for (int i = 0; i < num_points; i++)
 		{
 			glm::vec2 p = toScreenCoords(m_poly[polynum]->getPoint(i));
-			
+			p -= mouse_delta;
+
+			/*
 			if (m_move_dragging && polynum == m_selected_poly)
 			{
 				glm::vec2 mouse_delta = toScreenCoords(m_move_reference) - glm::vec2(toScreenCoords(mouse_lp));
 				p -= mouse_delta;
 			}
-			
+			*/
+
 			ppoints[i].setX(p.x);
 			ppoints[i].setY(p.y);
 		}
@@ -734,6 +797,16 @@ void TileDesignerWidget::renderPoly(QPainter& painter, int polynum)
 
 		painter.drawPolygon(ppoints, num_points);
 
+		{
+			painter.setPen(QColor(255, 0, 0));
+			float minx, maxx, miny, maxy;
+			m_poly[polynum]->calculateBounds(&minx, &maxx, &miny, &maxy);
+			glm::vec2 tctl = toScreenCoords(glm::vec2(minx, miny));
+			glm::vec2 tcbr = toScreenCoords(glm::vec2(maxx, maxy));
+			tctl -= mouse_delta;
+			tcbr -= mouse_delta;
+			painter.drawText(tctl.x, tctl.y, tcbr.x - tctl.x, tcbr.y - tctl.y, Qt::AlignHCenter|Qt::AlignVCenter, polytext[polynum]);
+		}
 
 		// points
 		for (int i=0; i < num_points; i++)
@@ -821,6 +894,16 @@ void TileDesignerWidget::setScale(double scale)
 		m_scale[1] = scale;
 		transformPoly(m_poly[1], m_poly_side_default, m_position[1], m_angle[1], m_scale[1]);
 	}
+	else if (m_selected_poly == 2)
+	{
+		m_scale[2] = scale;
+		transformPoly(m_poly[2], m_poly_sidetop_default, m_position[2], m_angle[2], m_scale[2]);
+	}
+	else if (m_selected_poly == 3)
+	{
+		m_scale[3] = scale;
+		transformPoly(m_poly[3], m_poly_sidebot_default, m_position[3], m_angle[3], m_scale[3]);
+	}
 	update();
 }
 
@@ -835,6 +918,16 @@ void TileDesignerWidget::setRotate(int angle)
 	{
 		m_angle[1] = angle;
 		transformPoly(m_poly[1], m_poly_side_default, m_position[1], m_angle[1], m_scale[1]);
+	}
+	else if (m_selected_poly == 2)
+	{
+		m_angle[2] = angle;
+		transformPoly(m_poly[2], m_poly_sidetop_default, m_position[2], m_angle[2], m_scale[2]);
+	}
+	else if (m_selected_poly == 3)
+	{
+		m_angle[3] = angle;
+		transformPoly(m_poly[3], m_poly_sidebot_default, m_position[3], m_angle[3], m_scale[3]);
 	}
 	update();
 }
@@ -852,7 +945,7 @@ void TileDesignerWidget::transformPoly(PolygonDef* def, PolygonDef* srcdef, glm:
 	{
 		glm::vec2 pp = srcdef->getPoint(i) + pos;
 		glm::vec2 dp = (pp - center);
-		glm::vec2 tp = glm::rotate(dp, (float)(rot)) + center;
+		glm::vec2 tp = glm::rotate(dp, (float)(rot * M_PI / 180.0f)) + center;
 		pp = center + ((tp - center) * scale);
 
 		def->insertPoint(pp);
@@ -1367,6 +1460,22 @@ void TileDesigner::polySelected(int poly)
 		m_rotate_spin->setValue(m_widget->m_angle[1]);
 		m_scale_spin->setValue(m_widget->m_scale[1]);
 	}
+	else if (poly == 2)
+	{
+		m_rotate_widget->setDisabled(false);
+		m_scale_widget->setDisabled(false);
+
+		m_rotate_spin->setValue(m_widget->m_angle[2]);
+		m_scale_spin->setValue(m_widget->m_scale[2]);
+	}
+	else if (poly == 3)
+	{
+		m_rotate_widget->setDisabled(false);
+		m_scale_widget->setDisabled(false);
+
+		m_rotate_spin->setValue(m_widget->m_angle[3]);
+		m_scale_spin->setValue(m_widget->m_scale[3]);
+	}
 	else
 	{
 		m_rotate_widget->setDisabled(true);
@@ -1405,12 +1514,12 @@ void TileDesigner::setTileType(int type)
 }
 
 
-QImage TileDesigner::makeThumbnail(PolygonDef* top_points, PolygonDef* side_points,
+QImage TileDesigner::makeThumbnail(PolygonDef* top_points, PolygonDef* side_points, PolygonDef* sidetop_points, PolygonDef* sidebot_points,
 	Tileset::TileType tile_type,
 	Tileset::TopType top_type,
 	Tileset::ShadingType shading_type,
 	float top_height,
 	unsigned int color)
 {
-	return m_preview->makeThumbnail(top_points, side_points, tile_type, top_type, shading_type, top_height, color);
+	return m_preview->makeThumbnail(top_points, side_points, sidetop_points, sidebot_points, tile_type, top_type, shading_type, top_height, color);
 }

@@ -206,16 +206,16 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 		const AmbientOcclusion::AOWallTile& wall_tile_r = m_ao->getWallTile(ao_solution.wall_right);
 		const AmbientOcclusion::AOWallTile& wall_tile_br = m_ao->getWallTile(ao_solution.wall_botright);
 		const AmbientOcclusion::AOWallTile& wall_tile_bl = m_ao->getWallTile(ao_solution.wall_botleft);
-		const AmbientOcclusion::AOWallTile& wall_tile_sidel = m_ao->getWallTile(0);
-		const AmbientOcclusion::AOWallTile& wall_tile_sider = m_ao->getWallTile(0);
-		const AmbientOcclusion::AOWallTile& wall_tile_midtop = m_ao->getWallTile(0);
-		const AmbientOcclusion::AOWallTile& wall_tile_midbot = m_ao->getWallTile(0);
-		const AmbientOcclusion::AOWallTile& wall_tile_centtop = m_ao->getWallTile(0);
-		const AmbientOcclusion::AOWallTile& wall_tile_centbot = m_ao->getWallTile(0);
-		const AmbientOcclusion::AOWallTile& wall_tile_ctl = m_ao->getWallTile(0);
-		const AmbientOcclusion::AOWallTile& wall_tile_ctr = m_ao->getWallTile(0);
-		const AmbientOcclusion::AOWallTile& wall_tile_cbl = m_ao->getWallTile(0);
-		const AmbientOcclusion::AOWallTile& wall_tile_cbr = m_ao->getWallTile(0);
+		const AmbientOcclusion::AOWallTile& wall_tile_sidel = m_ao->getWallTile(AmbientOcclusion::WALLSIDE_FLOOR);
+		const AmbientOcclusion::AOWallTile& wall_tile_sider = m_ao->getWallTile(AmbientOcclusion::WALLSIDE_FLOOR);
+		const AmbientOcclusion::AOWallTile& wall_tile_midtop = m_ao->getWallTile(AmbientOcclusion::WALLSIDE_FLOOR);
+		const AmbientOcclusion::AOWallTile& wall_tile_midbot = m_ao->getWallTile(AmbientOcclusion::WALLSIDE_FLOOR);
+		const AmbientOcclusion::AOWallTile& wall_tile_centtop = m_ao->getWallTile(AmbientOcclusion::WALLSIDE_FLOOR);
+		const AmbientOcclusion::AOWallTile& wall_tile_centbot = m_ao->getWallTile(AmbientOcclusion::WALLSIDE_FLOOR);
+		const AmbientOcclusion::AOWallTile& wall_tile_ctl = m_ao->getWallTile(AmbientOcclusion::WALLSIDE_FLOOR);
+		const AmbientOcclusion::AOWallTile& wall_tile_ctr = m_ao->getWallTile(AmbientOcclusion::WALLSIDE_FLOOR);
+		const AmbientOcclusion::AOWallTile& wall_tile_cbl = m_ao->getWallTile(AmbientOcclusion::WALLSIDE_FLOOR);
+		const AmbientOcclusion::AOWallTile& wall_tile_cbr = m_ao->getWallTile(AmbientOcclusion::WALLSIDE_FLOOR);
 
 
 

@@ -103,6 +103,12 @@ private:
 		int wall_topright;
 		int wall_botleft;
 		int wall_botright;
+		int wall_sideleft;
+		int wall_sideright;
+		int wall_midtop;
+		int wall_midbot;
+		int wall_centtop;
+		int wall_centbot;
 	};
 
 

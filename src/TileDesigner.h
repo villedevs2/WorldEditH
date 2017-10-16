@@ -34,7 +34,11 @@ public:
 	{
 		POLY_TOP = 0x1,
 		POLY_SIDE = 0x2,
+		POLY_SIDETOP = 0x4,
+		POLY_SIDEBOT = 0x8,
 	};
+
+	static const int NUM_POLY_OBJS = 4;
 
 	TileDesignerWidget(QWidget* parent, Level* level, TilePreview* preview);
 	~TileDesignerWidget();
@@ -130,10 +134,12 @@ private:
 	Tileset::TileType m_current_tile_type;
 	int m_selected_poly;
 
-	PolygonDef* m_poly[2];
+	PolygonDef* m_poly[4];
 
 	PolygonDef* m_poly_top_default[10];
 	PolygonDef* m_poly_side_default;
+	PolygonDef* m_poly_sidetop_default;
+	PolygonDef* m_poly_sidebot_default;
 
 	Level* m_level;
 
@@ -151,9 +157,9 @@ private:
 	bool m_move_dragging;
 	glm::vec2 m_move_reference;
 
-	glm::vec2 m_position[2];
-	float m_angle[2];
-	float m_scale[2];
+	glm::vec2 m_position[4];
+	float m_angle[4];
+	float m_scale[4];
 
 	bool m_snap_grid;
 	bool m_show_grid;
@@ -178,12 +184,8 @@ public:
 
 	void setTexture(QImage* texture);
 
-	QImage makeThumbnail(PolygonDef* top_points, PolygonDef* side_points,
-						Tileset::TileType tile_type,
-						Tileset::TopType top_type,
-						Tileset::ShadingType shading_type,
-						float top_height,
-						unsigned int color);
+	QImage makeThumbnail(PolygonDef* top_points, PolygonDef* side_points, PolygonDef* sidetop_points, PolygonDef* sidebot_points,
+		Tileset::TileType tile_type, Tileset::TopType top_type, Tileset::ShadingType shading_type, float top_height, unsigned int color);
 
 	static const int NUM_GRID_SIZES = 8;
 	static const float GRID_SIZE[NUM_GRID_SIZES];

@@ -2,6 +2,7 @@
 
 #include <QtGui>
 #include <QGLWidget>
+#include <qopenglfunctions.h>
 #include <qglshaderprogram.h>
 
 #include <glm.hpp>
@@ -13,7 +14,7 @@
 #include "Tileset.h"
 #include "Shaders.h"
 
-class TilePreview : public QGLWidget
+class TilePreview : public QGLWidget, private QOpenGLFunctions
 {
 	Q_OBJECT
 
@@ -24,17 +25,20 @@ public:
 	void setTexture(QImage* texture);
 	void setTopUVs(PolygonDef* uvs);
 	void setSideUVs(PolygonDef* uvs);
+	void setSideTopUVs(PolygonDef* uvs);
+	void setSideBotUVs(PolygonDef* uvs);
 	void setTileType(Tileset::TileType type);
 	void setTopHeight(float height);
 	void setTopType(Tileset::TopType type);
 	void setShadingType(Tileset::ShadingType type);
 
 	QImage makeThumbnail(PolygonDef* top_points, PolygonDef* side_points,
-						Tileset::TileType tile_type,
-						Tileset::TopType top_type,
-						Tileset::ShadingType shading_type,
-						float top_height,
-						unsigned int color);
+		PolygonDef* sidetop_points, PolygonDef* sidebot_points,
+		Tileset::TileType tile_type,
+		Tileset::TopType top_type,
+		Tileset::ShadingType shading_type,
+		float top_height,
+		unsigned int color);
 
 protected:
 	void initializeGL();
@@ -58,11 +62,16 @@ private:
 
 	QString loadShader(QString filename);
 	void updateGeo(const glm::vec2* top_points, const glm::vec2* side_points,
-					Tileset::TileType tile_type,
-					Tileset::TopType top_type,
-					Tileset::ShadingType shading_type,
-					float top_height,
-					unsigned int color);
+		const glm::vec2* sidetop_points, const glm::vec2* sidebot_points,
+		Tileset::TileType tile_type,
+		Tileset::TopType top_type,
+		Tileset::ShadingType shading_type,
+		float top_height,
+		unsigned int color);
+
+	void loadAmbientMap(QImage* texture);
+
+	Level* m_level;
 
 	float m_viewport_width;
 	float m_viewport_height;
@@ -73,6 +82,7 @@ private:
 
 	VBO<HSVertex>* m_vbo;
 	GLuint m_base_tex;
+	GLuint m_ambient_tex;
 
 	Tileset::TileType m_tile_type;
 	Tileset::TopType m_top_type;
@@ -80,6 +90,8 @@ private:
 
 	glm::vec2 m_top_points[6];
 	glm::vec2 m_side_points[4];
+	glm::vec2 m_sidetop_points[4];
+	glm::vec2 m_sidebot_points[4];
 	unsigned int m_color;
 	float m_top_height;
 };
