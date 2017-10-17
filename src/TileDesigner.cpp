@@ -95,15 +95,18 @@ TileDesignerWidget::TileDesignerWidget(QWidget* parent, Level* level, TilePrevie
 	m_poly_side_default->insertPoint(glm::vec2(0.125f, 0.125f));
 	m_poly_side_default->insertPoint(glm::vec2(0.125f, 0.0f));
 
-	m_poly_sidetop_default->insertPoint(glm::vec2(0.0f, 0.0f));
 	m_poly_sidetop_default->insertPoint(glm::vec2(0.0f, 0.03125f));
 	m_poly_sidetop_default->insertPoint(glm::vec2(0.125f, 0.03125f));
 	m_poly_sidetop_default->insertPoint(glm::vec2(0.125f, 0.0f));
+	m_poly_sidetop_default->insertPoint(glm::vec2(0.0f, 0.0f));
 	
-	m_poly_sidebot_default->insertPoint(glm::vec2(0.0f, 0.0f));
 	m_poly_sidebot_default->insertPoint(glm::vec2(0.0f, 0.03125f));
 	m_poly_sidebot_default->insertPoint(glm::vec2(0.125f, 0.03125f));
 	m_poly_sidebot_default->insertPoint(glm::vec2(0.125f, 0.0f));
+	m_poly_sidebot_default->insertPoint(glm::vec2(0.0f, 0.0f));
+	
+	
+	
 
 	m_zoom = 1.0f;
 	m_scroll = glm::vec2(0.0f, 0.0f);
@@ -953,6 +956,8 @@ void TileDesignerWidget::transformPoly(PolygonDef* def, PolygonDef* srcdef, glm:
 
 	m_preview->setTopUVs(m_poly[0]);
 	m_preview->setSideUVs(m_poly[1]);
+	m_preview->setSideTopUVs(m_poly[2]);
+	m_preview->setSideBotUVs(m_poly[3]);
 }
 
 void TileDesignerWidget::setTopType(Tileset::TopType type)
