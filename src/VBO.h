@@ -10,6 +10,7 @@ class HSVertex
 {
 public:
 	HSVertex::HSVertex();
+	HSVertex::HSVertex(const glm::vec3& pos, const glm::vec2& uv, const glm::vec2& amb_uv, unsigned int color);
 	HSVertex::HSVertex(const glm::vec3& pos, const glm::vec2& uv, const glm::vec2& amb_uv, const glm::vec3& normal, unsigned int color);
 	HSVertex::~HSVertex();
 

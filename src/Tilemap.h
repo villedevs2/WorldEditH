@@ -35,6 +35,39 @@ public:
 		FLAGS_FIXED_Z = 0x00000001,
 	};
 
+	struct TileAO
+	{
+		AmbientOcclusion::AOFloorTile* floor;
+		AmbientOcclusion::AOWallTile* wall_left;
+		AmbientOcclusion::AOWallTile* wall_right;
+		AmbientOcclusion::AOWallTile* wall_topleft;
+		AmbientOcclusion::AOWallTile* wall_topright;
+		AmbientOcclusion::AOWallTile* wall_botleft;
+		AmbientOcclusion::AOWallTile* wall_botright;
+		AmbientOcclusion::AOWallTile* wall_sideleft;
+		AmbientOcclusion::AOWallTile* wall_sideright;
+		AmbientOcclusion::AOWallTile* wall_midtop;
+		AmbientOcclusion::AOWallTile* wall_midbot;
+		AmbientOcclusion::AOWallTile* wall_centtop;
+		AmbientOcclusion::AOWallTile* wall_centbot;
+	};
+
+	struct TileDef
+	{
+		glm::vec2* floor_uvs;
+		glm::vec2 floor_uvcen;
+		glm::vec2* wallmid_uvs;
+		glm::vec2* walltop_uvs;
+		glm::vec2* wallbot_uvs;
+		Tileset::TileType tiletype;
+		Tileset::TopType toptype;
+		Tileset::ShadingType shading;
+		float tile_height;
+		float top_height;
+		unsigned int color;
+		Tilemap::TileAO tile_ao;
+	};
+
 	static const unsigned int TILE_MASK = 0xffff;
 	static const unsigned int TILE_EMPTY = 0xffff;
 	static const unsigned int Z_MASK = 0xff0000;
@@ -68,6 +101,7 @@ public:
 	float getTileHeight();
 	Tilemap::Bucket* getTileBucket(int bx, int by);
 	Tilemap::Bucket* getTileBucket(int index);
+	static int makeVBOTile(VBO<HSVertex>& vbo, int index, const TileDef& tiledef);
 
 private:
 	struct TileCoord
@@ -110,7 +144,6 @@ private:
 		int wall_centtop;
 		int wall_centbot;
 	};
-
 
 	void tesselateTile(Bucket* bucket, int bx, int by);
 	void retesselateTileByCoords(int tx, int ty);

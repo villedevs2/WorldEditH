@@ -18,6 +18,15 @@ HSVertex::HSVertex(const glm::vec3& pos, const glm::vec2& uv, const glm::vec2& a
 	this->color = color;
 }
 
+HSVertex::HSVertex(const glm::vec3& pos, const glm::vec2& uv, const glm::vec2& amb_uv, unsigned int color)
+{
+	this->pos = pos;
+	this->uv = uv;
+	this->amb_uv = amb_uv;
+	this->normal = glm::vec3();
+	this->color = color;
+}
+
 HSVertex::~HSVertex()
 {
 }

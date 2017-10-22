@@ -335,11 +335,6 @@ void TilePreview::updateGeo(const glm::vec2* top_points, const glm::vec2* side_p
 {
 	int vbo_index = 0;
 
-	float amb_tile_w = 1.0 / 8.0;
-	float amb_tile_h = 1.0 / 8.0;
-	float amb_tile_x = 0.0f;
-	float amb_tile_y = 0.0f;
-
 	glm::vec2 uv1 = top_points[0];
 	glm::vec2 uv2 = top_points[1];
 	glm::vec2 uv3 = top_points[2];
@@ -353,16 +348,6 @@ void TilePreview::updateGeo(const glm::vec2* top_points, const glm::vec2* side_p
 	glm::vec2 suv2 = side_points[1];
 	glm::vec2 suv3 = side_points[2];
 	glm::vec2 suv4 = side_points[3];
-
-	glm::vec2 topsuv1 = sidetop_points[0];
-	glm::vec2 topsuv2 = sidetop_points[1];
-	glm::vec2 topsuv3 = sidetop_points[2];
-	glm::vec2 topsuv4 = sidetop_points[3];
-
-	glm::vec2 botsuv1 = sidebot_points[0];
-	glm::vec2 botsuv2 = sidebot_points[1];
-	glm::vec2 botsuv3 = sidebot_points[2];
-	glm::vec2 botsuv4 = sidebot_points[3];
 
 		/*
 		     p6
