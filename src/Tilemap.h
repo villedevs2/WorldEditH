@@ -50,6 +50,10 @@ public:
 		AmbientOcclusion::AOWallTile* wall_midbot;
 		AmbientOcclusion::AOWallTile* wall_centtop;
 		AmbientOcclusion::AOWallTile* wall_centbot;
+		AmbientOcclusion::AOWallTile* wall_corntl;
+		AmbientOcclusion::AOWallTile* wall_corntr;
+		AmbientOcclusion::AOWallTile* wall_cornbl;
+		AmbientOcclusion::AOWallTile* wall_cornbr;
 	};
 
 	struct TileDef
@@ -62,9 +66,11 @@ public:
 		Tileset::TileType tiletype;
 		Tileset::TopType toptype;
 		Tileset::ShadingType shading;
-		float tile_height;
+		float tile_z;
 		float top_height;
 		unsigned int color;
+		float tile_width;
+		float tile_height;
 		Tilemap::TileAO tile_ao;
 	};
 
@@ -101,7 +107,7 @@ public:
 	float getTileHeight();
 	Tilemap::Bucket* getTileBucket(int bx, int by);
 	Tilemap::Bucket* getTileBucket(int index);
-	static int makeVBOTile(VBO<HSVertex>& vbo, int index, const TileDef& tiledef);
+	static int makeVBOTile(VBO<HSVertex>& vbo, int index, const TileDef& tiledef, int x, int y);
 
 private:
 	struct TileCoord
