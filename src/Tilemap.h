@@ -58,11 +58,11 @@ public:
 
 	struct TileDef
 	{
-		glm::vec2* floor_uvs;
+		glm::vec2 floor_uvs[6];
 		glm::vec2 floor_uvcen;
-		glm::vec2* wallmid_uvs;
-		glm::vec2* walltop_uvs;
-		glm::vec2* wallbot_uvs;
+		glm::vec2 wallmid_uvs[4];
+		glm::vec2 walltop_uvs[4];
+		glm::vec2 wallbot_uvs[4];
 		Tileset::TileType tiletype;
 		Tileset::TopType toptype;
 		Tileset::ShadingType shading;
@@ -107,7 +107,7 @@ public:
 	float getTileHeight();
 	Tilemap::Bucket* getTileBucket(int bx, int by);
 	Tilemap::Bucket* getTileBucket(int index);
-	static int makeVBOTile(VBO<HSVertex>& vbo, int index, const TileDef& tiledef, int x, int y);
+	static int makeVBOTile(VBO<HSVertex>* vbo, int index, const TileDef& tiledef, int x, int y);
 
 private:
 	struct TileCoord

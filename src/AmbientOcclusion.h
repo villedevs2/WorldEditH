@@ -37,8 +37,8 @@ public:
 	void calculate();
 	QImage* getMap();
 	bool load(QString name);
-	const AmbientOcclusion::AOFloorTile& getFloorTile(int tile);
-	const AmbientOcclusion::AOWallTile& getWallTile(int tile);
+	AmbientOcclusion::AOFloorTile* getFloorTile(int tile);
+	AmbientOcclusion::AOWallTile* getWallTile(int tile);
 
 	enum Sides
 	{

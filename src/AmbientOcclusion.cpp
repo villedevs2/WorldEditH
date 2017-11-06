@@ -368,16 +368,16 @@ bool AmbientOcclusion::load(QString name)
 	return false;
 }
 
-const AmbientOcclusion::AOFloorTile& AmbientOcclusion::getFloorTile(int tile)
+AmbientOcclusion::AOFloorTile* AmbientOcclusion::getFloorTile(int tile)
 {
 	assert(tile >= 0 && tile < 64);
 
-	return m_floor_tiles[tile];
+	return &m_floor_tiles[tile];
 }
 
-const AmbientOcclusion::AOWallTile& AmbientOcclusion::getWallTile(int tile)
+AmbientOcclusion::AOWallTile* AmbientOcclusion::getWallTile(int tile)
 {
 	assert(tile >= 0 && tile < 8);
 
-	return m_wall_tiles[tile];
+	return &m_wall_tiles[tile];
 }

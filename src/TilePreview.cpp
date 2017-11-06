@@ -349,6 +349,64 @@ void TilePreview::updateGeo(const glm::vec2* top_points, const glm::vec2* side_p
 	glm::vec2 suv3 = side_points[2];
 	glm::vec2 suv4 = side_points[3];
 
+	Tilemap::TileDef tiledef;
+	tiledef.floor_uvs[0] = top_points[0];
+	tiledef.floor_uvs[1] = top_points[1];
+	tiledef.floor_uvs[2] = top_points[2];
+	tiledef.floor_uvs[3] = top_points[3];
+	tiledef.floor_uvs[4] = top_points[4];
+	tiledef.floor_uvs[5] = top_points[5];
+	tiledef.floor_uvcen = glm::mix(uv1 + ((uv5 - uv1) * 0.5f), uv2 + ((uv4 - uv2) * 0.5f), 0.5f);
+
+	tiledef.wallmid_uvs[0] = side_points[0];
+	tiledef.wallmid_uvs[1] = side_points[1];
+	tiledef.wallmid_uvs[2] = side_points[2];
+	tiledef.wallmid_uvs[3] = side_points[3];
+
+	tiledef.walltop_uvs[0] = sidetop_points[0];
+	tiledef.walltop_uvs[1] = sidetop_points[1];
+	tiledef.walltop_uvs[2] = sidetop_points[2];
+	tiledef.walltop_uvs[3] = sidetop_points[3];
+
+	tiledef.wallbot_uvs[0] = sidebot_points[0];
+	tiledef.wallbot_uvs[1] = sidebot_points[1];
+	tiledef.wallbot_uvs[2] = sidebot_points[2];
+	tiledef.wallbot_uvs[3] = sidebot_points[3];
+
+	tiledef.tiletype = tile_type;
+	tiledef.toptype = top_type;
+	tiledef.shading = shading_type;
+
+	tiledef.tile_z = 1.0f;
+	tiledef.top_height = top_height;
+	tiledef.color = color;
+	tiledef.tile_width = 1.0f;
+	tiledef.tile_height = 1.4f;
+
+	tiledef.tile_ao.floor = m_level->getAO()->getFloorTile(0);
+	tiledef.tile_ao.wall_left = m_level->getAO()->getWallTile(0);
+	tiledef.tile_ao.wall_right = m_level->getAO()->getWallTile(0);
+	tiledef.tile_ao.wall_topleft = m_level->getAO()->getWallTile(0);
+	tiledef.tile_ao.wall_topright = m_level->getAO()->getWallTile(0);
+	tiledef.tile_ao.wall_botleft = m_level->getAO()->getWallTile(0);
+	tiledef.tile_ao.wall_botright = m_level->getAO()->getWallTile(0);
+	tiledef.tile_ao.wall_left = m_level->getAO()->getWallTile(0);
+	tiledef.tile_ao.wall_sideleft = m_level->getAO()->getWallTile(0);
+	tiledef.tile_ao.wall_sideright = m_level->getAO()->getWallTile(0);
+	tiledef.tile_ao.wall_midtop = m_level->getAO()->getWallTile(0);
+	tiledef.tile_ao.wall_midbot = m_level->getAO()->getWallTile(0);
+	tiledef.tile_ao.wall_centtop = m_level->getAO()->getWallTile(0);
+	tiledef.tile_ao.wall_centbot = m_level->getAO()->getWallTile(0);
+	tiledef.tile_ao.wall_corntl = m_level->getAO()->getWallTile(0);
+	tiledef.tile_ao.wall_corntr = m_level->getAO()->getWallTile(0);
+	tiledef.tile_ao.wall_cornbl = m_level->getAO()->getWallTile(0);
+	tiledef.tile_ao.wall_cornbr = m_level->getAO()->getWallTile(0);
+
+	Tilemap::makeVBOTile(m_vbo, 0, tiledef, 0, 0);
+
+
+#if 0
+
 		/*
 		     p6
 		p1         p5
@@ -951,6 +1009,7 @@ void TilePreview::updateGeo(const glm::vec2* top_points, const glm::vec2* side_p
 
 	if (vbo_index < m_vbo->getCapacity())
 		m_vbo->degenTris(vbo_index, m_vbo->getCapacity() - vbo_index);
+#endif
 	
 	update();
 }
