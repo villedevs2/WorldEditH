@@ -61,6 +61,8 @@ public:
 	{
 		glm::vec2 top_points[6];
 		glm::vec2 side_points[4];
+		glm::vec2 sidetop_points[4];
+		glm::vec2 sidebot_points[4];
 		std::string name;
 		unsigned int color;
 		int id;
@@ -96,12 +98,12 @@ public:
 	Tileset(Tileset::EditCallback* edit_callback);
 	~Tileset();
 
-	int insertTile(std::string name, PolygonDef* top, PolygonDef* side, unsigned int color,
+	int insertTile(std::string name, PolygonDef* top, PolygonDef* side, PolygonDef* sidetop, PolygonDef* sidebot, unsigned int color,
 					Tileset::TileType type,
 					Tileset::TopType top_type,
 					Tileset::ShadingType shading_type,
 					float top_height, unsigned int* thumb, int thumb_w, int thumb_h);
-	int replaceTile(int index, std::string name, PolygonDef* top, PolygonDef* side, unsigned int color,
+	int replaceTile(int index, std::string name, PolygonDef* top, PolygonDef* side, PolygonDef* sidetop, PolygonDef* sidebot, unsigned int color,
 					Tileset::TileType type,
 					Tileset::TopType top_type,
 					Tileset::ShadingType shading_type,

@@ -129,6 +129,80 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 	float floor_amb_tile_y = floor_ao_tile_y * floor_amb_tile_h;
 	*/
 
+	VBO<HSVertex>* vbo = bucket->tiles;
+	float z = z_current * 0.1f;
+	int vbo_index = ((by * BUCKET_WIDTH) + bx) * MAX_VERTS;
+
+	int ctile = bucket->map[(by * BUCKET_WIDTH) + bx] & TILE_MASK;
+
+	if (ctile == Tilemap::TILE_EMPTY)
+	{
+		// make degen geo
+		vbo->degenTris(vbo_index, MAX_VERTS);
+	}
+	else
+	{
+		const Tileset::Tile* tiledata = m_tileset->getTile(ctile);
+
+		Tilemap::TileDef tiledef;
+		tiledef.floor_uvs[0] = tiledata->top_points[0];
+		tiledef.floor_uvs[1] = tiledata->top_points[1];
+		tiledef.floor_uvs[2] = tiledata->top_points[2];
+		tiledef.floor_uvs[3] = tiledata->top_points[3];
+		tiledef.floor_uvs[4] = tiledata->top_points[4];
+		tiledef.floor_uvs[5] = tiledata->top_points[5];
+		tiledef.floor_uvcen = glm::mix(tiledata->top_points[0] + ((tiledata->top_points[4] - tiledata->top_points[0]) * 0.5f), tiledata->top_points[1] + ((tiledata->top_points[3] - tiledata->top_points[1]) * 0.5f), 0.5f);
+
+		tiledef.wallmid_uvs[0] = tiledata->side_points[0];
+		tiledef.wallmid_uvs[1] = tiledata->side_points[1];
+		tiledef.wallmid_uvs[2] = tiledata->side_points[2];
+		tiledef.wallmid_uvs[3] = tiledata->side_points[3];
+
+		// TODOOOO
+		tiledef.walltop_uvs[0] = tiledata->side_points[0];
+		tiledef.walltop_uvs[1] = tiledata->side_points[1];
+		tiledef.walltop_uvs[2] = tiledata->side_points[2];
+		tiledef.walltop_uvs[3] = tiledata->side_points[3];
+		// TODOOOOO
+		tiledef.wallbot_uvs[0] = tiledata->side_points[0];
+		tiledef.wallbot_uvs[1] = tiledata->side_points[1];
+		tiledef.wallbot_uvs[2] = tiledata->side_points[2];
+		tiledef.wallbot_uvs[3] = tiledata->side_points[3];
+
+		tiledef.tiletype = tiledata->type;
+		tiledef.toptype = tiledata->top_type;
+
+		tiledef.tile_z = z;
+		tiledef.top_height = tiledata->top_height;
+		tiledef.color = tiledata->color;
+		tiledef.shading = Tileset::SHADING_STANDARD;	// TODDODODODOD
+		tiledef.tile_width = m_tile_width;
+		tiledef.tile_height = m_tile_height;
+
+		tiledef.tile_ao.floor = m_ao->getFloorTile(ao_solution.floor);
+		tiledef.tile_ao.wall_left = m_ao->getWallTile(ao_solution.wall_left);
+		tiledef.tile_ao.wall_right = m_ao->getWallTile(ao_solution.wall_right);
+		tiledef.tile_ao.wall_topleft = m_ao->getWallTile(ao_solution.wall_topleft);
+		tiledef.tile_ao.wall_topright = m_ao->getWallTile(ao_solution.wall_topright);
+		tiledef.tile_ao.wall_botleft = m_ao->getWallTile(ao_solution.wall_botleft);
+		tiledef.tile_ao.wall_botright = m_ao->getWallTile(ao_solution.wall_botright);
+		tiledef.tile_ao.wall_sideleft = m_ao->getWallTile(ao_solution.wall_sideleft);
+		tiledef.tile_ao.wall_sideright = m_ao->getWallTile(ao_solution.wall_sideright);
+		tiledef.tile_ao.wall_midtop = m_ao->getWallTile(ao_solution.wall_midtop);
+		tiledef.tile_ao.wall_midbot = m_ao->getWallTile(ao_solution.wall_midbot);
+		tiledef.tile_ao.wall_centtop = m_ao->getWallTile(ao_solution.wall_centtop);
+		tiledef.tile_ao.wall_centbot = m_ao->getWallTile(ao_solution.wall_centbot);
+		tiledef.tile_ao.wall_corntl = m_ao->getWallTile(ao_solution.wall_corntl);
+		tiledef.tile_ao.wall_corntr = m_ao->getWallTile(ao_solution.wall_corntr);
+		tiledef.tile_ao.wall_cornbl = m_ao->getWallTile(ao_solution.wall_cornbl);
+		tiledef.tile_ao.wall_cornbr = m_ao->getWallTile(ao_solution.wall_cornbr);
+
+
+		vbo_index += Tilemap::makeVBOTile(vbo, vbo_index, tiledef, (bucket->x * BUCKET_WIDTH) + bx, (bucket->y * BUCKET_HEIGHT) + by);
+	}
+
+
+#if 0
 	int wall_ao_tile[16];
 
 
@@ -634,12 +708,15 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 		if (vbo_index < MAX_VERTS)
 			vbo->degenTris(vbo_index, MAX_VERTS - vbo_index);
 	}
+#endif
 }
 
 int Tilemap::get(int x, int y)
 {
-	assert(x >= 0 && x < AREA_WIDTH);
-	assert(y >= 0 && y < AREA_HEIGHT);
+	if (x < 0 || x >= AREA_WIDTH)
+		return TILE_EMPTY;
+	if (y < 0 || y >= AREA_HEIGHT)
+		return TILE_EMPTY;
 
 	int bin = (y / BUCKET_HEIGHT) * (AREA_WIDTH / BUCKET_WIDTH) + (x / BUCKET_WIDTH);
 	if (m_buckets[bin] != nullptr)
@@ -1069,6 +1146,18 @@ void Tilemap::makeAOSolution(int tx, int ty, AOSolution* ao)
 	ao->wall_topright = wall_topright_bits;
 	ao->wall_botleft = wall_botleft_bits;
 	ao->wall_botright = wall_botright_bits;
+
+	// TODO?
+	ao->wall_sideleft = AmbientOcclusion::WALLSIDE_FLOOR;
+	ao->wall_sideright = AmbientOcclusion::WALLSIDE_FLOOR;
+	ao->wall_centbot = AmbientOcclusion::WALLSIDE_FLOOR;
+	ao->wall_centtop = AmbientOcclusion::WALLSIDE_FLOOR;
+	ao->wall_midtop = AmbientOcclusion::WALLSIDE_FLOOR;
+	ao->wall_midbot = AmbientOcclusion::WALLSIDE_FLOOR;
+	ao->wall_corntl = AmbientOcclusion::WALLSIDE_FLOOR;
+	ao->wall_corntr = AmbientOcclusion::WALLSIDE_FLOOR;
+	ao->wall_cornbl = AmbientOcclusion::WALLSIDE_FLOOR;
+	ao->wall_cornbr = AmbientOcclusion::WALLSIDE_FLOOR;
 }
 
 int Tilemap::makeVBOTile(VBO<HSVertex>* vbo, int vbo_index, const Tilemap::TileDef& tiledef, int x, int y)
@@ -1091,6 +1180,12 @@ int Tilemap::makeVBOTile(VBO<HSVertex>* vbo, int vbo_index, const Tilemap::TileD
 	float tx2 = tx1 + tiledef.tile_width;
 	float ty1 = (float)(y) * (tiledef.tile_height / 2);
 	float ty2 = ty1 + (tiledef.tile_height / 2);
+
+	if (y & 1)
+	{
+		tx1 += tiledef.tile_width / 2;
+		tx2 += tiledef.tile_width / 2;
+	}
 
 	glm::vec3 topt_p1 = glm::vec3(tx1, ty1 + (tiledef.tile_height * (15.0 / 70.0)), z);
 	glm::vec3 topt_p2 = glm::vec3(tx1, ty1 + (tiledef.tile_height * (35.0 / 70.0)), z);
@@ -1161,6 +1256,8 @@ int Tilemap::makeVBOTile(VBO<HSVertex>* vbo, int vbo_index, const Tilemap::TileD
 	HSVertex tv6(topt_p6, tiledef.floor_uvs[5], floor_ao->uv[5], top_norm, color);
 	HSVertex tvcen(topt_pcen, tiledef.floor_uvcen, floor_ao->center, top_norm, color);
 
+
+	// TODO: depend on tile height?
 	float amb_tt = 1.0f;
 	float amb_tb = 0.9166666f;
 	float amb_bt = 0.0833333f;
@@ -1869,6 +1966,7 @@ int Tilemap::makeVBOTile(VBO<HSVertex>* vbo, int vbo_index, const Tilemap::TileD
 		vbo_index += vbo->makeQuadPolyNorm(vbo_index, b_v1, b_v2, b_v3, b_v4);
 	}
 
+	
 	/*
 	if (vbo_index < vbo->getCapacity())
 		vbo->degenTris(vbo_index, m_vbo->getCapacity() - vbo_index);

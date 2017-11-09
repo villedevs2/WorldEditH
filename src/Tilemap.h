@@ -19,7 +19,7 @@ public:
 		virtual void tilemapModified() = 0;
 	};
 
-	static const int MAX_VERTS = 18;
+	static const int MAX_VERTS = 128;
 
 	struct Bucket
 	{
@@ -149,6 +149,10 @@ private:
 		int wall_midbot;
 		int wall_centtop;
 		int wall_centbot;
+		int wall_corntl;
+		int wall_corntr;
+		int wall_cornbl;
+		int wall_cornbr;
 	};
 
 	void tesselateTile(Bucket* bucket, int bx, int by);

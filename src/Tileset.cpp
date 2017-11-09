@@ -92,7 +92,7 @@ int Tileset::getSideBits(Tileset::TileType type)
 }
 
 
-int Tileset::insertTile(std::string name, PolygonDef* top, PolygonDef* side, unsigned int color,
+int Tileset::insertTile(std::string name, PolygonDef* top, PolygonDef* side, PolygonDef* sidetop, PolygonDef* sidebot, unsigned int color,
 	Tileset::TileType type,
 	Tileset::TopType top_type,
 	Tileset::ShadingType shading_type,
@@ -117,6 +117,17 @@ int Tileset::insertTile(std::string name, PolygonDef* top, PolygonDef* side, uns
 	{
 		tile.side_points[i] = side->getPoint(i);
 	}
+
+	for (int i = 0; i < sidetop->getNumPoints(); i++)
+	{
+		tile.sidetop_points[i] = sidetop->getPoint(i);
+	}
+
+	for (int i = 0; i < sidebot->getNumPoints(); i++)
+	{
+		tile.sidebot_points[i] = sidebot->getPoint(i);
+	}
+
 	tile.name = name;
 	tile.id = m_cumulative_tile_id;
 	m_cumulative_tile_id++;
@@ -143,7 +154,7 @@ int Tileset::insertTile(std::string name, PolygonDef* top, PolygonDef* side, uns
 	return tile.id;
 }
 
-int Tileset::replaceTile(int index, std::string name, PolygonDef* top, PolygonDef* side, unsigned int color,
+int Tileset::replaceTile(int index, std::string name, PolygonDef* top, PolygonDef* side, PolygonDef* sidetop, PolygonDef* sidebot, unsigned int color,
 						Tileset::TileType type,
 						Tileset::TopType top_type,
 						Tileset::ShadingType shading_type,
@@ -161,6 +172,17 @@ int Tileset::replaceTile(int index, std::string name, PolygonDef* top, PolygonDe
 	{
 		tile->side_points[i] = side->getPoint(i);
 	}
+
+	for (int i = 0; i < sidetop->getNumPoints(); i++)
+	{
+		tile->sidetop_points[i] = side->getPoint(i);
+	}
+
+	for (int i = 0; i < sidebot->getNumPoints(); i++)
+	{
+		tile->sidebot_points[i] = side->getPoint(i);
+	}
+
 	tile->name = name;
 
 	tile->color = color;
