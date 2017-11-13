@@ -72,6 +72,12 @@ public:
 		float tile_width;
 		float tile_height;
 		Tilemap::TileAO tile_ao;
+		int left_height;
+		int topleft_height;
+		int topright_height;
+		int right_height;
+		int botright_height;
+		int botleft_height;
 	};
 
 	static const unsigned int TILE_MASK = 0xffff;

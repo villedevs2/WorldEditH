@@ -158,16 +158,15 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 		tiledef.wallmid_uvs[2] = tiledata->side_points[2];
 		tiledef.wallmid_uvs[3] = tiledata->side_points[3];
 
-		// TODOOOO
-		tiledef.walltop_uvs[0] = tiledata->side_points[0];
-		tiledef.walltop_uvs[1] = tiledata->side_points[1];
-		tiledef.walltop_uvs[2] = tiledata->side_points[2];
-		tiledef.walltop_uvs[3] = tiledata->side_points[3];
-		// TODOOOOO
-		tiledef.wallbot_uvs[0] = tiledata->side_points[0];
-		tiledef.wallbot_uvs[1] = tiledata->side_points[1];
-		tiledef.wallbot_uvs[2] = tiledata->side_points[2];
-		tiledef.wallbot_uvs[3] = tiledata->side_points[3];
+		tiledef.walltop_uvs[0] = tiledata->sidetop_points[0];
+		tiledef.walltop_uvs[1] = tiledata->sidetop_points[1];
+		tiledef.walltop_uvs[2] = tiledata->sidetop_points[2];
+		tiledef.walltop_uvs[3] = tiledata->sidetop_points[3];
+
+		tiledef.wallbot_uvs[0] = tiledata->sidebot_points[0];
+		tiledef.wallbot_uvs[1] = tiledata->sidebot_points[1];
+		tiledef.wallbot_uvs[2] = tiledata->sidebot_points[2];
+		tiledef.wallbot_uvs[3] = tiledata->sidebot_points[3];
 
 		tiledef.tiletype = tiledata->type;
 		tiledef.toptype = tiledata->top_type;
@@ -196,6 +195,13 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 		tiledef.tile_ao.wall_corntr = m_ao->getWallTile(ao_solution.wall_corntr);
 		tiledef.tile_ao.wall_cornbl = m_ao->getWallTile(ao_solution.wall_cornbl);
 		tiledef.tile_ao.wall_cornbr = m_ao->getWallTile(ao_solution.wall_cornbr);
+
+		tiledef.left_height = getZ(adjacent_coords.left.x, adjacent_coords.left.y);
+		tiledef.right_height = getZ(adjacent_coords.right.x, adjacent_coords.right.y);
+		tiledef.topleft_height = getZ(adjacent_coords.topleft.x, adjacent_coords.topleft.y);
+		tiledef.topright_height = getZ(adjacent_coords.topright.x, adjacent_coords.topright.y);
+		tiledef.botleft_height = getZ(adjacent_coords.botleft.x, adjacent_coords.botleft.y);
+		tiledef.botright_height = getZ(adjacent_coords.botright.x, adjacent_coords.botright.y);
 
 
 		vbo_index += Tilemap::makeVBOTile(vbo, vbo_index, tiledef, (bucket->x * BUCKET_WIDTH) + bx, (bucket->y * BUCKET_HEIGHT) + by);

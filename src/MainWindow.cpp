@@ -1896,7 +1896,7 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 	BinaryFile input;
 
 	const unsigned int hspf_id = 0x48535046;
-	const unsigned int hspf_version = 0x10005;
+	const unsigned int hspf_version = 0x10006;
 	
 	Level::Object::Param params[Level::Object::NUM_PARAMS];
 	QString object_name = "";
@@ -2029,6 +2029,8 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 
 		PolygonDef* top = new PolygonDef(6);
 		PolygonDef* side = new PolygonDef(4);
+		PolygonDef* sidetop = new PolygonDef(4);
+		PolygonDef* sidebot = new PolygonDef(4);
 
 		// tiles
 		for (int i=0; i < num_tiles; i++)
@@ -2086,6 +2088,24 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 				side->insertPoint(glm::vec2(x, y));
 			}
 
+			// side top UVs
+			for (int j = 0; j < 4; j++)
+			{
+				float x = input.read_float();
+				float y = input.read_float();
+
+				sidetop->insertPoint(glm::vec2(x, y));
+			}
+
+			// side bottom UVs
+			for (int j = 0; j < 4; j++)
+			{
+				float x = input.read_float();
+				float y = input.read_float();
+
+				sidebot->insertPoint(glm::vec2(x, y));
+			}
+
 			unsigned int tile_color = input.read_dword();
 
 			unsigned int top_type = input.read_dword();
@@ -2119,7 +2139,7 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 				}
 			}
 
-			int id = tileset->insertTile(tile_name.toStdString(), top, side, tile_color,
+			int id = tileset->insertTile(tile_name.toStdString(), top, side, sidetop, sidebot, tile_color,
 										(Tileset::TileType)type,
 										(Tileset::TopType)top_type,
 										(Tileset::ShadingType)shading_type,
@@ -2132,13 +2152,13 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 
 		delete top;
 		delete side;
+		delete sidetop;
+		delete sidebot;
 
 		// ----------------
 
-		int num_tmaps = input.read_dword();
-		for (int tmap = 0; tmap < num_tmaps; tmap++)
 		{
-			Tilemap* tilemap = m_level->getTilemap((Level::TilemapType)tmap);
+			Tilemap* tilemap = m_level->getTilemap((Level::TilemapType)0);
 
 			// buckets
 			int num_buckets = input.read_dword();
@@ -2162,7 +2182,6 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 					}
 				}
 			}
-
 		}
 
 
@@ -2194,7 +2213,7 @@ bool MainWindow::writeBinaryProjectFile(QString& filename)
 	BinaryFile output;
 
 	const char hspf_id[4] = { 0x48, 0x53, 0x50, 0x46 };
-	const unsigned int hspf_version = 0x10005;
+	const unsigned int hspf_version = 0x10006;
 
 	int num_objects = m_level->numObjects();
 
@@ -2312,6 +2331,20 @@ bool MainWindow::writeBinaryProjectFile(QString& filename)
 				output.write_float(tile->side_points[j].y);
 			}
 
+			// side top UVs
+			for (int j = 0; j < 4; j++)
+			{
+				output.write_float(tile->sidetop_points[j].x);
+				output.write_float(tile->sidetop_points[j].y);
+			}
+
+			// side bottom UVs
+			for (int j = 0; j < 4; j++)
+			{
+				output.write_float(tile->sidebot_points[j].x);
+				output.write_float(tile->sidebot_points[j].y);
+			}
+
 			// tile color
 			output.write_dword(tile->color);
 
@@ -2348,12 +2381,8 @@ bool MainWindow::writeBinaryProjectFile(QString& filename)
 		// buckets
 		std::vector<Tilemap::Bucket*> buckets;
 
-		int num_tmaps = Level::NUM_TILEMAP_TYPES;
-		output.write_dword(num_tmaps);
-		
-		for (int tmap = 0; tmap < num_tmaps; tmap++)
 		{
-			Tilemap* tilemap = m_level->getTilemap((Level::TilemapType)tmap);
+			Tilemap* tilemap = m_level->getTilemap((Level::TilemapType)0);
 
 			int total_buckets = (Tilemap::AREA_WIDTH / Tilemap::BUCKET_WIDTH) * (Tilemap::AREA_HEIGHT / Tilemap::BUCKET_HEIGHT);
 			for (int i = 0; i < total_buckets; i++)

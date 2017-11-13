@@ -573,7 +573,7 @@ void TileDesignerWidget::insertTile(QString& name)
 		}
 	}
 
-	int id = m_level->getTileset()->insertTile(name.toStdString(), m_poly[0], m_poly[1], m_color,
+	int id = m_level->getTileset()->insertTile(name.toStdString(), m_poly[0], m_poly[1], m_poly[2], m_poly[3], m_color,
 												m_current_tile_type,
 												m_top_type,
 												m_shading_type,
@@ -606,7 +606,7 @@ void TileDesignerWidget::replaceTile(QString& name, int index)
 		}
 	}
 
-	int id = m_level->getTileset()->replaceTile(index, name.toStdString(), m_poly[0], m_poly[1], m_color,
+	int id = m_level->getTileset()->replaceTile(index, name.toStdString(), m_poly[0], m_poly[1], m_poly[2], m_poly[3], m_color,
 												m_current_tile_type,
 												m_top_type,
 												m_shading_type,
