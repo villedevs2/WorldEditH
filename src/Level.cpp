@@ -313,8 +313,7 @@ Level::Level(AmbientOcclusion* ao)
 	m_ao = ao;
 
 	m_tileset = new Tileset(this);
-	m_tilemap[Level::TILEMAP_NORMAL] = new Tilemap(m_tileset, this, 0.0f, 100.0f, 0, ao);
-	m_tilemap[Level::TILEMAP_FLOOR] = new Tilemap(m_tileset, this, -10.0f, 10.0f, Tilemap::FLAGS_FIXED_Z, ao);
+	m_tilemap = new Tilemap(m_tileset, this, 0.0f, 100.0f, 0, ao);
 
 	for (int i=0; i < NUM_VBOS; i++)
 	{
@@ -327,10 +326,8 @@ Level::Level(AmbientOcclusion* ao)
 
 Level::~Level()
 {
-	for (int i = 0; i < Level::NUM_TILEMAP_TYPES; i++)
-	{
-		delete[] m_tilemap[i];
-	}
+	delete m_tilemap;
+	delete m_tileset;
 
 	for (int i=0; i < NUM_VBOS; i++)
 	{
@@ -344,9 +341,9 @@ Tileset* Level::getTileset()
 	return m_tileset;
 }
 
-Tilemap* Level::getTilemap(Level::TilemapType type)
+Tilemap* Level::getTilemap()
 {
-	return m_tilemap[type];
+	return m_tilemap;
 }
 
 
@@ -362,10 +359,7 @@ void Level::tileAdded(int index)
 
 void Level::tileReplaced(int index)
 {
-	for (int i = 0; i < Level::NUM_TILEMAP_TYPES; i++)
-	{
-		m_tilemap[i]->tileChanged(index);
-	}
+	m_tilemap->tileChanged(index);
 
 	setModified();
 }
@@ -629,10 +623,7 @@ void Level::reset()
 	}
 	m_cumulative_object_id = 1;
 
-	for (int i = 0; i < Level::NUM_TILEMAP_TYPES; i++)
-	{
-		m_tilemap[i]->reset();
-	}
+	m_tilemap->reset();
 
 	setModified();
 }

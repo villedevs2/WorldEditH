@@ -210,6 +210,9 @@ MainWindow::MainWindow()
 	int ye = 50;
 	float tw = 1.0f;
 	float th = 1.2f;
+
+	// TODOTODOTODOTODO - make configurable!?
+	m_wall_threshold = 50;
 }
 
 MainWindow::~MainWindow(void)
@@ -752,7 +755,7 @@ void MainWindow::edgify_fill_point(FILE* fout, coord_point* points, int p1, int 
 	}
 }
 
-bool MainWindow::edgify(std::vector<std::vector<int>>& ptlist)
+bool MainWindow::edgify(std::vector<std::vector<int>>& ptlist, int wall_threshold)
 {
 	struct coord_pair
 	{
@@ -781,7 +784,7 @@ bool MainWindow::edgify(std::vector<std::vector<int>>& ptlist)
 	}
 
 	Tileset* tileset = m_level->getTileset();
-	Tilemap* tilemap = m_level->getTilemap(Level::TILEMAP_NORMAL);
+	Tilemap* tilemap = m_level->getTilemap();
 
 	// step 1
 	progress.setValue(1);
@@ -904,7 +907,8 @@ bool MainWindow::edgify(std::vector<std::vector<int>>& ptlist)
 							if (tx >= 0 && ty >= 0 && tx < Tilemap::AREA_WIDTH && ty < Tilemap::AREA_HEIGHT)
 							{
 								int ctile = tilemap->get(tx, ty);
-								if (ctile != Tilemap::TILE_EMPTY)
+								int cz = tilemap->getZ(tx, ty);
+								if (ctile != Tilemap::TILE_EMPTY || cz < wall_threshold)
 								{
 									const Tileset::Tile* tt = m_level->getTileset()->getTile(ctile);
 
@@ -1323,7 +1327,7 @@ void MainWindow::doEdgify()
 {
 	std::vector<std::vector<int>> ptlist;
 
-	if (edgify(ptlist))
+	if (edgify(ptlist, m_wall_threshold))
 	{
 		m_glwidget->setEdgeData(ptlist);
 	}
@@ -1338,9 +1342,7 @@ void MainWindow::clearEdgify()
 
 void MainWindow::doStats()
 {
-	// TODO: count other tilemaps too !!!
-
-	Tilemap* tilemap = m_level->getTilemap(Level::TILEMAP_NORMAL);
+	Tilemap* tilemap = m_level->getTilemap();
 
 	int total_buckets = (Tilemap::AREA_WIDTH / Tilemap::BUCKET_WIDTH) * (Tilemap::AREA_HEIGHT / Tilemap::BUCKET_HEIGHT);
 	int num_buckets = 0;
@@ -2158,7 +2160,7 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 		// ----------------
 
 		{
-			Tilemap* tilemap = m_level->getTilemap((Level::TilemapType)0);
+			Tilemap* tilemap = m_level->getTilemap();
 
 			// buckets
 			int num_buckets = input.read_dword();
@@ -2382,7 +2384,7 @@ bool MainWindow::writeBinaryProjectFile(QString& filename)
 		std::vector<Tilemap::Bucket*> buckets;
 
 		{
-			Tilemap* tilemap = m_level->getTilemap((Level::TilemapType)0);
+			Tilemap* tilemap = m_level->getTilemap();
 
 			int total_buckets = (Tilemap::AREA_WIDTH / Tilemap::BUCKET_WIDTH) * (Tilemap::AREA_HEIGHT / Tilemap::BUCKET_HEIGHT);
 			for (int i = 0; i < total_buckets; i++)
@@ -2582,13 +2584,8 @@ void MainWindow::writeLevelFile(QString& filename)
 
 		// buckets
 		std::vector<Tilemap::Bucket*> buckets;
-
-		int num_tmaps = Level::NUM_TILEMAP_TYPES;
-		output.write_dword(num_tmaps);
-
-		for (int tmap = 0; tmap < num_tmaps; tmap++)
 		{
-			Tilemap* tilemap = m_level->getTilemap((Level::TilemapType)tmap);
+			Tilemap* tilemap = m_level->getTilemap();
 
 			int total_buckets = (Tilemap::AREA_WIDTH / Tilemap::BUCKET_WIDTH) * (Tilemap::AREA_HEIGHT / Tilemap::BUCKET_HEIGHT);
 			for (int i = 0; i < total_buckets; i++)
@@ -2614,12 +2611,7 @@ void MainWindow::writeLevelFile(QString& filename)
 					int tile = b->map[t] & Tilemap::TILE_MASK;
 					int z = (b->map[t] & Tilemap::Z_MASK) >> Tilemap::Z_SHIFT;
 					output.write_word(tile);
-					
-					// floor has no z-value
-					if (tmap != Level::TILEMAP_FLOOR)
-					{
-						output.write_byte(z);
-					}
+					output.write_byte(z);
 				}
 			}
 		}
@@ -2658,7 +2650,7 @@ void MainWindow::writeLevelFile(QString& filename)
 		// Edges
 		std::vector<std::vector<int>> ptlist;
 
-		if (!edgify(ptlist))
+		if (!edgify(ptlist, m_wall_threshold))
 		{
 			throw "Edgify failed!";
 		}

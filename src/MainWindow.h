@@ -175,6 +175,8 @@ private:
 
 	AmbientOcclusion* m_ambient_occlusion;
 
+	int m_wall_threshold;
+
 	struct coord_point
 	{
 		int con1;
@@ -182,7 +184,7 @@ private:
 	};
 
 	void edgify_fill_point(FILE* fout, coord_point* points, int p1, int p2);
-	bool edgify(std::vector<std::vector<int>>& ptlist);
+	bool edgify(std::vector<std::vector<int>>& ptlist, int wall_threshold);
 
 public slots:
 	void texEditClosed();
