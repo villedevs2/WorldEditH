@@ -196,12 +196,12 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 		tiledef.tile_ao.wall_cornbl = m_ao->getWallTile(ao_solution.wall_cornbl);
 		tiledef.tile_ao.wall_cornbr = m_ao->getWallTile(ao_solution.wall_cornbr);
 
-		tiledef.left_height = getZ(adjacent_coords.left.x, adjacent_coords.left.y);
-		tiledef.right_height = getZ(adjacent_coords.right.x, adjacent_coords.right.y);
-		tiledef.topleft_height = getZ(adjacent_coords.topleft.x, adjacent_coords.topleft.y);
-		tiledef.topright_height = getZ(adjacent_coords.topright.x, adjacent_coords.topright.y);
-		tiledef.botleft_height = getZ(adjacent_coords.botleft.x, adjacent_coords.botleft.y);
-		tiledef.botright_height = getZ(adjacent_coords.botright.x, adjacent_coords.botright.y);
+		tiledef.left_height = getZ(adjacent_coords.left.x, adjacent_coords.left.y) * 0.1f;
+		tiledef.right_height = getZ(adjacent_coords.right.x, adjacent_coords.right.y) * 0.1f;
+		tiledef.topleft_height = getZ(adjacent_coords.topleft.x, adjacent_coords.topleft.y) * 0.1f;
+		tiledef.topright_height = getZ(adjacent_coords.topright.x, adjacent_coords.topright.y) * 0.1f;
+		tiledef.botleft_height = getZ(adjacent_coords.botleft.x, adjacent_coords.botleft.y) * 0.1f;
+		tiledef.botright_height = getZ(adjacent_coords.botright.x, adjacent_coords.botright.y) * 0.1f;
 
 
 		vbo_index += Tilemap::makeVBOTile(vbo, vbo_index, tiledef, (bucket->x * BUCKET_WIDTH) + bx, (bucket->y * BUCKET_HEIGHT) + by);
@@ -1168,13 +1168,67 @@ void Tilemap::makeAOSolution(int tx, int ty, AOSolution* ao)
 
 int Tilemap::makeVBOTile(VBO<HSVertex>* vbo, int vbo_index, const Tilemap::TileDef& tiledef, int x, int y)
 {
+	enum RenderTileSide {
+		TILESIDE_LEFT = 0,
+		TILESIDE_RIGHT = 1,
+		TILESIDE_TOPLEFT = 2,
+		TILESIDE_TOPRIGHT = 3,
+		TILESIDE_BOTLEFT = 4,
+		TILESIDE_BOTRIGHT = 5
+	};
+
+	bool render_sidetop[6] = { true, true, true, true, true, true };
+	bool render_sidebot[6] = { true, true, true, true, true, true };
+	bool render_side[6] = { true, true, true, true, true, true };
+
+	// side bottom render condition
+	if (tiledef.left_height > 0.0f) render_sidebot[TILESIDE_LEFT] = false;
+	if (tiledef.right_height > 0.0f) render_sidebot[TILESIDE_RIGHT] = false;
+	if (tiledef.topleft_height > 0.0f) render_sidebot[TILESIDE_TOPLEFT] = false;
+	if (tiledef.topright_height > 0.0f) render_sidebot[TILESIDE_TOPRIGHT] = false;
+	if (tiledef.botleft_height > 0.0f) render_sidebot[TILESIDE_BOTLEFT] = false;
+	if (tiledef.botright_height > 0.0f) render_sidebot[TILESIDE_BOTRIGHT] = false;
+
+	// side top render condition
+	if (tiledef.left_height >= tiledef.tile_z)
+	{
+		render_sidetop[TILESIDE_LEFT] = false;
+		render_side[TILESIDE_LEFT] = false;
+	}
+	if (tiledef.right_height >= tiledef.tile_z)
+	{
+		render_sidetop[TILESIDE_RIGHT] = false;
+		render_side[TILESIDE_RIGHT] = false;
+	}
+	if (tiledef.topleft_height >= tiledef.tile_z)
+	{
+		render_sidetop[TILESIDE_TOPLEFT] = false;
+		render_side[TILESIDE_TOPLEFT] = false;
+	}
+	if (tiledef.topright_height >= tiledef.tile_z)
+	{
+		render_sidetop[TILESIDE_TOPRIGHT] = false;
+		render_side[TILESIDE_TOPRIGHT] = false;
+	}
+	if (tiledef.botleft_height >= tiledef.tile_z)
+	{
+		render_sidetop[TILESIDE_BOTLEFT] = false;
+		render_side[TILESIDE_BOTLEFT] = false;
+	}
+	if (tiledef.botright_height >= tiledef.tile_z)
+	{
+		render_sidetop[TILESIDE_BOTRIGHT] = false;
+		render_side[TILESIDE_BOTRIGHT] = false;
+	}
+
+
 	int vbo_start = vbo_index;
 
 	unsigned int color = tiledef.color;
 
 	float botz = 0.1f;
 	float topz = 0.1f;
-	float z = tiledef.tile_z + botz + topz;
+	float z = tiledef.tile_z;
 
 	float midz = 0.0f;
 	if (tiledef.toptype == Tileset::TOP_POINTY)
@@ -1268,204 +1322,6 @@ int Tilemap::makeVBOTile(VBO<HSVertex>* vbo, int vbo_index, const Tilemap::TileD
 	float amb_tb = 0.9166666f;
 	float amb_bt = 0.0833333f;
 	float amb_bb = 0.0f;
-
-
-	/*
-	HSVertex topleft_m_v1(topb_p6, tiledef.wallmid_uvs[3], amb_topb_uvl, glm::vec3(), color);
-	HSVertex topleft_m_v2(topb_p1, tiledef.wallmid_uvs[2], amb_topb_uvr, glm::vec3(), color);
-	HSVertex topleft_m_v3(bott_p1, tiledef.wallmid_uvs[1], amb_bott_uvr, glm::vec3(), color);
-	HSVertex topleft_m_v4(bott_p6, tiledef.wallmid_uvs[0], amb_bott_uvl, glm::vec3(), color);
-	HSVertex topleft_t_v1(topt_p6, tiledef.walltop_uvs[3], amb_topt_uvl, glm::vec3(), color);
-	HSVertex topleft_t_v2(topt_p1, tiledef.walltop_uvs[2], amb_topt_uvr, glm::vec3(), color);
-	HSVertex topleft_t_v3(topb_p1, tiledef.walltop_uvs[1], amb_topb_uvr, glm::vec3(), color);
-	HSVertex topleft_t_v4(topb_p6, tiledef.walltop_uvs[0], amb_topb_uvl, glm::vec3(), color);
-	HSVertex topleft_b_v1(bott_p6, tiledef.wallbot_uvs[3], amb_bott_uvl, glm::vec3(), color);
-	HSVertex topleft_b_v2(bott_p1, tiledef.wallbot_uvs[2], amb_bott_uvr, glm::vec3(), color);
-	HSVertex topleft_b_v3(botb_p1, tiledef.wallbot_uvs[1], amb_botb_uvr, glm::vec3(), color);
-	HSVertex topleft_b_v4(botb_p6, tiledef.wallbot_uvs[0], amb_botb_uvl, glm::vec3(), color);
-
-	HSVertex topright_m_v1(topb_p5, tiledef.wallmid_uvs[3], amb_topb_uvl, glm::vec3(), color);
-	HSVertex topright_m_v2(topb_p6, tiledef.wallmid_uvs[2], amb_topb_uvr, glm::vec3(), color);
-	HSVertex topright_m_v3(bott_p6, tiledef.wallmid_uvs[1], amb_bott_uvr, glm::vec3(), color);
-	HSVertex topright_m_v4(bott_p5, tiledef.wallmid_uvs[0], amb_bott_uvl, glm::vec3(), color);
-	HSVertex topright_t_v1(topt_p5, tiledef.walltop_uvs[3], amb_topt_uvl, glm::vec3(), color);
-	HSVertex topright_t_v2(topt_p6, tiledef.walltop_uvs[2], amb_topt_uvr, glm::vec3(), color);
-	HSVertex topright_t_v3(topb_p6, tiledef.walltop_uvs[1], amb_topb_uvr, glm::vec3(), color);
-	HSVertex topright_t_v4(topb_p5, tiledef.walltop_uvs[0], amb_topb_uvl, glm::vec3(), color);
-	HSVertex topright_b_v1(bott_p5, tiledef.wallbot_uvs[3], amb_bott_uvl, glm::vec3(), color);
-	HSVertex topright_b_v2(bott_p6, tiledef.wallbot_uvs[2], amb_bott_uvr, glm::vec3(), color);
-	HSVertex topright_b_v3(botb_p6, tiledef.wallbot_uvs[1], amb_botb_uvr, glm::vec3(), color);
-	HSVertex topright_b_v4(botb_p5, tiledef.wallbot_uvs[0], amb_botb_uvl, glm::vec3(), color);
-
-	HSVertex right_m_v1(topb_p4, suv1, amb_topb_uvl, glm::vec3(), color);
-	HSVertex right_m_v2(topb_p5, suv2, amb_topb_uvr, glm::vec3(), color);
-	HSVertex right_m_v3(bott_p5, suv3, amb_bott_uvr, glm::vec3(), color);
-	HSVertex right_m_v4(bott_p4, suv4, amb_bott_uvl, glm::vec3(), color);
-	HSVertex right_t_v1(topt_p4, sidetop_points[3], amb_topt_uvl, glm::vec3(), color);
-	HSVertex right_t_v2(topt_p5, sidetop_points[2], amb_topt_uvr, glm::vec3(), color);
-	HSVertex right_t_v3(topb_p5, sidetop_points[1], amb_topb_uvr, glm::vec3(), color);
-	HSVertex right_t_v4(topb_p4, sidetop_points[0], amb_topb_uvl, glm::vec3(), color);
-	HSVertex right_b_v1(bott_p4, sidebot_points[3], amb_bott_uvl, glm::vec3(), color);
-	HSVertex right_b_v2(bott_p5, sidebot_points[2], amb_bott_uvr, glm::vec3(), color);
-	HSVertex right_b_v3(botb_p5, sidebot_points[1], amb_botb_uvr, glm::vec3(), color);
-	HSVertex right_b_v4(botb_p4, sidebot_points[0], amb_botb_uvl, glm::vec3(), color);
-
-	HSVertex botright_m_v1(topb_p3, suv1, amb_topb_uvl, glm::vec3(), color);
-	HSVertex botright_m_v2(topb_p4, suv2, amb_topb_uvr, glm::vec3(), color);
-	HSVertex botright_m_v3(bott_p4, suv3, amb_bott_uvr, glm::vec3(), color);
-	HSVertex botright_m_v4(bott_p3, suv4, amb_bott_uvl, glm::vec3(), color);
-	HSVertex botright_t_v1(topt_p3, sidetop_points[3], amb_topt_uvl, glm::vec3(), color);
-	HSVertex botright_t_v2(topt_p4, sidetop_points[2], amb_topt_uvr, glm::vec3(), color);
-	HSVertex botright_t_v3(topb_p4, sidetop_points[1], amb_topb_uvr, glm::vec3(), color);
-	HSVertex botright_t_v4(topb_p3, sidetop_points[0], amb_topb_uvl, glm::vec3(), color);
-	HSVertex botright_b_v1(bott_p3, sidebot_points[3], amb_bott_uvl, glm::vec3(), color);
-	HSVertex botright_b_v2(bott_p4, sidebot_points[2], amb_bott_uvr, glm::vec3(), color);
-	HSVertex botright_b_v3(botb_p4, sidebot_points[1], amb_botb_uvr, glm::vec3(), color);
-	HSVertex botright_b_v4(botb_p3, sidebot_points[0], amb_botb_uvl, glm::vec3(), color);
-
-	HSVertex botleft_m_v1(topb_p2, suv1, amb_topb_uvl, glm::vec3(), color);
-	HSVertex botleft_m_v2(topb_p3, suv2, amb_topb_uvr, glm::vec3(), color);
-	HSVertex botleft_m_v3(bott_p3, suv3, amb_bott_uvr, glm::vec3(), color);
-	HSVertex botleft_m_v4(bott_p2, suv4, amb_bott_uvl, glm::vec3(), color);
-	HSVertex botleft_t_v1(topt_p2, sidetop_points[3], amb_topt_uvl, glm::vec3(), color);
-	HSVertex botleft_t_v2(topt_p3, sidetop_points[2], amb_topt_uvr, glm::vec3(), color);
-	HSVertex botleft_t_v3(topb_p3, sidetop_points[1], amb_topb_uvr, glm::vec3(), color);
-	HSVertex botleft_t_v4(topb_p2, sidetop_points[0], amb_topb_uvl, glm::vec3(), color);
-	HSVertex botleft_b_v1(bott_p2, sidebot_points[3], amb_bott_uvl, glm::vec3(), color);
-	HSVertex botleft_b_v2(bott_p3, sidebot_points[2], amb_bott_uvr, glm::vec3(), color);
-	HSVertex botleft_b_v3(botb_p3, sidebot_points[1], amb_botb_uvr, glm::vec3(), color);
-	HSVertex botleft_b_v4(botb_p2, sidebot_points[0], amb_botb_uvl, glm::vec3(), color);
-
-	HSVertex sideleft_m_v1(topb_p3, suv1, amb_topb_uvl, glm::vec3(), color);
-	HSVertex sideleft_m_v2(topb_p6, suv2, amb_topb_uvr, glm::vec3(), color);
-	HSVertex sideleft_m_v3(bott_p6, suv3, amb_bott_uvr, glm::vec3(), color);
-	HSVertex sideleft_m_v4(bott_p3, suv4, amb_bott_uvl, glm::vec3(), color);
-	HSVertex sideleft_t_v1(topt_p3, sidetop_points[3], amb_topt_uvl, glm::vec3(), color);
-	HSVertex sideleft_t_v2(topt_p6, sidetop_points[2], amb_topt_uvr, glm::vec3(), color);
-	HSVertex sideleft_t_v3(topb_p6, sidetop_points[1], amb_topb_uvr, glm::vec3(), color);
-	HSVertex sideleft_t_v4(topb_p3, sidetop_points[0], amb_topb_uvl, glm::vec3(), color);
-	HSVertex sideleft_b_v1(bott_p3, sidebot_points[3], amb_bott_uvl, glm::vec3(), color);
-	HSVertex sideleft_b_v2(bott_p6, sidebot_points[2], amb_bott_uvr, glm::vec3(), color);
-	HSVertex sideleft_b_v3(botb_p6, sidebot_points[1], amb_botb_uvr, glm::vec3(), color);
-	HSVertex sideleft_b_v4(botb_p3, sidebot_points[0], amb_botb_uvl, glm::vec3(), color);
-
-	HSVertex sideright_m_v1(topb_p6, suv1, amb_topb_uvl, glm::vec3(), color);
-	HSVertex sideright_m_v2(topb_p3, suv2, amb_topb_uvr, glm::vec3(), color);
-	HSVertex sideright_m_v3(bott_p3, suv3, amb_bott_uvr, glm::vec3(), color);
-	HSVertex sideright_m_v4(bott_p6, suv4, amb_bott_uvl, glm::vec3(), color);
-	HSVertex sideright_t_v1(topt_p6, sidetop_points[3], amb_topt_uvl, glm::vec3(), color);
-	HSVertex sideright_t_v2(topt_p3, sidetop_points[2], amb_topt_uvr, glm::vec3(), color);
-	HSVertex sideright_t_v3(topb_p3, sidetop_points[1], amb_topb_uvr, glm::vec3(), color);
-	HSVertex sideright_t_v4(topb_p6, sidetop_points[0], amb_topb_uvl, glm::vec3(), color);
-	HSVertex sideright_b_v1(bott_p6, sidebot_points[3], amb_bott_uvl, glm::vec3(), color);
-	HSVertex sideright_b_v2(bott_p3, sidebot_points[2], amb_bott_uvr, glm::vec3(), color);
-	HSVertex sideright_b_v3(botb_p3, sidebot_points[1], amb_botb_uvr, glm::vec3(), color);
-	HSVertex sideright_b_v4(botb_p6, sidebot_points[0], amb_botb_uvl, glm::vec3(), color);
-
-	HSVertex midtop_m_v1(topb_p1, suv1, amb_topb_uvl, glm::vec3(), color);
-	HSVertex midtop_m_v2(topb_p5, suv2, amb_topb_uvr, glm::vec3(), color);
-	HSVertex midtop_m_v3(bott_p5, suv3, amb_bott_uvr, glm::vec3(), color);
-	HSVertex midtop_m_v4(bott_p1, suv4, amb_bott_uvl, glm::vec3(), color);
-	HSVertex midtop_t_v1(topt_p1, sidetop_points[3], amb_topt_uvl, glm::vec3(), color);
-	HSVertex midtop_t_v2(topt_p5, sidetop_points[2], amb_topt_uvr, glm::vec3(), color);
-	HSVertex midtop_t_v3(topb_p5, sidetop_points[1], amb_topb_uvr, glm::vec3(), color);
-	HSVertex midtop_t_v4(topb_p1, sidetop_points[0], amb_topb_uvl, glm::vec3(), color);
-	HSVertex midtop_b_v1(bott_p1, sidebot_points[3], amb_bott_uvl, glm::vec3(), color);
-	HSVertex midtop_b_v2(bott_p5, sidebot_points[2], amb_bott_uvr, glm::vec3(), color);
-	HSVertex midtop_b_v3(botb_p5, sidebot_points[1], amb_botb_uvr, glm::vec3(), color);
-	HSVertex midtop_b_v4(botb_p1, sidebot_points[0], amb_botb_uvl, glm::vec3(), color);
-
-	HSVertex midbot_m_v1(topb_p4, suv1, amb_topb_uvl, glm::vec3(), color);
-	HSVertex midbot_m_v2(topb_p2, suv2, amb_topb_uvr, glm::vec3(), color);
-	HSVertex midbot_m_v3(bott_p2, suv3, amb_bott_uvr, glm::vec3(), color);
-	HSVertex midbot_m_v4(bott_p4, suv4, amb_bott_uvl, glm::vec3(), color);
-	HSVertex midbot_t_v1(topt_p4, sidetop_points[3], amb_topt_uvl, glm::vec3(), color);
-	HSVertex midbot_t_v2(topt_p2, sidetop_points[2], amb_topt_uvr, glm::vec3(), color);
-	HSVertex midbot_t_v3(topb_p2, sidetop_points[1], amb_topb_uvr, glm::vec3(), color);
-	HSVertex midbot_t_v4(topb_p4, sidetop_points[0], amb_topb_uvl, glm::vec3(), color);
-	HSVertex midbot_b_v1(bott_p4, sidebot_points[3], amb_bott_uvl, glm::vec3(), color);
-	HSVertex midbot_b_v2(bott_p2, sidebot_points[2], amb_bott_uvr, glm::vec3(), color);
-	HSVertex midbot_b_v3(botb_p2, sidebot_points[1], amb_botb_uvr, glm::vec3(), color);
-	HSVertex midbot_b_v4(botb_p4, sidebot_points[0], amb_botb_uvl, glm::vec3(), color);
-
-	HSVertex centtop_m_v1(topb_p5, suv1, amb_topb_uvl, glm::vec3(), color);
-	HSVertex centtop_m_v2(topb_p1, suv2, amb_topb_uvr, glm::vec3(), color);
-	HSVertex centtop_m_v3(bott_p1, suv3, amb_bott_uvr, glm::vec3(), color);
-	HSVertex centtop_m_v4(bott_p5, suv4, amb_bott_uvl, glm::vec3(), color);
-	HSVertex centtop_t_v1(topt_p5, sidetop_points[3], amb_topt_uvl, glm::vec3(), color);
-	HSVertex centtop_t_v2(topt_p1, sidetop_points[2], amb_topt_uvr, glm::vec3(), color);
-	HSVertex centtop_t_v3(topb_p1, sidetop_points[1], amb_topb_uvr, glm::vec3(), color);
-	HSVertex centtop_t_v4(topb_p5, sidetop_points[0], amb_topb_uvl, glm::vec3(), color);
-	HSVertex centtop_b_v1(bott_p5, sidebot_points[3], amb_bott_uvl, glm::vec3(), color);
-	HSVertex centtop_b_v2(bott_p1, sidebot_points[2], amb_bott_uvr, glm::vec3(), color);
-	HSVertex centtop_b_v3(botb_p1, sidebot_points[1], amb_botb_uvr, glm::vec3(), color);
-	HSVertex centtop_b_v4(botb_p5, sidebot_points[0], amb_botb_uvl, glm::vec3(), color);
-
-	HSVertex centbot_m_v1(topb_p2, suv1, amb_topb_uvl, glm::vec3(), color);
-	HSVertex centbot_m_v2(topb_p4, suv2, amb_topb_uvr, glm::vec3(), color);
-	HSVertex centbot_m_v3(bott_p4, suv3, amb_bott_uvr, glm::vec3(), color);
-	HSVertex centbot_m_v4(bott_p2, suv4, amb_bott_uvl, glm::vec3(), color);
-	HSVertex centbot_t_v1(topt_p2, sidetop_points[3], amb_topt_uvl, glm::vec3(), color);
-	HSVertex centbot_t_v2(topt_p4, sidetop_points[2], amb_topt_uvr, glm::vec3(), color);
-	HSVertex centbot_t_v3(topb_p4, sidetop_points[1], amb_topb_uvr, glm::vec3(), color);
-	HSVertex centbot_t_v4(topb_p2, sidetop_points[0], amb_topb_uvl, glm::vec3(), color);
-	HSVertex centbot_b_v1(bott_p2, sidebot_points[3], amb_bott_uvl, glm::vec3(), color);
-	HSVertex centbot_b_v2(bott_p4, sidebot_points[2], amb_bott_uvr, glm::vec3(), color);
-	HSVertex centbot_b_v3(botb_p4, sidebot_points[1], amb_botb_uvr, glm::vec3(), color);
-	HSVertex centbot_b_v4(botb_p2, sidebot_points[0], amb_botb_uvl, glm::vec3(), color);
-
-	HSVertex corntl_m_v1(topb_p2, suv1, amb_topb_uvl, glm::vec3(), color);
-	HSVertex corntl_m_v2(topb_p6, suv2, amb_topb_uvr, glm::vec3(), color);
-	HSVertex corntl_m_v3(bott_p6, suv3, amb_bott_uvr, glm::vec3(), color);
-	HSVertex corntl_m_v4(bott_p2, suv4, amb_bott_uvl, glm::vec3(), color);
-	HSVertex corntl_t_v1(topt_p2, sidetop_points[3], amb_topt_uvl, glm::vec3(), color);
-	HSVertex corntl_t_v2(topt_p6, sidetop_points[2], amb_topt_uvr, glm::vec3(), color);
-	HSVertex corntl_t_v3(topb_p6, sidetop_points[1], amb_topb_uvr, glm::vec3(), color);
-	HSVertex corntl_t_v4(topb_p2, sidetop_points[0], amb_topb_uvl, glm::vec3(), color);
-	HSVertex corntl_b_v1(bott_p2, sidebot_points[3], amb_bott_uvl, glm::vec3(), color);
-	HSVertex corntl_b_v2(bott_p6, sidebot_points[2], amb_bott_uvr, glm::vec3(), color);
-	HSVertex corntl_b_v3(botb_p6, sidebot_points[1], amb_botb_uvr, glm::vec3(), color);
-	HSVertex corntl_b_v4(botb_p2, sidebot_points[0], amb_botb_uvl, glm::vec3(), color);
-
-	HSVertex corntr_m_v1(topb_p6, suv1, amb_topb_uvl, glm::vec3(), color);
-	HSVertex corntr_m_v2(topb_p4, suv2, amb_topb_uvr, glm::vec3(), color);
-	HSVertex corntr_m_v3(bott_p4, suv3, amb_bott_uvr, glm::vec3(), color);
-	HSVertex corntr_m_v4(bott_p6, suv4, amb_bott_uvl, glm::vec3(), color);
-	HSVertex corntr_t_v1(topt_p6, sidetop_points[3], amb_topt_uvl, glm::vec3(), color);
-	HSVertex corntr_t_v2(topt_p4, sidetop_points[2], amb_topt_uvr, glm::vec3(), color);
-	HSVertex corntr_t_v3(topb_p4, sidetop_points[1], amb_topb_uvr, glm::vec3(), color);
-	HSVertex corntr_t_v4(topb_p6, sidetop_points[0], amb_topb_uvl, glm::vec3(), color);
-	HSVertex corntr_b_v1(bott_p6, sidebot_points[3], amb_bott_uvl, glm::vec3(), color);
-	HSVertex corntr_b_v2(bott_p4, sidebot_points[2], amb_bott_uvr, glm::vec3(), color);
-	HSVertex corntr_b_v3(botb_p4, sidebot_points[1], amb_botb_uvr, glm::vec3(), color);
-	HSVertex corntr_b_v4(botb_p6, sidebot_points[0], amb_botb_uvl, glm::vec3(), color);
-
-	HSVertex cornbl_m_v1(topb_p3, suv1, amb_topb_uvl, glm::vec3(), color);
-	HSVertex cornbl_m_v2(topb_p1, suv2, amb_topb_uvr, glm::vec3(), color);
-	HSVertex cornbl_m_v3(bott_p1, suv3, amb_bott_uvr, glm::vec3(), color);
-	HSVertex cornbl_m_v4(bott_p3, suv4, amb_bott_uvl, glm::vec3(), color);
-	HSVertex cornbl_t_v1(topt_p3, sidetop_points[3], amb_topt_uvl, glm::vec3(), color);
-	HSVertex cornbl_t_v2(topt_p1, sidetop_points[2], amb_topt_uvr, glm::vec3(), color);
-	HSVertex cornbl_t_v3(topb_p1, sidetop_points[1], amb_topb_uvr, glm::vec3(), color);
-	HSVertex cornbl_t_v4(topb_p3, sidetop_points[0], amb_topb_uvl, glm::vec3(), color);
-	HSVertex cornbl_b_v1(bott_p3, sidebot_points[3], amb_bott_uvl, glm::vec3(), color);
-	HSVertex cornbl_b_v2(bott_p1, sidebot_points[2], amb_bott_uvr, glm::vec3(), color);
-	HSVertex cornbl_b_v3(botb_p1, sidebot_points[1], amb_botb_uvr, glm::vec3(), color);
-	HSVertex cornbl_b_v4(botb_p3, sidebot_points[0], amb_botb_uvl, glm::vec3(), color);
-
-	HSVertex cornbr_m_v1(topb_p5, suv1, amb_topb_uvl, glm::vec3(), color);
-	HSVertex cornbr_m_v2(topb_p3, suv2, amb_topb_uvr, glm::vec3(), color);
-	HSVertex cornbr_m_v3(bott_p3, suv3, amb_bott_uvr, glm::vec3(), color);
-	HSVertex cornbr_m_v4(bott_p5, suv4, amb_bott_uvl, glm::vec3(), color);
-	HSVertex cornbr_t_v1(topt_p5, sidetop_points[3], amb_topt_uvl, glm::vec3(), color);
-	HSVertex cornbr_t_v2(topt_p3, sidetop_points[2], amb_topt_uvr, glm::vec3(), color);
-	HSVertex cornbr_t_v3(topb_p3, sidetop_points[1], amb_topb_uvr, glm::vec3(), color);
-	HSVertex cornbr_t_v4(topb_p5, sidetop_points[0], amb_topb_uvl, glm::vec3(), color);
-	HSVertex cornbr_b_v1(bott_p5, sidebot_points[3], amb_bott_uvl, glm::vec3(), color);
-	HSVertex cornbr_b_v2(bott_p3, sidebot_points[2], amb_bott_uvr, glm::vec3(), color);
-	HSVertex cornbr_b_v3(botb_p3, sidebot_points[1], amb_botb_uvr, glm::vec3(), color);
-	HSVertex cornbr_b_v4(botb_p5, sidebot_points[0], amb_botb_uvl, glm::vec3(), color);
-	*/
 
 	enum
 	{
@@ -1682,9 +1538,9 @@ int Tilemap::makeVBOTile(VBO<HSVertex>* vbo, int vbo_index, const Tilemap::TileD
 		HSVertex b_v3(botb_p2, tiledef.wallbot_uvs[1], glm::mix(wall_left_ao->uv[0], wall_left_ao->uv[1], amb_bb), color);
 		HSVertex b_v4(botb_p1, tiledef.wallbot_uvs[0], glm::mix(wall_left_ao->uv[3], wall_left_ao->uv[2], amb_bb), color);
 
-		vbo_index += vbo->makeQuadPolyNorm(vbo_index, m_v1, m_v2, m_v3, m_v4);
-		vbo_index += vbo->makeQuadPolyNorm(vbo_index, t_v1, t_v2, t_v3, t_v4);
-		vbo_index += vbo->makeQuadPolyNorm(vbo_index, b_v1, b_v2, b_v3, b_v4);
+		if (render_side[TILESIDE_LEFT]) vbo_index += vbo->makeQuadPolyNorm(vbo_index, m_v1, m_v2, m_v3, m_v4);
+		if (render_sidetop[TILESIDE_LEFT]) vbo_index += vbo->makeQuadPolyNorm(vbo_index, t_v1, t_v2, t_v3, t_v4);
+		if (render_sidebot[TILESIDE_LEFT]) vbo_index += vbo->makeQuadPolyNorm(vbo_index, b_v1, b_v2, b_v3, b_v4);
 	}
 	if (render_sides & RENDER_TOPLEFT)
 	{
@@ -1701,9 +1557,9 @@ int Tilemap::makeVBOTile(VBO<HSVertex>* vbo, int vbo_index, const Tilemap::TileD
 		HSVertex b_v3(botb_p1, tiledef.wallbot_uvs[1], glm::mix(wall_topleft_ao->uv[0], wall_topleft_ao->uv[1], amb_bb), color);
 		HSVertex b_v4(botb_p6, tiledef.wallbot_uvs[0], glm::mix(wall_topleft_ao->uv[3], wall_topleft_ao->uv[2], amb_bb), color);
 
-		vbo_index += vbo->makeQuadPolyNorm(vbo_index, m_v1, m_v2, m_v3, m_v4);
-		vbo_index += vbo->makeQuadPolyNorm(vbo_index, t_v1, t_v2, t_v3, t_v4);
-		vbo_index += vbo->makeQuadPolyNorm(vbo_index, b_v1, b_v2, b_v3, b_v4);
+		if (render_side[TILESIDE_TOPLEFT]) vbo_index += vbo->makeQuadPolyNorm(vbo_index, m_v1, m_v2, m_v3, m_v4);
+		if (render_sidetop[TILESIDE_TOPLEFT]) vbo_index += vbo->makeQuadPolyNorm(vbo_index, t_v1, t_v2, t_v3, t_v4);
+		if (render_sidebot[TILESIDE_TOPLEFT]) vbo_index += vbo->makeQuadPolyNorm(vbo_index, b_v1, b_v2, b_v3, b_v4);
 	}
 	if (render_sides & RENDER_TOPRIGHT)
 	{
@@ -1720,9 +1576,9 @@ int Tilemap::makeVBOTile(VBO<HSVertex>* vbo, int vbo_index, const Tilemap::TileD
 		HSVertex b_v3(botb_p6, tiledef.wallbot_uvs[1], glm::mix(wall_topright_ao->uv[0], wall_topright_ao->uv[1], amb_bb), color);
 		HSVertex b_v4(botb_p5, tiledef.wallbot_uvs[0], glm::mix(wall_topright_ao->uv[3], wall_topright_ao->uv[2], amb_bb), color);
 
-		vbo_index += vbo->makeQuadPolyNorm(vbo_index, m_v1, m_v2, m_v3, m_v4);
-		vbo_index += vbo->makeQuadPolyNorm(vbo_index, t_v1, t_v2, t_v3, t_v4);
-		vbo_index += vbo->makeQuadPolyNorm(vbo_index, b_v1, b_v2, b_v3, b_v4);
+		if (render_side[TILESIDE_TOPRIGHT]) vbo_index += vbo->makeQuadPolyNorm(vbo_index, m_v1, m_v2, m_v3, m_v4);
+		if (render_sidetop[TILESIDE_TOPRIGHT]) vbo_index += vbo->makeQuadPolyNorm(vbo_index, t_v1, t_v2, t_v3, t_v4);
+		if (render_sidebot[TILESIDE_TOPRIGHT]) vbo_index += vbo->makeQuadPolyNorm(vbo_index, b_v1, b_v2, b_v3, b_v4);
 	}
 	if (render_sides & RENDER_RIGHT)
 	{
@@ -1739,9 +1595,9 @@ int Tilemap::makeVBOTile(VBO<HSVertex>* vbo, int vbo_index, const Tilemap::TileD
 		HSVertex b_v3(botb_p5, tiledef.wallbot_uvs[1], glm::mix(wall_right_ao->uv[0], wall_right_ao->uv[1], amb_bb), color);
 		HSVertex b_v4(botb_p4, tiledef.wallbot_uvs[0], glm::mix(wall_right_ao->uv[3], wall_right_ao->uv[2], amb_bb), color);
 
-		vbo_index += vbo->makeQuadPolyNorm(vbo_index, m_v1, m_v2, m_v3, m_v4);
-		vbo_index += vbo->makeQuadPolyNorm(vbo_index, t_v1, t_v2, t_v3, t_v4);
-		vbo_index += vbo->makeQuadPolyNorm(vbo_index, b_v1, b_v2, b_v3, b_v4);
+		if (render_side[TILESIDE_RIGHT]) vbo_index += vbo->makeQuadPolyNorm(vbo_index, m_v1, m_v2, m_v3, m_v4);
+		if (render_sidetop[TILESIDE_RIGHT]) vbo_index += vbo->makeQuadPolyNorm(vbo_index, t_v1, t_v2, t_v3, t_v4);
+		if (render_sidebot[TILESIDE_RIGHT]) vbo_index += vbo->makeQuadPolyNorm(vbo_index, b_v1, b_v2, b_v3, b_v4);
 	}
 	if (render_sides & RENDER_BOTRIGHT)
 	{
@@ -1758,9 +1614,9 @@ int Tilemap::makeVBOTile(VBO<HSVertex>* vbo, int vbo_index, const Tilemap::TileD
 		HSVertex b_v3(botb_p4, tiledef.wallbot_uvs[1], glm::mix(wall_botright_ao->uv[0], wall_botright_ao->uv[1], amb_bb), color);
 		HSVertex b_v4(botb_p3, tiledef.wallbot_uvs[0], glm::mix(wall_botright_ao->uv[3], wall_botright_ao->uv[2], amb_bb), color);
 
-		vbo_index += vbo->makeQuadPolyNorm(vbo_index, m_v1, m_v2, m_v3, m_v4);
-		vbo_index += vbo->makeQuadPolyNorm(vbo_index, t_v1, t_v2, t_v3, t_v4);
-		vbo_index += vbo->makeQuadPolyNorm(vbo_index, b_v1, b_v2, b_v3, b_v4);
+		if (render_side[TILESIDE_BOTRIGHT]) vbo_index += vbo->makeQuadPolyNorm(vbo_index, m_v1, m_v2, m_v3, m_v4);
+		if (render_sidetop[TILESIDE_BOTRIGHT]) vbo_index += vbo->makeQuadPolyNorm(vbo_index, t_v1, t_v2, t_v3, t_v4);
+		if (render_sidebot[TILESIDE_BOTRIGHT]) vbo_index += vbo->makeQuadPolyNorm(vbo_index, b_v1, b_v2, b_v3, b_v4);
 	}
 	if (render_sides & RENDER_BOTLEFT)
 	{
@@ -1777,9 +1633,9 @@ int Tilemap::makeVBOTile(VBO<HSVertex>* vbo, int vbo_index, const Tilemap::TileD
 		HSVertex b_v3(botb_p3, tiledef.wallbot_uvs[1], glm::mix(wall_botleft_ao->uv[0], wall_botleft_ao->uv[1], amb_bb), color);
 		HSVertex b_v4(botb_p2, tiledef.wallbot_uvs[0], glm::mix(wall_botleft_ao->uv[3], wall_botleft_ao->uv[2], amb_bb), color);
 
-		vbo_index += vbo->makeQuadPolyNorm(vbo_index, m_v1, m_v2, m_v3, m_v4);
-		vbo_index += vbo->makeQuadPolyNorm(vbo_index, t_v1, t_v2, t_v3, t_v4);
-		vbo_index += vbo->makeQuadPolyNorm(vbo_index, b_v1, b_v2, b_v3, b_v4);
+		if (render_side[TILESIDE_BOTLEFT]) vbo_index += vbo->makeQuadPolyNorm(vbo_index, m_v1, m_v2, m_v3, m_v4);
+		if (render_sidetop[TILESIDE_BOTLEFT]) vbo_index += vbo->makeQuadPolyNorm(vbo_index, t_v1, t_v2, t_v3, t_v4);
+		if (render_sidebot[TILESIDE_BOTLEFT]) vbo_index += vbo->makeQuadPolyNorm(vbo_index, b_v1, b_v2, b_v3, b_v4);
 	}
 	if (render_sides & RENDER_SIDELEFT)
 	{

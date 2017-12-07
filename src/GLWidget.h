@@ -99,7 +99,6 @@ public slots:
 	void setTileBrush(int tile);
 	void setObjectColor(QColor color);
 	void setTileBaseZ(float z);
-	void selectTilemap(Level::TilemapType type);
 
 protected:
 	void initializeGL();
@@ -122,8 +121,8 @@ private:
 	void renderEditMode(QPainter& painter);
 	void renderMoveMode(QPainter& painter);
 	void renderOtherObjects(QPainter& painter);
-	void renderTilemapPointer(Level::TilemapType map, QPainter& painter);
-	void renderEdgeData(Level::TilemapType map, QPainter& painter);
+	void renderTilemapPointer(QPainter& painter);
+	void renderEdgeData(QPainter& painter);
 	void selectObject(int object);
 	void deselectObject();
 	void objectToEditing(int object);
@@ -132,10 +131,10 @@ private:
 	glm::vec2 snapToGrid(glm::vec2 point);
 	float makeScalingScale(float scale);
 	float makeRotationAngle(float angle);
-	void updateTileDrawLocation(Level::TilemapType map, const glm::vec2& mouse_lp);
-	void tilemapDraw(Level::TilemapType map);
-	void tilemapZDraw(Level::TilemapType map);
-	void tilemapZEdit(Level::TilemapType map, int zmod);
+	void updateTileDrawLocation(const glm::vec2& mouse_lp);
+	void tilemapDraw();
+	void tilemapZDraw();
+	void tilemapZEdit(int zmod);
 
 	Level* m_level;
 	QColor m_bgcolor;
@@ -219,6 +218,4 @@ private:
 	float m_tile_basez;
 
 	std::vector<std::vector<int>> m_edgedata;
-
-	Level::TilemapType m_edited_tilemap;
 };

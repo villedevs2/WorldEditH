@@ -402,6 +402,13 @@ void TilePreview::updateGeo(const glm::vec2* top_points, const glm::vec2* side_p
 	tiledef.tile_ao.wall_cornbl = m_level->getAO()->getWallTile(0);
 	tiledef.tile_ao.wall_cornbr = m_level->getAO()->getWallTile(0);
 
+	tiledef.left_height = 0.0f;
+	tiledef.right_height = 0.0f;
+	tiledef.topleft_height = 0.0f;
+	tiledef.topright_height = 0.0f;
+	tiledef.botleft_height = 0.0f;
+	tiledef.botright_height = 0.0f;
+
 	Tilemap::makeVBOTile(m_vbo, 0, tiledef, 0, 0);
 
 

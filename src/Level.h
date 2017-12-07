@@ -30,13 +30,6 @@ public:
 		NUM_VBOS,
 	};
 
-	enum TilemapType
-	{
-		TILEMAP_NORMAL = 0,
-		TILEMAP_FLOOR = 1,
-		NUM_TILEMAP_TYPES
-	};
-
 	class Object
 	{
 		friend class Level;
@@ -113,7 +106,7 @@ public:
 	void tileRemoved(int index);
 
 	Tileset* getTileset();
-	Tilemap* getTilemap(Level::TilemapType type);
+	Tilemap* getTilemap();
 
 	int insertObject(glm::vec2* points, glm::vec2* uvs, int num_points, ObjectType type, std::string name, unsigned int color);
 	void editObjectGeo(int object, glm::vec2* points, glm::vec2* uvs);
@@ -154,7 +147,7 @@ private:
 	std::vector<std::string> m_trigger_list;
 
 	Tileset* m_tileset;
-	Tilemap* m_tilemap[Level::NUM_TILEMAP_TYPES];
+	Tilemap* m_tilemap;
 
 	AmbientOcclusion* m_ao;
 };

@@ -61,8 +61,6 @@ GLWidget::GLWidget(QWidget *parent, Level* level)
 
 	m_create_poly_color = 0xffffffff;
 
-	m_edited_tilemap = Level::TILEMAP_NORMAL;
-
 	reset();
 
 	this->setMouseTracking(true);
@@ -314,12 +312,6 @@ void GLWidget::setTileBaseZ(float z)
 }
 
 
-void GLWidget::selectTilemap(Level::TilemapType type)
-{
-	m_edited_tilemap = type;
-}
-
-
 // ----------------------------------------------------------------------------
 
 
@@ -428,7 +420,7 @@ float GLWidget::makeRotationAngle(float angle)
 
 
 
-void GLWidget::tilemapDraw(Level::TilemapType map)
+void GLWidget::tilemapDraw()
 {
 	if (m_tile_selx >= 0 &&
 		m_tile_sely >= 0 &&
@@ -439,35 +431,35 @@ void GLWidget::tilemapDraw(Level::TilemapType map)
 		if (brush < 0)
 			brush = Tilemap::TILE_EMPTY;
 
-		Tilemap* tilemap = m_level->getTilemap(map);
+		Tilemap* tilemap = m_level->getTilemap();
 
 		tilemap->edit(m_tile_selx, m_tile_sely, brush);
 		tilemap->editZ(m_tile_selx, m_tile_sely, m_tile_basez);
 	}
 }
 
-void GLWidget::tilemapZDraw(Level::TilemapType map)
+void GLWidget::tilemapZDraw()
 {
 	if (m_tile_selx >= 0 &&
 		m_tile_sely >= 0 &&
 		m_tile_selx < Tilemap::AREA_WIDTH &&
 		m_tile_sely < Tilemap::AREA_HEIGHT)
 	{
-		Tilemap* tilemap = m_level->getTilemap(map);
+		Tilemap* tilemap = m_level->getTilemap();
 
 		tilemap->editZ(m_tile_selx, m_tile_sely, m_tile_basez);
 //		emit onTileUpdate(map, m_tile_selx, m_tile_sely);
 	}
 }
 
-void GLWidget::tilemapZEdit(Level::TilemapType map, int zmod)
+void GLWidget::tilemapZEdit(int zmod)
 {
 	if (m_tile_selx >= 0 &&
 		m_tile_sely >= 0 &&
 		m_tile_selx < Tilemap::AREA_WIDTH &&
 		m_tile_sely < Tilemap::AREA_HEIGHT)
 	{
-		Tilemap* tilemap = m_level->getTilemap(map);
+		Tilemap* tilemap = m_level->getTilemap();
 
 		int z = tilemap->getZ(m_tile_selx, m_tile_sely);
 		z += zmod;
@@ -481,9 +473,9 @@ void GLWidget::tilemapZEdit(Level::TilemapType map, int zmod)
 	}
 }
 
-void GLWidget::updateTileDrawLocation(Level::TilemapType map, const glm::vec2& mouse_lp)
+void GLWidget::updateTileDrawLocation(const glm::vec2& mouse_lp)
 {
-	Tilemap* tilemap = m_level->getTilemap(map);
+	Tilemap* tilemap = m_level->getTilemap();
 
 	float tile_width = tilemap->getTileWidth();
 	float tile_height = tilemap->getTileHeight();
@@ -998,12 +990,12 @@ void GLWidget::mousePressEvent(QMouseEvent* event)
 			{
 				glm::vec2 mouse_lp = toLevelCoords(glm::vec2(mouse_x, mouse_y));
 
-				updateTileDrawLocation(m_edited_tilemap, mouse_lp);
+				updateTileDrawLocation(mouse_lp);
 
 				if (m_opmode == MODE_TILEMAP)
-					tilemapDraw(m_edited_tilemap);
+					tilemapDraw();
 				else if (m_opmode == MODE_TILE_ZEDIT)
-					tilemapZDraw(m_edited_tilemap);
+					tilemapZDraw();
 
 				m_tilemap_painting = true;
 			}
@@ -1053,7 +1045,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent* event)
 			int prev_x = m_tile_selx;
 			int prev_y = m_tile_sely;
 
-			updateTileDrawLocation(m_edited_tilemap, mouse_lp);
+			updateTileDrawLocation(mouse_lp);
 
 			if (m_tile_selx != prev_x || m_tile_sely != prev_y)
 				update();
@@ -1062,9 +1054,9 @@ void GLWidget::mouseMoveEvent(QMouseEvent* event)
 			{
 				//glm::vec2 mouse_lp = toLevelCoords(glm::vec2(mouse_x, mouse_y));
 				if (m_opmode == MODE_TILEMAP)
-					tilemapDraw(m_edited_tilemap);
+					tilemapDraw();
 				else if (m_opmode == MODE_TILE_ZEDIT)
-					tilemapZDraw(m_edited_tilemap);
+					tilemapZDraw();
 
 				update();
 			}
@@ -1305,11 +1297,11 @@ void GLWidget::keyReleaseEvent(QKeyEvent* event)
 		{
 			if (key == Qt::Key_Q)
 			{
-				tilemapZEdit(m_edited_tilemap, 1);
+				tilemapZEdit(1);
 			}
 			else if (key == Qt::Key_A)
 			{
-				tilemapZEdit(m_edited_tilemap, -1);
+				tilemapZEdit(-1);
 			}
 			break;
 		}
@@ -2111,9 +2103,9 @@ void GLWidget::renderOtherObjects(QPainter& painter)
 	}
 }
 
-void GLWidget::renderTilemapPointer(Level::TilemapType map, QPainter& painter)
+void GLWidget::renderTilemapPointer(QPainter& painter)
 {
-	Tilemap* tilemap = m_level->getTilemap(map);
+	Tilemap* tilemap = m_level->getTilemap();
 
 	QBrush brush = QBrush(QColor(224, 150, 0));
 
@@ -2277,9 +2269,9 @@ void GLWidget::renderTilemapPointer(Level::TilemapType map, QPainter& painter)
 
 
 
-void GLWidget::renderEdgeData(Level::TilemapType map, QPainter& painter)
+void GLWidget::renderEdgeData(QPainter& painter)
 {
-	Tilemap* tilemap = m_level->getTilemap(map);
+	Tilemap* tilemap = m_level->getTilemap();
 
 	int tm_width = Tilemap::AREA_WIDTH;
 	int tm_height = Tilemap::AREA_HEIGHT;
@@ -2540,9 +2532,8 @@ void GLWidget::paintGL()
 		glUniform3f(shader->light, 0.7, 0.7, -0.3);
 
 		// TODO: render all
-		for (int tmap = 0; tmap < Level::NUM_TILEMAP_TYPES; tmap++)
 		{
-			Tilemap* tilemap = m_level->getTilemap((Level::TilemapType)tmap);
+			Tilemap* tilemap = m_level->getTilemap();
 
 			// TODO: filter if needed
 
@@ -2620,8 +2611,8 @@ void GLWidget::paintGL()
 
 	renderOtherObjects(painter);
 
-	renderTilemapPointer(m_edited_tilemap, painter);
-	renderEdgeData(m_edited_tilemap, painter);
+	renderTilemapPointer(painter);
+	renderEdgeData(painter);
 
 
 	// draw visbox

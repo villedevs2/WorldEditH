@@ -25,17 +25,9 @@ protected:
 
 signals:
 	void onClose();
-	void onSelectTilemap(Level::TilemapType map);
-
-private slots:
-	void selectTilemap(int map);
 
 private:
 	Level* m_level;
 	QMainWindow* m_window;
 	QToolBar* m_toolbar;
-
-	QLabel* m_tilemap_label;
-	QComboBox* m_tilemap_combo;
-	QWidget* m_tilemap_widget;
 };
