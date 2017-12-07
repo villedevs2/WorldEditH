@@ -184,6 +184,9 @@
     <ClCompile Include="GeneratedFiles\qrc_WorldEditH.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Mesh.cpp">
+      <Filter>Source Files\src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="WorldEditH.h">
@@ -261,6 +264,9 @@
       <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Shaders.h">
+      <Filter>Header Files\src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Mesh.h">
       <Filter>Header Files\src</Filter>
     </ClInclude>
   </ItemGroup>
