@@ -167,6 +167,7 @@ void GLWidget::setMode(OperationMode mode)
 
 		case MODE_TILEMAP:
 		case MODE_TILE_ZEDIT:
+		case MODE_MULTITILE_ZRAND:
 		{
 			deselectObject();
 			m_tilemap_painting = false;
@@ -470,6 +471,18 @@ void GLWidget::tilemapZEdit(int zmod)
 
 		tilemap->editZ(m_tile_selx, m_tile_sely, z);
 //		emit onTileUpdate(map, m_tile_selx, m_tile_sely);
+	}
+}
+
+void GLWidget::multitileZRand(int scale, int size)
+{
+	if (m_tile_selx >= 0 &&
+		m_tile_sely >= 0 &&
+		m_tile_selx < Tilemap::AREA_WIDTH &&
+		m_tile_sely < Tilemap::AREA_HEIGHT)
+	{
+		// TODO
+
 	}
 }
 
@@ -882,6 +895,7 @@ void GLWidget::mouseReleaseEvent(QMouseEvent* event)
 
 		case MODE_TILEMAP:
 		case MODE_TILE_ZEDIT:
+		case MODE_MULTITILE_ZRAND:
 		{
 			if (event->button() & Qt::LeftButton)
 			{
@@ -1001,6 +1015,24 @@ void GLWidget::mousePressEvent(QMouseEvent* event)
 			}
 			break;
 		}
+
+		case MODE_MULTITILE_ZRAND:
+		{
+			if (event->button() & Qt::LeftButton)
+			{
+				glm::vec2 mouse_lp = toLevelCoords(glm::vec2(mouse_x, mouse_y));
+
+				updateTileDrawLocation(mouse_lp);
+
+				// TODO
+				int scale = 0;
+				int size = 0;
+
+				multitileZRand(scale, size);
+
+				m_tilemap_painting = true;
+			}
+		}
 	}
 
 	if (event->button() & Qt::RightButton && !m_panning)
@@ -1057,6 +1089,31 @@ void GLWidget::mouseMoveEvent(QMouseEvent* event)
 					tilemapDraw();
 				else if (m_opmode == MODE_TILE_ZEDIT)
 					tilemapZDraw();
+
+				update();
+			}
+			break;
+		}
+
+		case MODE_MULTITILE_ZRAND:
+		{
+			glm::vec2 mouse_lp = toLevelCoords(glm::vec2(mouse_x, mouse_y));
+
+			int prev_x = m_tile_selx;
+			int prev_y = m_tile_sely;
+
+			updateTileDrawLocation(mouse_lp);
+
+			if (m_tile_selx != prev_x || m_tile_sely != prev_y)
+				update();
+
+			if (m_tilemap_painting)
+			{
+				// TODO
+				int scale = 0;
+				int size = 0;
+
+				multitileZRand(scale, size);
 
 				update();
 			}
@@ -2745,7 +2802,12 @@ void GLWidget::paintGL()
 		}
 		case MODE_TILE_ZEDIT:
 		{
-			modetext = tr("Tilemap Z Edit: X: %1, Y: %1").arg(m_tile_selx).arg(m_tile_sely);
+			modetext = tr("Tilemap Z Edit: X: %1, Y: %2").arg(m_tile_selx).arg(m_tile_sely);
+			break;
+		}
+		case MODE_MULTITILE_ZRAND:
+		{
+			modetext = tr("Multitile Z Rand: X: %1, Y: %2").arg(m_tile_selx).arg(m_tile_sely);
 			break;
 		}
 	}	

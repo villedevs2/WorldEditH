@@ -1,0 +1,36 @@
+Homestar Tileset File Format
+v1.0 / 28.12.2017
+
+Header
+------
+
+4 bytes		| Format ID (HSTS) 0x48535443
+4 bytes		| Header version 0x10000
+n bytes		| Texture atlas name (null-terminated)
+
+4 bytes		| Num of tiles
+n bytes		| Tile structures
+
+Tile structure
+--------------
+
+n bytes		| Tile name (null-terminated)
+4 bytes		| Tile type
+		|    0 = Full      (6 top UVs)
+		     1 = Left      (4 top UVs)
+                     2 = Right     (4 top UVs)
+		     3 = Top       (3 top UVs)
+		     4 = Bottom    (3 top UVs)
+		     5 = Middle    (4 top UVs)
+n bytes		| Top UVs 4-6x [2 floats: U, V]
+n bytes		| Side UVs 4x [2 floats: U, V]
+n bytes		| Side Top UVs 4x [2 floats: U, V]
+n bytes		| Side Bottom UVs 4x [2x floats: U, V]
+4 bytes		| Tile color
+4 bytes		| Tile top type
+		     0 = Flat
+		     1 = Pointy
+4 bytes		| Top height [float]
+4 bytes		| Shading type
+4 bytes		| Thumbnail size in bytes
+n bytes		| Thumbnail as PNG

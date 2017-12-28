@@ -452,6 +452,35 @@ void MainWindow::exitProgram()
 
 }
 
+void MainWindow::loadTileset()
+{
+	QString filename = QFileDialog::getOpenFileName(this,
+		tr("Open Tileset File"),
+		getLevelDir(),
+		tr("Tileset File (*.tileset);;All Files (*.*)"));
+
+	if (!filename.isEmpty())
+	{
+		if (readTilesetFile(filename))
+		{
+			// TODO: texture change modal
+		}
+	}
+}
+
+void MainWindow::saveTileset()
+{
+	QString filename = QFileDialog::getSaveFileName(this,
+		tr("Save Tileset File"),
+		getLevelDir(),
+		tr("Tileset File (*.tileset);;All Files (*.*)"));
+
+	if (!filename.isEmpty())
+	{
+		writeTilesetFile(filename);
+	}
+}
+
 
 void MainWindow::selectionMode()
 {
@@ -499,6 +528,12 @@ void MainWindow::tileZEditMode()
 {
 	emit m_glwidget->setMode(GLWidget::MODE_TILE_ZEDIT);
 	m_tile_zedit_action->setChecked(true);
+}
+
+void MainWindow::multitileZRandMode()
+{
+	emit m_glwidget->setMode(GLWidget::MODE_MULTITILE_ZRAND);
+	m_multitile_zrand_action->setChecked(true);
 }
 
 
@@ -1500,6 +1535,16 @@ void MainWindow::createActions()
 	connect(m_savePrefabsAction, SIGNAL(triggered()), this, SLOT(savePrefabs()));
 
 
+	// tileset menu
+	m_loadTilesetAction = new QAction(tr("Load Tileset..."), this);
+	m_loadTilesetAction->setStatusTip(tr("Load tileset"));
+	connect(m_loadTilesetAction, SIGNAL(triggered()), this, SLOT(loadTileset()));
+
+	m_saveTilesetAction = new QAction(tr("Save Tileset..."), this);
+	m_saveTilesetAction->setStatusTip(tr("Save tileset"));
+	connect(m_saveTilesetAction, SIGNAL(triggered()), this, SLOT(saveTileset()));
+
+
 
 	// operation tools
 	m_opgroup = new QActionGroup(this);
@@ -1540,6 +1585,10 @@ void MainWindow::createActions()
 	m_tile_zedit_action->setCheckable(true);
 	connect(m_tile_zedit_action, SIGNAL(triggered()), this, SLOT(tileZEditMode()));
 
+	m_multitile_zrand_action = new QAction(QIcon("multitile.png"), tr("Randomize Z on multiple tiles"), this);
+	m_multitile_zrand_action->setCheckable(true);
+	connect(m_multitile_zrand_action, SIGNAL(triggered()), this, SLOT(multitileZRandMode()));
+
 	m_opgroup->addAction(m_select_action);
 	m_opgroup->addAction(m_move_action);
 	m_opgroup->addAction(m_rotate_action);
@@ -1548,6 +1597,7 @@ void MainWindow::createActions()
 	m_opgroup->addAction(m_draw_rect_action);
 	m_opgroup->addAction(m_tilemap_action);
 	m_opgroup->addAction(m_tile_zedit_action);
+	m_opgroup->addAction(m_multitile_zrand_action);
 
 
 	// editor tools
@@ -1689,6 +1739,11 @@ void MainWindow::createMenus()
 	m_prefabMenu = menuBar()->addMenu(tr("Prefab"));
 	m_prefabMenu->addAction(m_loadPrefabsAction);
 	m_prefabMenu->addAction(m_savePrefabsAction);
+
+	// tileset menu
+	m_tilesetMenu = menuBar()->addMenu(tr("Tileset"));
+	m_tilesetMenu->addAction(m_loadTilesetAction);
+	m_tilesetMenu->addAction(m_saveTilesetAction);
 }
 
 void MainWindow::createToolbars()
@@ -1708,6 +1763,7 @@ void MainWindow::createToolbars()
 	m_op_toolbar->addAction(m_draw_rect_action);
 	m_op_toolbar->addAction(m_tilemap_action);
 	m_op_toolbar->addAction(m_tile_zedit_action);
+	m_op_toolbar->addAction(m_multitile_zrand_action);
 
 	m_zbase_toolbar = addToolBar("Z Base");
 	m_zbase_toolbar->addWidget(m_zbaseWidget);
@@ -2684,4 +2740,334 @@ void MainWindow::writeLevelFile(QString& filename)
 		output.close();
 		return;
 	}
+}
+
+
+bool MainWindow::readTilesetFile(QString& filename)
+{
+	BinaryFile input;
+
+	const unsigned int hsts_id = 0x48535453;
+	const unsigned int hsts_version = 0x10000;
+
+	QString texture_name = "";
+	QString tile_name = "";
+
+	Tileset* tileset = m_level->getTileset();
+	tileset->removeTiles();
+	m_tileset_window->reset();
+
+	try
+	{
+		int inb, inp;
+		char buf[200];
+		input.open(filename.toStdString(), BinaryFile::MODE_READONLY);
+
+		// ID
+		unsigned int id = input.read_dword();
+		if (id != hsts_id)
+			throw "HSTS ID not found";
+
+		// version
+		unsigned int version = input.read_dword();
+		if (version != hsts_version)
+			throw "Wrong HSTS version";
+
+		// texture name
+		inb = 0;
+		inp = 0;
+		do
+		{
+			inb = input.read_byte();
+			buf[inp++] = inb;
+		} while (inb != 0);
+
+		texture_name = QString(buf);
+
+		// load texture if needed
+		if (!texture_name.isEmpty())
+		{
+			if (texture_name != m_texture_file)
+			{
+				QMessageBox box;
+				box.setText("Different texture.");
+				box.setInformativeText("The tileset uses a different texture. Want to load this texture?");
+				box.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+				box.setDefaultButton(QMessageBox::Yes);
+				int ret = box.exec();
+
+				if (ret == QMessageBox::Yes)
+				{
+					changeTexture(texture_name);
+				}
+			}
+		}
+
+
+		// num of tiles
+		int num_tiles = input.read_dword();
+
+		PolygonDef* top = new PolygonDef(6);
+		PolygonDef* side = new PolygonDef(4);
+		PolygonDef* sidetop = new PolygonDef(4);
+		PolygonDef* sidebot = new PolygonDef(4);
+
+		// tiles
+		for (int i = 0; i < num_tiles; i++)
+		{
+			// tile name
+			inb = 0;
+			inp = 0;
+			do
+			{
+				inb = input.read_byte();
+				buf[inp++] = inb;
+			} while (inb != 0);
+
+			tile_name = QString(buf);
+
+			//  tile type
+			unsigned int type = input.read_dword();
+
+			int num_top_points = 0;
+			glm::vec2 top_pps[6];
+			glm::vec2 side_pps[4];
+
+			top->reset();
+			side->reset();
+
+			// top UVs
+			switch (type)
+			{
+			case Tileset::TILE_FULL:		num_top_points = 6; break;
+			case Tileset::TILE_LEFT:		num_top_points = 4; break;
+			case Tileset::TILE_RIGHT:		num_top_points = 4; break;
+			case Tileset::TILE_TOP:			num_top_points = 3; break;
+			case Tileset::TILE_BOTTOM:		num_top_points = 3; break;
+			case Tileset::TILE_MID:			num_top_points = 4; break;
+			case Tileset::TILE_CORNER_TL:	num_top_points = 3; break;
+			case Tileset::TILE_CORNER_TR:	num_top_points = 3; break;
+			case Tileset::TILE_CORNER_BL:	num_top_points = 3; break;
+			case Tileset::TILE_CORNER_BR:	num_top_points = 3; break;
+			}
+
+			for (int j = 0; j < num_top_points; j++)
+			{
+				float x = input.read_float();
+				float y = input.read_float();
+
+				top->insertPoint(glm::vec2(x, y));
+			}
+
+			// side UVs
+			for (int j = 0; j < 4; j++)
+			{
+				float x = input.read_float();
+				float y = input.read_float();
+
+				side->insertPoint(glm::vec2(x, y));
+			}
+
+			// side top UVs
+			for (int j = 0; j < 4; j++)
+			{
+				float x = input.read_float();
+				float y = input.read_float();
+
+				sidetop->insertPoint(glm::vec2(x, y));
+			}
+
+			// side bottom UVs
+			for (int j = 0; j < 4; j++)
+			{
+				float x = input.read_float();
+				float y = input.read_float();
+
+				sidebot->insertPoint(glm::vec2(x, y));
+			}
+
+			unsigned int tile_color = input.read_dword();
+
+			unsigned int top_type = input.read_dword();
+
+			float top_height = input.read_float();
+			unsigned int shading_type = input.read_dword();
+
+			QByteArray ba;
+			int thumb_datasize = input.read_dword();
+			for (int i = 0; i < thumb_datasize; i++)
+			{
+				ba.push_back(input.read_byte());
+			}
+
+			QBuffer buffer(&ba);
+			buffer.open(QIODevice::ReadOnly);
+
+			QImage* thumb_image = new QImage();
+			thumb_image->load(&buffer, "PNG");
+
+			int thumb_w = thumb_image->width();
+			int thumb_h = thumb_image->height();
+			unsigned int* thumb = new unsigned int[thumb_w * thumb_h];
+
+			for (int j = 0; j < thumb_h; j++)
+			{
+				QRgb* line = (QRgb*)thumb_image->scanLine(j);
+				for (int i = 0; i < thumb_w; i++)
+				{
+					thumb[(j * thumb_w) + i] = line[i];
+				}
+			}
+
+			int id = tileset->insertTile(tile_name.toStdString(), top, side, sidetop, sidebot, tile_color,
+				(Tileset::TileType)type,
+				(Tileset::TopType)top_type,
+				(Tileset::ShadingType)shading_type,
+				top_height, thumb, thumb_w, thumb_h);
+			emit m_tileset_window->add(id);
+
+			delete[] thumb;
+			delete thumb_image;
+		}
+
+		delete top;
+		delete side;
+		delete sidetop;
+		delete sidebot;
+	}
+	catch (ios_base::failure&)
+	{
+		input.close();
+		return false;
+	}
+	catch (int e)
+	{
+		input.close();
+		return false;
+	}
+
+	return true;
+}
+
+
+bool MainWindow::writeTilesetFile(QString& filename)
+{
+	BinaryFile output;
+
+	const char hsts_id[4] = { 0x48, 0x53, 0x54, 0x53 };
+	const unsigned int hsts_version = 0x10000;
+
+	Tileset* tileset = m_level->getTileset();
+
+	try
+	{
+		output.open(filename.toStdString(), BinaryFile::MODE_WRITEONLY);
+
+		// ID
+		output.write((char*)hsts_id, 4);
+
+		// version
+		output.write_dword(hsts_version);
+
+		// texture name
+		QByteArray texname = m_texture_file.toLocal8Bit();
+		for (int i = 0; i < texname.length(); i++)
+		{
+			output.write_byte(texname.at(i));
+		}
+		output.write_byte(0);		// null terminator
+
+		// tiles
+		int num_tiles = m_level->getTileset()->getNumTiles();
+		output.write_dword(num_tiles);
+
+		for (int i = 0; i < num_tiles; i++)
+		{
+			Tileset::Tile* tile = tileset->getTile(i);
+
+			// tile name
+			std::string name = tile->name;
+			for (int j = 0; j < name.length(); j++)
+			{
+				output.write_byte(name.at(j));
+			}
+			output.write_byte(0);	// null terminator
+
+			// tile type
+			output.write_dword(tile->type);
+
+			int num_top_points = tile->numTopPoints();
+
+			for (int j = 0; j < num_top_points; j++)
+			{
+				output.write_float(tile->top_points[j].x);
+				output.write_float(tile->top_points[j].y);
+			}
+
+			// side UVs
+			for (int j = 0; j < 4; j++)
+			{
+				output.write_float(tile->side_points[j].x);
+				output.write_float(tile->side_points[j].y);
+			}
+
+			// side top UVs
+			for (int j = 0; j < 4; j++)
+			{
+				output.write_float(tile->sidetop_points[j].x);
+				output.write_float(tile->sidetop_points[j].y);
+			}
+
+			// side bottom UVs
+			for (int j = 0; j < 4; j++)
+			{
+				output.write_float(tile->sidebot_points[j].x);
+				output.write_float(tile->sidebot_points[j].y);
+			}
+
+			// tile color
+			output.write_dword(tile->color);
+
+			output.write_dword(tile->top_type);
+
+			output.write_float(tile->top_height);
+
+			output.write_dword(tile->shading_type);
+
+			QImage* thumb_image = new QImage(tile->thumb_width, tile->thumb_height, QImage::Format_ARGB32);
+			for (int j = 0; j < tile->thumb_height; j++)
+			{
+				QRgb* line = (QRgb*)thumb_image->scanLine(j);
+				for (int i = 0; i < tile->thumb_width; i++)
+				{
+					line[i] = tile->thumbnail[(j * tile->thumb_width) + i];
+				}
+			}
+
+			QByteArray ba;
+			QBuffer buffer(&ba);
+			buffer.open(QIODevice::WriteOnly);
+			thumb_image->save(&buffer, "PNG");
+
+			output.write_dword(ba.size());
+			for (int i = 0; i < ba.size(); i++)
+			{
+				output.write_byte(ba.at(i));
+			}
+
+			delete thumb_image;
+		}
+	}
+	catch (ios_base::failure&)
+	{
+		output.close();
+		return false;
+	}
+	catch (int e)
+	{
+		output.close();
+		return false;
+	}
+
+	return true;
 }

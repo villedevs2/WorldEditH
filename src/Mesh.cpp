@@ -145,8 +145,15 @@ bool Mesh::load(std::string& filename)
 		}
 
 	}
-	catch ()
+	catch (ios_base::failure&)
 	{
-
+		input.close();
+		return false;
 	}
+	catch (int e)
+	{
+		input.close();
+		return false;
+	}
+	return true;
 }

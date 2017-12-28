@@ -63,6 +63,8 @@ private:
 	bool writeBinaryProjectFile(QString& filename);
 	bool readBinaryProjectFile(QString& filename);
 	void reset();
+	bool writeTilesetFile(QString& filename);
+	bool readTilesetFile(QString& filename);
 	
 	QMenu* m_fileMenu;
 	QAction* m_newAction;
@@ -86,6 +88,10 @@ private:
 	QMenu* m_prefabMenu;
 	QAction* m_loadPrefabsAction;
 	QAction* m_savePrefabsAction;
+	QMenu* m_tilesetMenu;
+	QAction* m_loadTilesetAction;
+	QAction* m_saveTilesetAction;
+
 	QLabel* m_zoomLevelLabel;
 	QComboBox* m_zoomLevelCombo;
 	QWidget* m_zoomLevelWidget;
@@ -108,6 +114,7 @@ private:
 	QAction* m_draw_rect_action;
 	QAction* m_tilemap_action;
 	QAction* m_tile_zedit_action;
+	QAction* m_multitile_zrand_action;
 
 	QAction* m_toggle_texedit;
 	QAction* m_toggle_objedit;
@@ -202,6 +209,8 @@ private slots:
 	void exportLevel();
 	void exitProgram();
 	void loadTexture();
+	void loadTileset();
+	void saveTileset();
 
 	void selectionMode();
 	void moveMode();
@@ -211,6 +220,7 @@ private slots:
 	void drawRectMode();
 	void tilemapMode();
 	void tileZEditMode();
+	void multitileZRandMode();
 
 	void toggleTexEdit();
 	void toggleObjEdit();

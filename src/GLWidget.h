@@ -29,6 +29,7 @@ public:
 		MODE_DRAW_RECT,
 		MODE_TILEMAP,
 		MODE_TILE_ZEDIT,
+		MODE_MULTITILE_ZRAND
 	};
 
 	/*
@@ -135,6 +136,7 @@ private:
 	void tilemapDraw();
 	void tilemapZDraw();
 	void tilemapZEdit(int zmod);
+	void multitileZRand(int scale, int size);
 
 	Level* m_level;
 	QColor m_bgcolor;
