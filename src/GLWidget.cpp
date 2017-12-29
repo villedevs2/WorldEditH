@@ -59,11 +59,16 @@ GLWidget::GLWidget(QWidget *parent, Level* level)
 
 	m_tile_brush = -1;
 
+	m_zrand_size = 1;
+
 	m_create_poly_color = 0xffffffff;
 
 	reset();
 
 	this->setMouseTracking(true);
+
+	std::random_device rd;
+	m_random_engine = new std::mt19937(rd());
 }
 
 GLWidget::~GLWidget(void)
@@ -167,7 +172,8 @@ void GLWidget::setMode(OperationMode mode)
 
 		case MODE_TILEMAP:
 		case MODE_TILE_ZEDIT:
-		case MODE_MULTITILE_ZRAND:
+		case MODE_MULTITILE_ZRAND_RAISE:
+		case MODE_MULTITILE_ZRAND_LOWER:
 		{
 			deselectObject();
 			m_tilemap_painting = false;
@@ -311,6 +317,14 @@ void GLWidget::setTileBaseZ(float z)
 {
 	m_tile_basez = z;
 }
+
+void GLWidget::setZRandSize(int value)
+{
+	m_zrand_size = value;
+	
+	update();
+}
+
 
 
 // ----------------------------------------------------------------------------
@@ -474,15 +488,42 @@ void GLWidget::tilemapZEdit(int zmod)
 	}
 }
 
-void GLWidget::multitileZRand(int scale, int size)
+void GLWidget::multitileZRand(int size, bool inc)
 {
 	if (m_tile_selx >= 0 &&
 		m_tile_sely >= 0 &&
 		m_tile_selx < Tilemap::AREA_WIDTH &&
 		m_tile_sely < Tilemap::AREA_HEIGHT)
 	{
-		// TODO
+		Tilemap* tilemap = m_level->getTilemap();
 
+		int tx = m_tile_selx - size;
+		int ty = m_tile_sely - size;
+		int tw = size * 2;
+		int th = size * 2;
+
+		std::uniform_real_distribution<float> random_floats(0.0, 1.0f);
+
+		for (int j = ty; j < ty + th; j++)
+		{
+			for (int i = tx; i < tx + tw; i++)
+			{
+				float r = random_floats(*m_random_engine);
+
+				int zmod = (int)floor(r + 0.5f);
+				if (!inc)
+					zmod = -zmod;
+
+				int z = tilemap->getZ(i, j);
+				z += zmod;
+				if (z < 0)
+					z = 0;
+				if (z > Tilemap::Z_MAX)
+					z = Tilemap::Z_MAX;
+
+				tilemap->editZ(i, j, z);
+			}
+		}
 	}
 }
 
@@ -895,7 +936,8 @@ void GLWidget::mouseReleaseEvent(QMouseEvent* event)
 
 		case MODE_TILEMAP:
 		case MODE_TILE_ZEDIT:
-		case MODE_MULTITILE_ZRAND:
+		case MODE_MULTITILE_ZRAND_RAISE:
+		case MODE_MULTITILE_ZRAND_LOWER:
 		{
 			if (event->button() & Qt::LeftButton)
 			{
@@ -1016,7 +1058,8 @@ void GLWidget::mousePressEvent(QMouseEvent* event)
 			break;
 		}
 
-		case MODE_MULTITILE_ZRAND:
+		case MODE_MULTITILE_ZRAND_RAISE:
+		case MODE_MULTITILE_ZRAND_LOWER:
 		{
 			if (event->button() & Qt::LeftButton)
 			{
@@ -1024,14 +1067,17 @@ void GLWidget::mousePressEvent(QMouseEvent* event)
 
 				updateTileDrawLocation(mouse_lp);
 
-				// TODO
-				int scale = 0;
-				int size = 0;
+				bool inc = true;
+				if (m_opmode == MODE_MULTITILE_ZRAND_RAISE)
+					inc = true;
+				else if (m_opmode == MODE_MULTITILE_ZRAND_LOWER)
+					inc = false;
 
-				multitileZRand(scale, size);
+				multitileZRand(m_zrand_size, inc);
 
 				m_tilemap_painting = true;
 			}
+			break;
 		}
 	}
 
@@ -1095,7 +1141,8 @@ void GLWidget::mouseMoveEvent(QMouseEvent* event)
 			break;
 		}
 
-		case MODE_MULTITILE_ZRAND:
+		case MODE_MULTITILE_ZRAND_RAISE:
+		case MODE_MULTITILE_ZRAND_LOWER:
 		{
 			glm::vec2 mouse_lp = toLevelCoords(glm::vec2(mouse_x, mouse_y));
 
@@ -1109,11 +1156,13 @@ void GLWidget::mouseMoveEvent(QMouseEvent* event)
 
 			if (m_tilemap_painting)
 			{
-				// TODO
-				int scale = 0;
-				int size = 0;
+				bool inc = true;
+				if (m_opmode == MODE_MULTITILE_ZRAND_RAISE)
+					inc = true;
+				else if (m_opmode == MODE_MULTITILE_ZRAND_LOWER)
+					inc = false;
 
-				multitileZRand(scale, size);
+				multitileZRand(m_zrand_size, inc);
 
 				update();
 			}
@@ -2805,9 +2854,14 @@ void GLWidget::paintGL()
 			modetext = tr("Tilemap Z Edit: X: %1, Y: %2").arg(m_tile_selx).arg(m_tile_sely);
 			break;
 		}
-		case MODE_MULTITILE_ZRAND:
+		case MODE_MULTITILE_ZRAND_RAISE:
 		{
-			modetext = tr("Multitile Z Rand: X: %1, Y: %2").arg(m_tile_selx).arg(m_tile_sely);
+			modetext = tr("Multitile Z Rand Raise: X: %1, Y: %2").arg(m_tile_selx).arg(m_tile_sely);
+			break;
+		}
+		case MODE_MULTITILE_ZRAND_LOWER:
+		{
+			modetext = tr("Multitile Z Rand Lower: X: %1, Y: %2").arg(m_tile_selx).arg(m_tile_sely);
 			break;
 		}
 	}	

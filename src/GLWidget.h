@@ -8,6 +8,7 @@
 #include <glm.hpp>
 #include <gtx/rotate_vector.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <random>
 
 #include "VBO.h"
 #include "PolygonDef.h"
@@ -29,7 +30,8 @@ public:
 		MODE_DRAW_RECT,
 		MODE_TILEMAP,
 		MODE_TILE_ZEDIT,
-		MODE_MULTITILE_ZRAND
+		MODE_MULTITILE_ZRAND_RAISE,
+		MODE_MULTITILE_ZRAND_LOWER
 	};
 
 	/*
@@ -100,6 +102,7 @@ public slots:
 	void setTileBrush(int tile);
 	void setObjectColor(QColor color);
 	void setTileBaseZ(float z);
+	void setZRandSize(int value);
 
 protected:
 	void initializeGL();
@@ -136,7 +139,7 @@ private:
 	void tilemapDraw();
 	void tilemapZDraw();
 	void tilemapZEdit(int zmod);
-	void multitileZRand(int scale, int size);
+	void multitileZRand(int size, bool inc);
 
 	Level* m_level;
 	QColor m_bgcolor;
@@ -219,5 +222,9 @@ private:
 
 	float m_tile_basez;
 
+	int m_zrand_size;
+
 	std::vector<std::vector<int>> m_edgedata;
+
+	std::mt19937* m_random_engine;
 };

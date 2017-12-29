@@ -530,10 +530,16 @@ void MainWindow::tileZEditMode()
 	m_tile_zedit_action->setChecked(true);
 }
 
-void MainWindow::multitileZRandMode()
+void MainWindow::multitileZRandRaiseMode()
 {
-	emit m_glwidget->setMode(GLWidget::MODE_MULTITILE_ZRAND);
-	m_multitile_zrand_action->setChecked(true);
+	emit m_glwidget->setMode(GLWidget::MODE_MULTITILE_ZRAND_RAISE);
+	m_multitile_zrand_raise_action->setChecked(true);
+}
+
+void MainWindow::multitileZRandLowerMode()
+{
+	emit m_glwidget->setMode(GLWidget::MODE_MULTITILE_ZRAND_LOWER);
+	m_multitile_zrand_lower_action->setChecked(true);
 }
 
 
@@ -752,6 +758,11 @@ void MainWindow::setColor()
 void MainWindow::zbaseChanged(int value)
 {
 	emit m_glwidget->setTileBaseZ(value);
+}
+
+void MainWindow::zrandSizeChanged(int value)
+{
+	emit m_glwidget->setZRandSize(value);
 }
 
 
@@ -1501,6 +1512,23 @@ void MainWindow::createActions()
 	m_zbaseWidget = new QWidget;
 	m_zbaseWidget->setLayout(zbase_layout);
 
+
+	m_zrandSizeLabel = new QLabel(tr("ZR Size:"));
+	m_zrandSizeSpin = new QSpinBox();
+	m_zrandSizeSpin->setRange(1, 8);
+	m_zrandSizeSpin->setSingleStep(1);
+	QBoxLayout* zrandSizeLayout = new QBoxLayout(QBoxLayout::LeftToRight);
+	zrandSizeLayout->setSpacing(2);
+	zrandSizeLayout->setMargin(1);
+	zrandSizeLayout->addWidget(m_zrandSizeLabel);
+	zrandSizeLayout->addWidget(m_zrandSizeSpin);
+	connect(m_zrandSizeSpin, SIGNAL(valueChanged(int)), this, SLOT(zrandSizeChanged(int)));
+
+	m_zrandSizeWidget = new QWidget;
+	m_zrandSizeWidget->setLayout(zrandSizeLayout);
+
+
+
 	m_gridSizeCombo = new QComboBox();
 	for (int i=0; i < GLWidget::NUM_GRID_SIZES; i++)
 	{
@@ -1585,9 +1613,13 @@ void MainWindow::createActions()
 	m_tile_zedit_action->setCheckable(true);
 	connect(m_tile_zedit_action, SIGNAL(triggered()), this, SLOT(tileZEditMode()));
 
-	m_multitile_zrand_action = new QAction(QIcon("multitile.png"), tr("Randomize Z on multiple tiles"), this);
-	m_multitile_zrand_action->setCheckable(true);
-	connect(m_multitile_zrand_action, SIGNAL(triggered()), this, SLOT(multitileZRandMode()));
+	m_multitile_zrand_raise_action = new QAction(QIcon("multitile_raise.png"), tr("ZRand raise on multiple tiles"), this);
+	m_multitile_zrand_raise_action->setCheckable(true);
+	connect(m_multitile_zrand_raise_action, SIGNAL(triggered()), this, SLOT(multitileZRandRaiseMode()));
+
+	m_multitile_zrand_lower_action = new QAction(QIcon("multitile_lower.png"), tr("ZRand lower on multiple tiles"), this);
+	m_multitile_zrand_lower_action->setCheckable(true);
+	connect(m_multitile_zrand_lower_action, SIGNAL(triggered()), this, SLOT(multitileZRandLowerMode()));
 
 	m_opgroup->addAction(m_select_action);
 	m_opgroup->addAction(m_move_action);
@@ -1597,7 +1629,8 @@ void MainWindow::createActions()
 	m_opgroup->addAction(m_draw_rect_action);
 	m_opgroup->addAction(m_tilemap_action);
 	m_opgroup->addAction(m_tile_zedit_action);
-	m_opgroup->addAction(m_multitile_zrand_action);
+	m_opgroup->addAction(m_multitile_zrand_raise_action);
+	m_opgroup->addAction(m_multitile_zrand_lower_action);
 
 
 	// editor tools
@@ -1763,10 +1796,12 @@ void MainWindow::createToolbars()
 	m_op_toolbar->addAction(m_draw_rect_action);
 	m_op_toolbar->addAction(m_tilemap_action);
 	m_op_toolbar->addAction(m_tile_zedit_action);
-	m_op_toolbar->addAction(m_multitile_zrand_action);
+	m_op_toolbar->addAction(m_multitile_zrand_raise_action);
+	m_op_toolbar->addAction(m_multitile_zrand_lower_action);
 
 	m_zbase_toolbar = addToolBar("Z Base");
 	m_zbase_toolbar->addWidget(m_zbaseWidget);
+	m_zbase_toolbar->addWidget(m_zrandSizeWidget);
 
 	m_grid_toolbar = addToolBar("Grid");
 	m_grid_toolbar->addAction(m_toggleGridAction);

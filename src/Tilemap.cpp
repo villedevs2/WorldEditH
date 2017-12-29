@@ -204,7 +204,14 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 		tiledef.botright_height = getZ(adjacent_coords.botright.x, adjacent_coords.botright.y) * 0.1f;
 
 
-		vbo_index += Tilemap::makeVBOTile(vbo, vbo_index, tiledef, (bucket->x * BUCKET_WIDTH) + bx, (bucket->y * BUCKET_HEIGHT) + by);
+		int vbsize = Tilemap::makeVBOTile(vbo, vbo_index, tiledef, (bucket->x * BUCKET_WIDTH) + bx, (bucket->y * BUCKET_HEIGHT) + by);
+		vbo_index += vbsize;
+
+		if (vbsize < MAX_VERTS)
+		{
+			vbo->degenTris(vbo_index, MAX_VERTS - vbsize);
+			vbo_index += MAX_VERTS - vbsize;
+		}
 	}
 
 

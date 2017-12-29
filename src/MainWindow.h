@@ -104,6 +104,9 @@ private:
 	QLabel* m_zbaseLabel;
 	QSpinBox* m_zbaseSpin;
 	QWidget* m_zbaseWidget;
+	QLabel* m_zrandSizeLabel;
+	QSpinBox* m_zrandSizeSpin;
+	QWidget* m_zrandSizeWidget;
 
 	QActionGroup* m_opgroup;
 	QAction* m_select_action;
@@ -114,7 +117,8 @@ private:
 	QAction* m_draw_rect_action;
 	QAction* m_tilemap_action;
 	QAction* m_tile_zedit_action;
-	QAction* m_multitile_zrand_action;
+	QAction* m_multitile_zrand_raise_action;
+	QAction* m_multitile_zrand_lower_action;
 
 	QAction* m_toggle_texedit;
 	QAction* m_toggle_objedit;
@@ -220,7 +224,8 @@ private slots:
 	void drawRectMode();
 	void tilemapMode();
 	void tileZEditMode();
-	void multitileZRandMode();
+	void multitileZRandRaiseMode();
+	void multitileZRandLowerMode();
 
 	void toggleTexEdit();
 	void toggleObjEdit();
@@ -250,4 +255,6 @@ private slots:
 
 	void zbaseChanged(int);
 	void doStats();
+
+	void zrandSizeChanged(int);
 };

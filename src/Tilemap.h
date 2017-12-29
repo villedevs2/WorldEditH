@@ -85,7 +85,7 @@ public:
 	static const unsigned int Z_MASK = 0xff0000;
 	static const unsigned int Z_SHIFT = 16;
 
-	static const int Z_MAX = 100;
+	static const int Z_MAX = 200;
 
 	static const int AREA_WIDTH = 8192;
 	static const int AREA_HEIGHT = 8192;
