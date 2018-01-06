@@ -832,24 +832,29 @@ void Tilemap::editZ(int x, int y, int z)
 
 		int index = (iy * BUCKET_WIDTH) + ix;
 
-		m_buckets[bin]->map[index] &= ~Z_MASK;
-		m_buckets[bin]->map[index] |= (z << Z_SHIFT) & Z_MASK;
+		// only edit Z if the tile is not empty
+		int tile = m_buckets[bin]->map[index] & TILE_MASK;
+		if (tile != TILE_EMPTY)
+		{
+			m_buckets[bin]->map[index] &= ~Z_MASK;
+			m_buckets[bin]->map[index] |= (z << Z_SHIFT) & Z_MASK;
 
-		tesselateTile(m_buckets[bin], ix, iy);
+			tesselateTile(m_buckets[bin], ix, iy);
 
-		// retesselate adjacent tiles
-		AdjacentTileCoords adjacent_coords;
-		AdjacentTiles adjacent_tiles;
-		getAdjacentTileCoords(&adjacent_coords, x, y);
-		getAdjacentTiles(&adjacent_tiles, &adjacent_coords);
-		if (adjacent_tiles.left != TILE_EMPTY) retesselateTileByCoords(adjacent_coords.left.x, adjacent_coords.left.y);
-		if (adjacent_tiles.right != TILE_EMPTY) retesselateTileByCoords(adjacent_coords.right.x, adjacent_coords.right.y);
-		if (adjacent_tiles.topleft != TILE_EMPTY) retesselateTileByCoords(adjacent_coords.topleft.x, adjacent_coords.topleft.y);
-		if (adjacent_tiles.topright != TILE_EMPTY) retesselateTileByCoords(adjacent_coords.topright.x, adjacent_coords.topright.y);
-		if (adjacent_tiles.botleft != TILE_EMPTY) retesselateTileByCoords(adjacent_coords.botleft.x, adjacent_coords.botright.y);
-		if (adjacent_tiles.botright != TILE_EMPTY) retesselateTileByCoords(adjacent_coords.botright.x, adjacent_coords.botright.y);
+			// retesselate adjacent tiles
+			AdjacentTileCoords adjacent_coords;
+			AdjacentTiles adjacent_tiles;
+			getAdjacentTileCoords(&adjacent_coords, x, y);
+			getAdjacentTiles(&adjacent_tiles, &adjacent_coords);
+			if (adjacent_tiles.left != TILE_EMPTY) retesselateTileByCoords(adjacent_coords.left.x, adjacent_coords.left.y);
+			if (adjacent_tiles.right != TILE_EMPTY) retesselateTileByCoords(adjacent_coords.right.x, adjacent_coords.right.y);
+			if (adjacent_tiles.topleft != TILE_EMPTY) retesselateTileByCoords(adjacent_coords.topleft.x, adjacent_coords.topleft.y);
+			if (adjacent_tiles.topright != TILE_EMPTY) retesselateTileByCoords(adjacent_coords.topright.x, adjacent_coords.topright.y);
+			if (adjacent_tiles.botleft != TILE_EMPTY) retesselateTileByCoords(adjacent_coords.botleft.x, adjacent_coords.botright.y);
+			if (adjacent_tiles.botright != TILE_EMPTY) retesselateTileByCoords(adjacent_coords.botright.x, adjacent_coords.botright.y);
 
-		m_edit_callback->tilemapModified();
+			m_edit_callback->tilemapModified();
+		}
 	}
 }
 
@@ -1261,7 +1266,7 @@ int Tilemap::makeVBOTile(VBO<HSVertex>* vbo, int vbo_index, const Tilemap::TileD
 	glm::vec3 topt_p5 = glm::vec3(tx2, ty1 + (tiledef.tile_height * (15.0 / 70.0)), z);
 	glm::vec3 topt_p6 = glm::vec3(tx1 + (tiledef.tile_width * 0.5), ty1, z);
 
-	glm::vec3 topt_pcen = glm::vec3(tx1 + (tiledef.tile_width * 0.5), ty1 + (tiledef.tile_height * (20.0 / 70.0)), midz);
+	glm::vec3 topt_pcen = glm::vec3(tx1 + (tiledef.tile_width * 0.5), ty1 + (tiledef.tile_height * (25.0 / 70.0)), midz);
 
 	/*
 	glm::vec3 topt_p1 = glm::vec3(0.0f, 0.3f, z);

@@ -89,11 +89,16 @@ TileDesignerWidget::TileDesignerWidget(QWidget* parent, Level* level, TilePrevie
 	m_poly_top_default[9]->insertPoint(glm::vec2(tx3, ty3));
 	m_poly_top_default[9]->insertPoint(glm::vec2(tx3, ty2));
 
-
+	/*
 	m_poly_side_default->insertPoint(glm::vec2(0.0f, 0.0f));
 	m_poly_side_default->insertPoint(glm::vec2(0.0f, 0.125f));
 	m_poly_side_default->insertPoint(glm::vec2(0.125f, 0.125f));
 	m_poly_side_default->insertPoint(glm::vec2(0.125f, 0.0f));
+	*/	
+	m_poly_side_default->insertPoint(glm::vec2(0.0f, 0.125f));
+	m_poly_side_default->insertPoint(glm::vec2(0.125f, 0.125f));
+	m_poly_side_default->insertPoint(glm::vec2(0.125f, 0.0f));
+	m_poly_side_default->insertPoint(glm::vec2(0.0f, 0.0f));
 
 	m_poly_sidetop_default->insertPoint(glm::vec2(0.0f, 0.03125f));
 	m_poly_sidetop_default->insertPoint(glm::vec2(0.125f, 0.03125f));
