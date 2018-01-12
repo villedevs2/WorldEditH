@@ -83,8 +83,6 @@ private:
 	QLabel* m_gridSizeLabel;
 	QComboBox* m_gridSizeCombo;
 	QWidget* m_gridSizeWidget;
-	QMenu* m_textureMenu;
-	QAction* m_loadTexAction;
 	QMenu* m_prefabMenu;
 	QAction* m_loadPrefabsAction;
 	QAction* m_savePrefabsAction;
@@ -120,9 +118,7 @@ private:
 	QAction* m_multitile_zrand_raise_action;
 	QAction* m_multitile_zrand_lower_action;
 
-	QAction* m_toggle_texedit;
 	QAction* m_toggle_objedit;
-	QAction* m_toggle_tiledesigner;
 	QAction* m_toggle_tileset_window;
 	QAction* m_toggle_tilemap_control;
 
@@ -151,14 +147,11 @@ private:
 
 	Level* m_level;
 
-	TextureEdit* m_texedit;
 	QImage* m_texture;
 
 	QImage* m_ambient_map;
 
-	bool m_texedit_open;
 	bool m_objedit_open;
-	bool m_tiledesigner_open;
 	bool m_tileset_window_open;
 	bool m_tilemap_control_open;
 
@@ -166,7 +159,6 @@ private:
 	bool m_snap_grid;
 
 	ObjectEdit* m_objedit;
-	TileDesigner* m_tiledesigner;
 	TilemapControl* m_tilemap_control;
 
 	bool m_enable_visbox;
@@ -198,9 +190,7 @@ private:
 	bool edgify(std::vector<std::vector<int>>& ptlist, int wall_threshold);
 
 public slots:
-	void texEditClosed();
 	void objEditClosed();
-	void tileDesignerClosed();
 	void tilesetWindowClosed();
 	void setColor();
 	void tilemapControlClosed();
@@ -227,9 +217,7 @@ private slots:
 	void multitileZRandRaiseMode();
 	void multitileZRandLowerMode();
 
-	void toggleTexEdit();
 	void toggleObjEdit();
-	void toggleTileDesigner();
 	void toggleTilesetWindow();
 	void toggleTilemapControl();
 

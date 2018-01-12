@@ -27,11 +27,8 @@ MainWindow::MainWindow()
 	m_glwidget = new GLWidget(this, m_level);
 
 	m_objbrowser = new ObjectBrowser(this, m_level);
-	m_texedit = new TextureEdit(this, m_level);
 	m_objedit = new ObjectEdit(this, m_level);
 	m_tilemap_control = new TilemapControl(this, m_level);
-	
-	m_tiledesigner = new TileDesigner(this, m_level);
 	
 
 	m_visbox_conf = new VisboxConf(this);
@@ -77,40 +74,30 @@ MainWindow::MainWindow()
 	connect(m_glwidget, SIGNAL(onAddObject(int)), m_objbrowser, SLOT(add(int)));
 
 	connect(m_glwidget, SIGNAL(onRemoveObject(int)), m_objbrowser, SLOT(remove(int)));
-	connect(m_glwidget, SIGNAL(onRemoveObject(int)), m_texedit, SLOT(remove(int)));
 	connect(m_glwidget, SIGNAL(onRemoveObject(int)), m_objedit, SLOT(remove(int)));
 	
 	connect(m_glwidget, SIGNAL(onSelectObject(int)), m_objbrowser, SLOT(select(int)));
-	connect(m_glwidget, SIGNAL(onSelectObject(int)), m_texedit, SLOT(select(int)));
 	connect(m_glwidget, SIGNAL(onSelectObject(int)), m_objedit, SLOT(select(int)));
 	
 	connect(m_glwidget, SIGNAL(onDeselectObject()), m_objbrowser, SLOT(deselect()));
-	connect(m_glwidget, SIGNAL(onDeselectObject()), m_texedit, SLOT(deselect()));
 	connect(m_glwidget, SIGNAL(onDeselectObject()), m_objedit, SLOT(deselect()));
 	
 	connect(m_glwidget, SIGNAL(onSetMode(GLWidget::OperationMode)), m_objedit, SLOT(setMode(GLWidget::OperationMode)));
 	
 	connect(m_objbrowser, SIGNAL(onSelectObject(int)), m_glwidget, SLOT(select(int)));
-	connect(m_objbrowser, SIGNAL(onSelectObject(int)), m_texedit, SLOT(select(int)));
 	connect(m_objbrowser, SIGNAL(onSelectObject(int)), m_objedit, SLOT(select(int)));
 
 	connect(m_objbrowser, SIGNAL(onObjectDataChanged(int)), m_objedit, SLOT(objectDataChanged(int)));
 	connect(m_objedit, SIGNAL(onObjectDataChanged(int)), m_objbrowser, SLOT(objectDataChanged(int)));
 	
-	connect(m_texedit, SIGNAL(onClose()), this, SLOT(texEditClosed()));
 	connect(m_objedit, SIGNAL(onClose()), this, SLOT(objEditClosed()));
 	connect(m_tilemap_control, SIGNAL(onClose()), this, SLOT(tilemapControlClosed()));
-	connect(m_tiledesigner, SIGNAL(onClose()),this, SLOT(tileDesignerClosed()));
 	connect(m_tileset_window, SIGNAL(onClose()), this, SLOT(tilesetWindowClosed()));
 
 	connect(m_objedit, SIGNAL(onSetCreateType(Level::ObjectType)), m_glwidget, SLOT(setCreateType(Level::ObjectType)));
 	connect(m_objedit, SIGNAL(onSetCreateTriggerType(int)), m_glwidget, SLOT(setCreateTriggerType(int)));
 
-	connect(m_tiledesigner, SIGNAL(onInsertTile(int)), m_tileset_window, SLOT(add(int)));
-	connect(m_tiledesigner, SIGNAL(onReplaceTile(int)), m_tileset_window, SLOT(replace(int)));
-
 	connect(m_tileset_window, SIGNAL(onSelectTile(int)), m_glwidget, SLOT(setTileBrush(int)));
-	connect(m_tileset_window, SIGNAL(onSelectTile(int)), m_tiledesigner, SLOT(tileSelected(int)));
 
 	connect(m_tilemap_control, SIGNAL(onSelectTilemap(Level::TilemapType)), m_glwidget, SLOT(selectTilemap(Level::TilemapType)));
 
@@ -138,9 +125,6 @@ MainWindow::MainWindow()
 	// object editor positioning
 	m_objedit->move(QPoint(width() + 120, 100));
 
-	// object designer positioning
-	m_tiledesigner->move(QPoint(width() - 600, 230));
-
 	// tileset window positioning
 	m_tileset_window->move(QPoint(width() + 850, 600));
 
@@ -148,20 +132,10 @@ MainWindow::MainWindow()
 	m_tilemap_control->move(QPoint(width() - 400, 100));
 
 
-	// tex edit hidden by default
-	m_texedit_open = false;
-	m_toggle_texedit->setChecked(false);
-	m_texedit->setHidden(true);
-
 	// obj edit shown by default
 	m_objedit_open = true;
 	m_toggle_objedit->setChecked(true);
 	m_objedit->setHidden(false);
-
-	// tile designer hidden by default
-	m_tiledesigner_open = false;
-	m_toggle_tiledesigner->setChecked(false);
-	m_tiledesigner->setHidden(true);
 
 	// tileset shown by default
 	m_tileset_window_open = false;
@@ -542,29 +516,6 @@ void MainWindow::multitileZRandLowerMode()
 	m_multitile_zrand_lower_action->setChecked(true);
 }
 
-
-void MainWindow::toggleTexEdit()
-{
-	if (m_texedit_open)
-	{
-		emit m_texedit->setHidden(true);
-		m_texedit_open = false;
-		m_toggle_texedit->setChecked(false);
-	}
-	else
-	{
-		emit m_texedit->setHidden(false);
-		m_texedit_open = true;
-		m_toggle_texedit->setChecked(true);
-	}
-}
-
-void MainWindow::texEditClosed()
-{
-	m_texedit_open = false;
-	m_toggle_texedit->setChecked(false);
-}
-
 void MainWindow::toggleObjEdit()
 {
 	if (m_objedit_open)
@@ -585,28 +536,6 @@ void MainWindow::objEditClosed()
 {
 	m_objedit_open = false;
 	m_toggle_objedit->setChecked(false);
-}
-
-void MainWindow::toggleTileDesigner()
-{
-	if (m_tiledesigner_open)
-	{
-		emit m_tiledesigner->setHidden(true);
-		m_tiledesigner_open = false;
-		m_toggle_tiledesigner->setChecked(false);
-	}
-	else
-	{
-		emit m_tiledesigner->setHidden(false);
-		m_tiledesigner_open = true;
-		m_toggle_tiledesigner->setChecked(true);
-	}
-}
-
-void MainWindow::tileDesignerClosed()
-{
-	m_tiledesigner_open = false;
-	m_toggle_tiledesigner->setChecked(false);
 }
 
 void MainWindow::toggleTilesetWindow()
@@ -714,8 +643,6 @@ void MainWindow::changeTexture(QString path)
 	m_texture_file = path;
 
 	m_glwidget->loadTexture(m_texture);
-	m_texedit->setTexture(m_texture);
-	m_tiledesigner->setTexture(m_texture);
 	m_tileset_window->setTexture(m_texture);
 
 	QImage* textures[6];
@@ -1547,12 +1474,6 @@ void MainWindow::createActions()
 	m_gridSizeWidget->setLayout(gridsize_layout);
 
 
-	// texture menu
-	m_loadTexAction = new QAction(tr("Load Texture..."), this);
-	m_loadTexAction->setStatusTip(tr("Load new texture"));
-	connect(m_loadTexAction, SIGNAL(triggered()), this, SLOT(loadTexture()));
-
-
 	// prefab menu
 	m_loadPrefabsAction = new QAction(tr("Load Prefabs..."), this);
 	m_loadPrefabsAction->setStatusTip(tr("Load prefabs"));
@@ -1634,17 +1555,9 @@ void MainWindow::createActions()
 
 
 	// editor tools
-	m_toggle_texedit = new QAction(QIcon("texture.png"), tr("Toggle Texture Editor"), this);
-	m_toggle_texedit->setCheckable(true);
-	connect(m_toggle_texedit, SIGNAL(triggered()), this, SLOT(toggleTexEdit()));
-
 	m_toggle_objedit = new QAction(QIcon("objedit.png"), tr("Toggle Object Editor"), this);
 	m_toggle_objedit->setCheckable(true);
 	connect(m_toggle_objedit, SIGNAL(triggered()), this, SLOT(toggleObjEdit()));
-
-	m_toggle_tiledesigner = new QAction(QIcon("objfilter.png"), tr("Toggle Tile Designer"), this);
-	m_toggle_tiledesigner->setCheckable(true);
-	connect(m_toggle_tiledesigner, SIGNAL(triggered()), this, SLOT(toggleTileDesigner()));
 
 	m_toggle_tileset_window = new QAction(QIcon("tilemap.png"), tr("Toggle Tileset"), this);
 	m_toggle_tileset_window->setCheckable(true);
@@ -1764,10 +1677,6 @@ void MainWindow::createMenus()
 	m_editMenu->addAction(m_clear_edgify_action);
 	m_editMenu->addAction(m_stats_action);
 
-	// texture menu
-	m_textureMenu = menuBar()->addMenu(tr("&Texture"));
-	m_textureMenu->addAction(m_loadTexAction);
-
 	// prefab menu
 	m_prefabMenu = menuBar()->addMenu(tr("Prefab"));
 	m_prefabMenu->addAction(m_loadPrefabsAction);
@@ -1809,9 +1718,7 @@ void MainWindow::createToolbars()
 	m_grid_toolbar->addWidget(m_gridSizeWidget);
 
 	m_editor_toolbar = addToolBar("Editors");
-	m_editor_toolbar->addAction(m_toggle_texedit);
 	m_editor_toolbar->addAction(m_toggle_objedit);
-	m_editor_toolbar->addAction(m_toggle_tiledesigner);
 	m_editor_toolbar->addAction(m_toggle_tileset_window);
 	m_editor_toolbar->addAction(m_toggle_tilemap_control);
 
@@ -1872,7 +1779,7 @@ void MainWindow::newDocument()
 	setCurrentFile(tr(""));
 
 	// load default texture
-	changeTexture("blue_checker.png");
+	changeTexture("hexing.png");
 
 	for (int i = 0; i < 16; i++)
 	{
