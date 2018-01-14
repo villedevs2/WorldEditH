@@ -19,7 +19,7 @@ public:
 		virtual void tilemapModified() = 0;
 	};
 
-	static const int MAX_VERTS = 128;
+	static const int MAX_VERTS = 12;
 
 	struct Bucket
 	{
@@ -35,49 +35,14 @@ public:
 		FLAGS_FIXED_Z = 0x00000001,
 	};
 
-	struct TileAO
-	{
-		AmbientOcclusion::AOFloorTile* floor;
-		AmbientOcclusion::AOWallTile* wall_left;
-		AmbientOcclusion::AOWallTile* wall_right;
-		AmbientOcclusion::AOWallTile* wall_topleft;
-		AmbientOcclusion::AOWallTile* wall_topright;
-		AmbientOcclusion::AOWallTile* wall_botleft;
-		AmbientOcclusion::AOWallTile* wall_botright;
-		AmbientOcclusion::AOWallTile* wall_sideleft;
-		AmbientOcclusion::AOWallTile* wall_sideright;
-		AmbientOcclusion::AOWallTile* wall_midtop;
-		AmbientOcclusion::AOWallTile* wall_midbot;
-		AmbientOcclusion::AOWallTile* wall_centtop;
-		AmbientOcclusion::AOWallTile* wall_centbot;
-		AmbientOcclusion::AOWallTile* wall_corntl;
-		AmbientOcclusion::AOWallTile* wall_corntr;
-		AmbientOcclusion::AOWallTile* wall_cornbl;
-		AmbientOcclusion::AOWallTile* wall_cornbr;
-	};
-
 	struct TileDef
 	{
-		glm::vec2 floor_uvs[6];
-		glm::vec2 floor_uvcen;
-		glm::vec2 wallmid_uvs[4];
-		glm::vec2 walltop_uvs[4];
-		glm::vec2 wallbot_uvs[4];
+		glm::vec2 uvs[6];
+		glm::vec2 uvcen;
 		Tileset::TileType tiletype;
-		Tileset::TopType toptype;
-		Tileset::ShadingType shading;
-		float tile_z;
-		float top_height;
 		unsigned int color;
 		float tile_width;
 		float tile_height;
-		Tilemap::TileAO tile_ao;
-		float left_height;
-		float topleft_height;
-		float topright_height;
-		float right_height;
-		float botright_height;
-		float botleft_height;
 	};
 
 	static const unsigned int TILE_MASK = 0xffff;

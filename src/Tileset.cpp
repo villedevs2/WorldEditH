@@ -12,96 +12,12 @@ Tileset::~Tileset()
 }
 
 
-int Tileset::getSideBits(Tileset::TileType type)
-{
-	int bits = 0;
-
-	switch (type)
-	{
-	case TILE_FULL:
-	{
-		bits |= SIDE_LEFT;
-		bits |= SIDE_TOP_LEFT;
-		bits |= SIDE_TOP_RIGHT;
-		bits |= SIDE_RIGHT;
-		bits |= SIDE_BOT_RIGHT;
-		bits |= SIDE_BOT_LEFT;
-		break;
-	}
-	case TILE_LEFT:
-	{
-		bits |= SIDE_LEFT;
-		bits |= SIDE_TOP_LEFT;
-		bits |= SIDE_BOT_LEFT;
-		bits |= SIDE_MID;
-		break;
-	}
-	case TILE_RIGHT:
-	{
-		bits |= SIDE_RIGHT;
-		bits |= SIDE_TOP_RIGHT;
-		bits |= SIDE_BOT_RIGHT;
-		bits |= SIDE_MID;
-		break;
-	}
-	case TILE_TOP:
-	{
-		bits |= SIDE_TOP_RIGHT;
-		bits |= SIDE_TOP_LEFT;
-		break;
-	}
-	case TILE_BOTTOM:
-	{
-		bits |= SIDE_BOT_RIGHT;
-		bits |= SIDE_BOT_LEFT;
-		break;
-	}
-	case TILE_MID:
-	{
-		bits |= SIDE_LEFT;
-		bits |= SIDE_RIGHT;
-		break;
-	}
-	case TILE_CORNER_TL:
-	{
-		bits |= SIDE_LEFT;
-		bits |= SIDE_TOP_LEFT;
-		break;
-	}
-	case TILE_CORNER_TR:
-	{
-		bits |= SIDE_RIGHT;
-		bits |= SIDE_TOP_RIGHT;
-		break;
-	}
-	case TILE_CORNER_BL:
-	{
-		bits |= SIDE_LEFT;
-		bits |= SIDE_BOT_LEFT;
-		break;
-	}
-	case TILE_CORNER_BR:
-	{
-		bits |= SIDE_RIGHT;
-		bits |= SIDE_BOT_RIGHT;
-		break;
-	}
-	}
-
-	return bits;
-}
-
-
-int Tileset::insertTile(std::string name, PolygonDef* top, PolygonDef* side, PolygonDef* sidetop, PolygonDef* sidebot, unsigned int color,
-	Tileset::TileType type,
-	Tileset::TopType top_type,
-	Tileset::ShadingType shading_type,
-	float top_height, unsigned int* thumb, int thumb_w, int thumb_h)
+int Tileset::insertTile(std::string name, PolygonDef* uv, unsigned int color, std::string type, unsigned int* thumb, int thumb_w, int thumb_h)
 {
 	Tile tile;
-	for (int i = 0; i < top->getNumPoints(); i++)
+	for (int i = 0; i < uv->getNumPoints(); i++)
 	{
-		tile.top_points[i] = top->getPoint(i);
+		tile.points[i] = uv->getPoint(i);
 	}
 
 	/*
@@ -111,32 +27,29 @@ int Tileset::insertTile(std::string name, PolygonDef* top, PolygonDef* side, Pol
 		 p3
 	*/
 
-	tile.side_bits = getSideBits(type);
-
-	for (int i = 0; i < side->getNumPoints(); i++)
-	{
-		tile.side_points[i] = side->getPoint(i);
-	}
-
-	for (int i = 0; i < sidetop->getNumPoints(); i++)
-	{
-		tile.sidetop_points[i] = sidetop->getPoint(i);
-	}
-
-	for (int i = 0; i < sidebot->getNumPoints(); i++)
-	{
-		tile.sidebot_points[i] = sidebot->getPoint(i);
-	}
-
 	tile.name = name;
 	tile.id = m_cumulative_tile_id;
 	m_cumulative_tile_id++;
 
 	tile.color = color;
-	tile.type = type;
-	tile.top_type = top_type;
+	tile.type = TILE_FLOOR;
 
-	tile.top_height = top_height;
+	if (type == "floor")
+	{
+		tile.type = TILE_FLOOR;
+	}
+	else if (type == "wall")
+	{
+		tile.type = TILE_WALL;
+	}
+	else if (type == "tower")
+	{
+		tile.type = TILE_TOWER;
+	}
+	else if (type == "env")
+	{
+		tile.type = TILE_ENV;
+	}
 
 	tile.thumb_width = thumb_w;
 	tile.thumb_height = thumb_h;
@@ -152,62 +65,6 @@ int Tileset::insertTile(std::string name, PolygonDef* top, PolygonDef* side, Pol
 	m_edit_callback->tileAdded(m_tiles.size() - 1);
 
 	return tile.id;
-}
-
-int Tileset::replaceTile(int index, std::string name, PolygonDef* top, PolygonDef* side, PolygonDef* sidetop, PolygonDef* sidebot, unsigned int color,
-						Tileset::TileType type,
-						Tileset::TopType top_type,
-						Tileset::ShadingType shading_type,
-						float top_height, unsigned int* thumb, int thumb_w, int thumb_h)
-{
-	Tile* tile = &m_tiles.at(index);
-	for (int i = 0; i < top->getNumPoints(); i++)
-	{
-		tile->top_points[i] = top->getPoint(i);
-	}
-
-	tile->side_bits = getSideBits(type);
-
-	for (int i = 0; i < side->getNumPoints(); i++)
-	{
-		tile->side_points[i] = side->getPoint(i);
-	}
-
-	for (int i = 0; i < sidetop->getNumPoints(); i++)
-	{
-		tile->sidetop_points[i] = side->getPoint(i);
-	}
-
-	for (int i = 0; i < sidebot->getNumPoints(); i++)
-	{
-		tile->sidebot_points[i] = side->getPoint(i);
-	}
-
-	tile->name = name;
-
-	tile->color = color;
-	tile->type = type;
-	tile->top_type = top_type;
-
-	tile->top_height = top_height;
-
-	if (tile->thumbnail != nullptr)
-		delete[] tile->thumbnail;
-
-	tile->thumb_width = thumb_w;
-	tile->thumb_height = thumb_h;
-	tile->thumbnail = new unsigned int[thumb_w * thumb_h];
-
-	for (int i = 0; i < thumb_w*thumb_h; i++)
-	{
-		tile->thumbnail[i] = thumb[i];
-	}
-
-	//tesselateAllByTile(index);
-
-	m_edit_callback->tileReplaced(index);
-
-	return tile->id;
 }
 
 bool Tileset::removeTile(int id)

@@ -2243,14 +2243,6 @@ void GLWidget::renderTilemapPointer(QPainter& painter)
 			xxe += tile_width / 2;
 		}
 
-		Tileset::TileType brush_type = Tileset::TILE_FULL;
-
-		if (m_tile_brush >= 0)
-		{
-			const Tileset::Tile* tile = m_level->getTileset()->getTile(m_tile_brush);
-			brush_type = tile->type;
-		}
-
 		QPoint pts[6];
 		glm::vec2 tltl = toScreenCoords(glm::vec2(xxs, yys));
 		glm::vec2 brbr = toScreenCoords(glm::vec2(xxe, yye));
@@ -2281,95 +2273,13 @@ void GLWidget::renderTilemapPointer(QPainter& painter)
 		painter.drawPolygon(pts, 6);
 		*/
 
-		switch (brush_type)
-		{
-			case Tileset::TILE_FULL:
-			{
-				pts[0] = QPoint(txl, ty2);
-				pts[1] = QPoint(txl, ty3);
-				pts[2] = QPoint(txm, ty4);
-				pts[3] = QPoint(txr, ty3);
-				pts[4] = QPoint(txr, ty2);
-				pts[5] = QPoint(txm, ty1);
-				painter.drawPolygon(pts, 6);
-				break;
-			}
-			case Tileset::TILE_LEFT:
-			{
-				pts[0] = QPoint(txl, ty2);
-				pts[1] = QPoint(txl, ty3);
-				pts[2] = QPoint(txm, ty4);
-				pts[3] = QPoint(txm, ty1);
-				painter.drawPolygon(pts, 4);
-				break;
-			}
-			case Tileset::TILE_RIGHT:
-			{
-				pts[0] = QPoint(txm, ty1);
-				pts[1] = QPoint(txm, ty4);
-				pts[2] = QPoint(txr, ty3);
-				pts[3] = QPoint(txr, ty2);
-				painter.drawPolygon(pts, 4);
-				break;
-			}
-			case Tileset::TILE_TOP:
-			{
-				pts[0] = QPoint(txl, ty2);
-				pts[1] = QPoint(txr, ty2);
-				pts[2] = QPoint(txm, ty1);
-				painter.drawPolygon(pts, 3);
-				break;
-			}
-			case Tileset::TILE_BOTTOM:
-			{
-				pts[0] = QPoint(txl, ty3);
-				pts[1] = QPoint(txm, ty4);
-				pts[2] = QPoint(txr, ty3);
-				painter.drawPolygon(pts, 3);
-				break;
-			}
-			case Tileset::TILE_MID:
-			{
-				pts[0] = QPoint(txl, ty2);
-				pts[1] = QPoint(txl, ty3);
-				pts[2] = QPoint(txr, ty3);
-				pts[3] = QPoint(txr, ty2);
-				painter.drawPolygon(pts, 4);
-				break;
-			}
-			case Tileset::TILE_CORNER_TL:
-			{
-				pts[0] = QPoint(txm, ty1);
-				pts[1] = QPoint(txl, ty2);
-				pts[2] = QPoint(txl, ty3);
-				painter.drawPolygon(pts, 3);
-				break;
-			}
-			case Tileset::TILE_CORNER_TR:
-			{
-				pts[0] = QPoint(txm, ty1);
-				pts[1] = QPoint(txr, ty3);
-				pts[2] = QPoint(txr, ty2);
-				painter.drawPolygon(pts, 3);
-				break;
-			}
-			case Tileset::TILE_CORNER_BL:
-			{
-				pts[0] = QPoint(txl, ty2);
-				pts[1] = QPoint(txl, ty3);
-				pts[2] = QPoint(txm, ty4);
-				painter.drawPolygon(pts, 3);
-				break;
-			}
-			case Tileset::TILE_CORNER_BR:
-			{
-				pts[0] = QPoint(txm, ty4);
-				pts[1] = QPoint(txr, ty3);
-				pts[2] = QPoint(txr, ty2);
-				painter.drawPolygon(pts, 3);
-				break;
-			}
-		}
+		pts[0] = QPoint(txl, ty2);
+		pts[1] = QPoint(txl, ty3);
+		pts[2] = QPoint(txm, ty4);
+		pts[3] = QPoint(txr, ty3);
+		pts[4] = QPoint(txr, ty2);
+		pts[5] = QPoint(txm, ty1);
+		painter.drawPolygon(pts, 6);
 	}
 }
 

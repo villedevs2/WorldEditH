@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<tiles>
+<tile name="Floor 1" type="floor" x="0" y="0" width="256" height="256" color="ff0000"/>
+<tile name="Floor 2" type="floor" x="0" y="0" width="256" height="256" color="00ff00"/>
+<tile name="Floor 3" type="floor" x="0" y="0" width="256" height="256" color="00ffff"/>
+<tile name="Floor 4" type="floor" x="0" y="0" width="256" height="256" color="ffff00"/>
+<tile name="Floor 5" type="floor" x="0" y="0" width="256" height="256" color="ff00ff"/>
+<tile name="Floor 6" type="floor" x="256" y="0" width="256" height="256" color="ff0000"/>
+<tile name="Floor 7" type="floor" x="256" y="0" width="256" height="256" color="00ff00"/>
+<tile name="Floor 8" type="floor" x="256" y="0" width="256" height="256" color="00ffff"/>
+<tile name="Floor 9" type="floor" x="256" y="0" width="256" height="256" color="ffff00"/>
+<tile name="Floor 10" type="floor" x="256" y="0" width="256" height="256" color="ff00ff"/>
+<tile name="Wall 1" type="wall" x="512" y="0" width="256" height="256" color="ff0000"/>
+<tile name="Wall 2" type="wall" x="512" y="0" width="256" height="256" color="00ff00"/>
+<tile name="Wall 3" type="wall" x="512" y="0" width="256" height="256" color="00ffff"/>
+<tile name="Wall 4" type="wall" x="512" y="0" width="256" height="256" color="ffff00"/>
+<tile name="Wall 5" type="wall" x="512" y="0" width="256" height="256" color="ff00ff"/>
+<tile name="Wall 6" type="wall" x="768" y="0" width="256" height="256" color="ff0000"/>
+<tile name="Wall 7" type="wall" x="768" y="0" width="256" height="256" color="00ff00"/>
+<tile name="Wall 8" type="wall" x="768" y="0" width="256" height="256" color="00ffff"/>
+<tile name="Wall 9" type="wall" x="768" y="0" width="256" height="256" color="ffff00"/>
+<tile name="Wall 10" type="wall" x="768" y="0" width="256" height="256" color="ff00ff"/>
+<tile name="Tower 1" type="tower" x="1024" y="0" width="256" height="256" color="ff0000"/>
+<tile name="Tower 2" type="tower" x="1024" y="0" width="256" height="256" color="00ff00"/>
+<tile name="Tower 3" type="tower" x="1024" y="0" width="256" height="256" color="00ffff"/>
+<tile name="Tower 4" type="tower" x="1024" y="0" width="256" height="256" color="ffff00"/>
+<tile name="Tower 5" type="tower" x="1024" y="0" width="256" height="256" color="ff00ff"/>
+<tile name="Tower 6" type="tower" x="1280" y="0" width="256" height="256" color="ff0000"/>
+<tile name="Tower 7" type="tower" x="1280" y="0" width="256" height="256" color="00ff00"/>
+<tile name="Tower 8" type="tower" x="1280" y="0" width="256" height="256" color="00ffff"/>
+<tile name="Tower 9" type="tower" x="1280" y="0" width="256" height="256" color="ffff00"/>
+<tile name="Tower 10" type="tower" x="1280" y="0" width="256" height="256" color="ff00ff"/>
+<tile name="Env 1" type="env" x="1536" y="0" width="256" height="256" color="ff0000"/>
+<tile name="Env 2" type="env" x="1536" y="0" width="256" height="256" color="00ff00"/>
+<tile name="Env 3" type="env" x="1536" y="0" width="256" height="256" color="00ffff"/>
+<tile name="Env 4" type="env" x="1536" y="0" width="256" height="256" color="ffff00"/>
+<tile name="Env 5" type="env" x="1536" y="0" width="256" height="256" color="ff00ff"/>
+<tile name="Env 6" type="env" x="1792" y="0" width="256" height="256" color="ff0000"/>
+<tile name="Env 7" type="env" x="1792" y="0" width="256" height="256" color="00ff00"/>
+<tile name="Env 8" type="env" x="1792" y="0" width="256" height="256" color="00ffff"/>
+<tile name="Env 9" type="env" x="1792" y="0" width="256" height="256" color="ffff00"/>
+<tile name="Env 10" type="env" x="1792" y="0" width="256" height="256" color="ff00ff"/>
+</tiles>

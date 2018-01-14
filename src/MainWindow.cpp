@@ -426,6 +426,7 @@ void MainWindow::exitProgram()
 
 }
 
+/*
 void MainWindow::loadTileset()
 {
 	QString filename = QFileDialog::getOpenFileName(this,
@@ -454,6 +455,7 @@ void MainWindow::saveTileset()
 		writeTilesetFile(filename);
 	}
 }
+*/
 
 
 void MainWindow::selectionMode()
@@ -936,197 +938,35 @@ bool MainWindow::edgify(std::vector<std::vector<int>>& ptlist, int wall_threshol
 								p4
 						*/
 
-						switch (tile->type)
+						// LEFT
+						if (tilecon[0] == 0)
 						{
-							case Tileset::TILE_FULL:
-							{
-								// LEFT
-								if (tilecon[0] == 0)
-								{
-									edgify_fill_point(fout, points, p[0], p[5]);
-								}
-								// TOPLEFT
-								if (tilecon[1] == 0)
-								{
-									edgify_fill_point(fout, points, p[0], p[1]);
-								}
-								// TOPRIGHT
-								if (tilecon[2] == 0)
-								{
-									edgify_fill_point(fout, points, p[1], p[2]);
-								}
-								// RIGHT
-								if (tilecon[3] == 0)
-								{
-									edgify_fill_point(fout, points, p[2], p[3]);
-								}
-								// BOTTOM RIGHT
-								if (tilecon[4] == 0)
-								{
-									edgify_fill_point(fout, points, p[3], p[4]);
-								}
-								// BOTTOM LEFT
-								if (tilecon[5] == 0)
-								{
-									edgify_fill_point(fout, points, p[4], p[5]);
-								}
-								break;
-							}
-							case Tileset::TILE_LEFT:
-							{
-								// LEFT
-								if (tilecon[0] == 0)
-								{
-									edgify_fill_point(fout, points, p[0], p[5]);
-								}
-								// TOPLEFT
-								if (tilecon[1] == 0)
-								{
-									edgify_fill_point(fout, points, p[0], p[1]);
-								}
-								// BOTTOM LEFT
-								if (tilecon[5] == 0)
-								{
-									edgify_fill_point(fout, points, p[4], p[5]);
-								}
-								// always fill mid
-								edgify_fill_point(fout, points, p[4], p[1]);
-								break;
-							}
-							case Tileset::TILE_RIGHT:
-							{
-								// TOPRIGHT
-								if (tilecon[2] == 0)
-								{
-									edgify_fill_point(fout, points, p[1], p[2]);
-								}
-								// RIGHT
-								if (tilecon[3] == 0)
-								{
-									edgify_fill_point(fout, points, p[2], p[3]);
-								}
-								// BOTTOM RIGHT
-								if (tilecon[4] == 0)
-								{
-									edgify_fill_point(fout, points, p[3], p[4]);
-								}
-								// always fill mid
-								edgify_fill_point(fout, points, p[4], p[1]);
-								break;
-							}
-							case Tileset::TILE_TOP:
-							{
-								// TOPLEFT
-								if (tilecon[1] == 0)
-								{
-									edgify_fill_point(fout, points, p[0], p[1]);
-								}
-								// TOPRIGHT
-								if (tilecon[2] == 0)
-								{
-									edgify_fill_point(fout, points, p[1], p[2]);
-								}
-								// always fill mid
-								edgify_fill_point(fout, points, p[0], p[2]);
-								break;
-							}
-							case Tileset::TILE_BOTTOM:
-							{
-								// BOTTOM RIGHT
-								if (tilecon[4] == 0)
-								{
-									edgify_fill_point(fout, points, p[3], p[4]);
-								}
-								// BOTTOM LEFT
-								if (tilecon[5] == 0)
-								{
-									edgify_fill_point(fout, points, p[4], p[5]);
-								}
-								// always fill mid
-								edgify_fill_point(fout, points, p[5], p[3]);
-								break;
-							}
-							case Tileset::TILE_MID:
-							{
-								// LEFT
-								if (tilecon[0] == 0)
-								{
-									edgify_fill_point(fout, points, p[0], p[5]);
-								}
-								// RIGHT
-								if (tilecon[3] == 0)
-								{
-									edgify_fill_point(fout, points, p[2], p[3]);
-								}
-								// always fill mid
-								edgify_fill_point(fout, points, p[0], p[2]);
-								edgify_fill_point(fout, points, p[5], p[3]);
-								break;
-							}
-							case Tileset::TILE_CORNER_TL:
-							{
-								// LEFT
-								if (tilecon[0] == 0)
-								{
-									edgify_fill_point(fout, points, p[0], p[5]);
-								}
-								// TOPLEFT
-								if (tilecon[1] == 0)
-								{
-									edgify_fill_point(fout, points, p[0], p[1]);
-								}
-								// always fill mid
-								edgify_fill_point(fout, points, p[5], p[1]);
-								break;
-							}
-							case Tileset::TILE_CORNER_TR:
-							{
-								// RIGHT
-								if (tilecon[3] == 0)
-								{
-									edgify_fill_point(fout, points, p[2], p[3]);
-								}
-								// TOPRIGHT
-								if (tilecon[2] == 0)
-								{
-									edgify_fill_point(fout, points, p[1], p[2]);
-								}
-								// always fill mid
-								edgify_fill_point(fout, points, p[1], p[3]);
-								break;
-							}
-							case Tileset::TILE_CORNER_BL:
-							{
-								// LEFT
-								if (tilecon[0] == 0)
-								{
-									edgify_fill_point(fout, points, p[0], p[5]);
-								}
-								// BOTTOM LEFT
-								if (tilecon[5] == 0)
-								{
-									edgify_fill_point(fout, points, p[4], p[5]);
-								}
-								// always fill mid
-								edgify_fill_point(fout, points, p[0], p[4]);
-								break;
-							}
-							case Tileset::TILE_CORNER_BR:
-							{
-								// RIGHT
-								if (tilecon[3] == 0)
-								{
-									edgify_fill_point(fout, points, p[2], p[3]);
-								}
-								// BOTTOM RIGHT
-								if (tilecon[4] == 0)
-								{
-									edgify_fill_point(fout, points, p[3], p[4]);
-								}
-								// always fill mid
-								edgify_fill_point(fout, points, p[4], p[2]);
-								break;
-							}
+							edgify_fill_point(fout, points, p[0], p[5]);
+						}
+						// TOPLEFT
+						if (tilecon[1] == 0)
+						{
+							edgify_fill_point(fout, points, p[0], p[1]);
+						}
+						// TOPRIGHT
+						if (tilecon[2] == 0)
+						{
+							edgify_fill_point(fout, points, p[1], p[2]);
+						}
+						// RIGHT
+						if (tilecon[3] == 0)
+						{
+							edgify_fill_point(fout, points, p[2], p[3]);
+						}
+						// BOTTOM RIGHT
+						if (tilecon[4] == 0)
+						{
+							edgify_fill_point(fout, points, p[3], p[4]);
+						}
+						// BOTTOM LEFT
+						if (tilecon[5] == 0)
+						{
+							edgify_fill_point(fout, points, p[4], p[5]);
 						}
 
 						//fprintf(fout, "Tile %d, %d: tl %d, %d, tr %d, %d, bl %d, %d, br %d, %d\n", x, y, topleft.x, topleft.y, topright.x, topright.y, botleft.x, botleft.y, botright.x, botright.y);
@@ -1484,16 +1324,6 @@ void MainWindow::createActions()
 	connect(m_savePrefabsAction, SIGNAL(triggered()), this, SLOT(savePrefabs()));
 
 
-	// tileset menu
-	m_loadTilesetAction = new QAction(tr("Load Tileset..."), this);
-	m_loadTilesetAction->setStatusTip(tr("Load tileset"));
-	connect(m_loadTilesetAction, SIGNAL(triggered()), this, SLOT(loadTileset()));
-
-	m_saveTilesetAction = new QAction(tr("Save Tileset..."), this);
-	m_saveTilesetAction->setStatusTip(tr("Save tileset"));
-	connect(m_saveTilesetAction, SIGNAL(triggered()), this, SLOT(saveTileset()));
-
-
 
 	// operation tools
 	m_opgroup = new QActionGroup(this);
@@ -1681,11 +1511,6 @@ void MainWindow::createMenus()
 	m_prefabMenu = menuBar()->addMenu(tr("Prefab"));
 	m_prefabMenu->addAction(m_loadPrefabsAction);
 	m_prefabMenu->addAction(m_savePrefabsAction);
-
-	// tileset menu
-	m_tilesetMenu = menuBar()->addMenu(tr("Tileset"));
-	m_tilesetMenu->addAction(m_loadTilesetAction);
-	m_tilesetMenu->addAction(m_saveTilesetAction);
 }
 
 void MainWindow::createToolbars()
@@ -1785,11 +1610,117 @@ void MainWindow::newDocument()
 	{
 		QColorDialog::setCustomColor(i, QColor(255, 255, 255));
 	}
+
+	loadTiles();
 }
 
 void MainWindow::resetControls()
 {
 }
+
+
+void MainWindow::loadTiles()
+{
+	QFile* file = new QFile("tileset.xml");
+	file->open(QIODevice::ReadOnly);
+
+	QXmlStreamReader input(file);
+
+	vector<std::string> tile_list;
+	std::string current_name;
+	std::string current_type;
+	int x;
+	int y;
+	int width;
+	int height;
+	unsigned int color;
+
+	while (!input.atEnd())
+	{
+		input.readNext();
+
+		if (input.isStartElement())
+		{
+			QString element = input.name().toString();
+			QXmlStreamAttributes attrs = input.attributes();
+			int num_attrs = attrs.size();
+			
+			if (element == "tile")
+			{
+				for (int i = 0; i < num_attrs; i++)
+				{
+					QString attr_name = attrs[i].name().toString();
+
+					if (attr_name == "name")
+					{
+						current_name = attrs[i].value().toString().toStdString();
+					}
+					else if (attr_name == "type")
+					{
+						current_type = attrs[i].value().toString().toStdString();
+					}
+					else if (attr_name == "x")
+					{
+						x = attrs[i].value().toInt();
+					}
+					else if (attr_name == "y")
+					{
+						y = attrs[i].value().toInt();
+					}
+					else if (attr_name == "width")
+					{
+						width = attrs[i].value().toInt();
+					}
+					else if (attr_name == "height")
+					{
+						height = attrs[i].value().toInt();
+					}
+					else if (attr_name == "color")
+					{
+						color = attrs[i].value().toInt(0, 16);
+					}
+				}
+
+				float x1 = (float)(x) / 2048.0f;
+				float w1 = (float)(x + width) / 2048.0f;
+				float y1 = (float)(y) / 2048.0f;
+				float h1 = (float)(y + height) / 2048.0f;
+
+				PolygonDef poly(6);
+				poly.insertPoint(glm::vec2(x1, y1 + (h1 * 0.3f)));
+				poly.insertPoint(glm::vec2(x1, y1 + (h1 * 0.7f)));
+				poly.insertPoint(glm::vec2(x1 + (w1 * 0.5f), y1 + h1));
+				poly.insertPoint(glm::vec2(x1 + w1, y1 + (h1 * 0.7f)));
+				poly.insertPoint(glm::vec2(x1 + w1, y1 + (h1 * 0.3f)));
+				poly.insertPoint(glm::vec2(x1 + (w1 * 0.5f), y1));
+
+
+				int thumb_w = width;
+				int thumb_h = height;
+				unsigned int* thumb = new unsigned int[thumb_w * thumb_h];
+
+				for (int j = 0; j < thumb_h; j++)
+				{
+					QRgb* line = (QRgb*)m_texture->scanLine(j + y);
+					for (int i = 0; i < thumb_w; i++)
+					{
+						thumb[(j * thumb_w) + i] = line[i + x];
+					}
+				}
+
+				// insert tile
+				int id = m_level->getTileset()->insertTile(current_name, &poly, color, current_type, thumb, thumb_w, thumb_h);
+				emit m_tileset_window->add(id);
+
+				delete[] thumb;
+			}
+		}
+		else if (input.isEndElement())
+		{
+		}
+	};
+}
+
 
 void MainWindow::setGridSize(int size)
 {
@@ -2024,6 +1955,10 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 
 		// ------------------
 
+		// TODOTODOTODO
+
+		/*
+
 		// num of tiles
 		int num_tiles = input.read_dword();
 
@@ -2055,21 +1990,6 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 
 			top->reset();
 			side->reset();
-
-			// top UVs
-			switch (type)
-			{
-				case Tileset::TILE_FULL:		num_top_points = 6; break;
-				case Tileset::TILE_LEFT:		num_top_points = 4; break;
-				case Tileset::TILE_RIGHT:		num_top_points = 4; break;
-				case Tileset::TILE_TOP:			num_top_points = 3; break;
-				case Tileset::TILE_BOTTOM:		num_top_points = 3; break;
-				case Tileset::TILE_MID:			num_top_points = 4; break;
-				case Tileset::TILE_CORNER_TL:	num_top_points = 3; break;
-				case Tileset::TILE_CORNER_TR:	num_top_points = 3; break;
-				case Tileset::TILE_CORNER_BL:	num_top_points = 3; break;
-				case Tileset::TILE_CORNER_BR:	num_top_points = 3; break;
-			}
 
 			for (int j = 0; j < num_top_points; j++)
 			{
@@ -2155,6 +2075,8 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 		delete sidetop;
 		delete sidebot;
 
+
+		*/
 		// ----------------
 
 		{
@@ -2297,7 +2219,10 @@ bool MainWindow::writeBinaryProjectFile(QString& filename)
 		}
 		
 
+		// TODOTODOTODO
+
 		// tiles
+		/*
 		int num_tiles = m_level->getTileset()->getNumTiles();
 		output.write_dword(num_tiles);
 
@@ -2377,6 +2302,7 @@ bool MainWindow::writeBinaryProjectFile(QString& filename)
 
 			delete thumb_image;
 		}
+		*/
 
 		// buckets
 		std::vector<Tilemap::Bucket*> buckets;
@@ -2547,7 +2473,10 @@ void MainWindow::writeLevelFile(QString& filename)
 			}
 		}
 
+		// TODOTODOTODO
+
 		// Number of tiles
+		/*
 		output.write_dword(num_tiles);
 
 		for (int i=0; i < num_tiles; i++)
@@ -2577,6 +2506,7 @@ void MainWindow::writeLevelFile(QString& filename)
 			output.write_dword(tile->top_type);
 			output.write_float(tile->top_height);
 		}
+		*/
 
 		// Tilemap
 
@@ -2684,7 +2614,7 @@ void MainWindow::writeLevelFile(QString& filename)
 	}
 }
 
-
+/*
 bool MainWindow::readTilesetFile(QString& filename)
 {
 	BinaryFile input;
@@ -2890,8 +2820,8 @@ bool MainWindow::readTilesetFile(QString& filename)
 
 	return true;
 }
-
-
+*/
+/*
 bool MainWindow::writeTilesetFile(QString& filename)
 {
 	BinaryFile output;
@@ -3013,3 +2943,4 @@ bool MainWindow::writeTilesetFile(QString& filename)
 
 	return true;
 }
+*/

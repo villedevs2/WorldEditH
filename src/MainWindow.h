@@ -23,7 +23,6 @@
 #include "ObjectEdit.h"
 #include "BinaryFile.h"
 #include "VisboxConf.h"
-#include "TileDesigner.h"
 #include "TilesetWidget.h"
 #include "LevelConf.h"
 #include "TilemapControl.h"
@@ -63,8 +62,6 @@ private:
 	bool writeBinaryProjectFile(QString& filename);
 	bool readBinaryProjectFile(QString& filename);
 	void reset();
-	bool writeTilesetFile(QString& filename);
-	bool readTilesetFile(QString& filename);
 	
 	QMenu* m_fileMenu;
 	QAction* m_newAction;
@@ -203,8 +200,8 @@ private slots:
 	void exportLevel();
 	void exitProgram();
 	void loadTexture();
-	void loadTileset();
-	void saveTileset();
+	//void loadTileset();
+	//void saveTileset();
 
 	void selectionMode();
 	void moveMode();
@@ -245,4 +242,6 @@ private slots:
 	void doStats();
 
 	void zrandSizeChanged(int);
+
+	void loadTiles();
 };
