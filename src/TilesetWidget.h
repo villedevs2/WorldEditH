@@ -10,8 +10,8 @@
 #include "Level.h"
 #include "Thumbnail.h"
 
-#define TILESET_THUMB_W		70
-#define TILESET_THUMB_H		105
+#define TILESET_THUMB_W		100
+#define TILESET_THUMB_H		100
 
 class TilesetDelegate : public QStyledItemDelegate
 {
@@ -74,7 +74,7 @@ protected:
 
 	QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 	{
-		return QSize(90, 125);
+		return QSize(125, 125);
 	}
 };
 
