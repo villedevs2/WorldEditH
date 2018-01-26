@@ -1622,6 +1622,11 @@ void MainWindow::loadTiles()
 				poly.insertPoint(glm::vec2(x1 + w1, y1 + (h1 * 0.3f)));
 				poly.insertPoint(glm::vec2(x1 + (w1 * 0.5f), y1));
 
+				int color_r = (color >> 16) & 0xff;
+				int color_g = (color >> 8) & 0xff;
+				int color_b = (color & 0xff);
+
+
 
 				int thumb_w = width;
 				int thumb_h = height;
@@ -1632,7 +1637,17 @@ void MainWindow::loadTiles()
 					QRgb* line = (QRgb*)m_texture->scanLine(j + y);
 					for (int i = 0; i < thumb_w; i++)
 					{
-						thumb[(j * thumb_w) + i] = line[i + x];
+						int tr = (line[i + x] >> 16) & 0xff;
+						int tg = (line[i + x] >> 8) & 0xff;
+						int tb = line[i + x] & 0xff;
+
+						tr = (tr * color_r) >> 8;
+						tg = (tg * color_g) >> 8;
+						tb = (tb * color_b) >> 8;
+
+						int fc = (tr << 16) | (tg << 8) | (tb) | 0xff000000;
+
+						thumb[(j * thumb_w) + i] = fc;
 					}
 				}
 
@@ -1883,130 +1898,6 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 
 		// ------------------
 
-		// TODOTODOTODO
-
-		/*
-
-		// num of tiles
-		int num_tiles = input.read_dword();
-
-		PolygonDef* top = new PolygonDef(6);
-		PolygonDef* side = new PolygonDef(4);
-		PolygonDef* sidetop = new PolygonDef(4);
-		PolygonDef* sidebot = new PolygonDef(4);
-
-		// tiles
-		for (int i=0; i < num_tiles; i++)
-		{
-			// tile name
-			inb = 0;
-			inp = 0;
-			do
-			{
-				inb = input.read_byte();
-				buf[inp++] = inb;
-			} while (inb != 0);
-
-			tile_name = QString(buf);
-
-			//  tile type
-			unsigned int type = input.read_dword();
-
-			int num_top_points = 0;
-			glm::vec2 top_pps[6];
-			glm::vec2 side_pps[4];
-
-			top->reset();
-			side->reset();
-
-			for (int j = 0; j < num_top_points; j++)
-			{
-				float x = input.read_float();
-				float y = input.read_float();
-
-				top->insertPoint(glm::vec2(x, y));
-			}
-
-			// side UVs
-			for (int j=0; j < 4; j++)
-			{
-				float x = input.read_float();
-				float y = input.read_float();
-				
-				side->insertPoint(glm::vec2(x, y));
-			}
-
-			// side top UVs
-			for (int j = 0; j < 4; j++)
-			{
-				float x = input.read_float();
-				float y = input.read_float();
-
-				sidetop->insertPoint(glm::vec2(x, y));
-			}
-
-			// side bottom UVs
-			for (int j = 0; j < 4; j++)
-			{
-				float x = input.read_float();
-				float y = input.read_float();
-
-				sidebot->insertPoint(glm::vec2(x, y));
-			}
-
-			unsigned int tile_color = input.read_dword();
-
-			unsigned int top_type = input.read_dword();
-
-			float top_height = input.read_float();
-			unsigned int shading_type = input.read_dword();
-
-			QByteArray ba;
-			int thumb_datasize = input.read_dword();
-			for (int i = 0; i < thumb_datasize; i++)
-			{
-				ba.push_back(input.read_byte());
-			}
-
-			QBuffer buffer(&ba);
-			buffer.open(QIODevice::ReadOnly);
-			
-			QImage* thumb_image = new QImage();
-			thumb_image->load(&buffer, "PNG");
-
-			int thumb_w = thumb_image->width();
-			int thumb_h = thumb_image->height();
-			unsigned int* thumb = new unsigned int[thumb_w * thumb_h];
-
-			for (int j = 0; j < thumb_h; j++)
-			{
-				QRgb* line = (QRgb*)thumb_image->scanLine(j);
-				for (int i = 0; i < thumb_w; i++)
-				{
-					thumb[(j * thumb_w) + i] = line[i];
-				}
-			}
-
-			int id = tileset->insertTile(tile_name.toStdString(), top, side, sidetop, sidebot, tile_color,
-										(Tileset::TileType)type,
-										(Tileset::TopType)top_type,
-										(Tileset::ShadingType)shading_type,
-										top_height, thumb, thumb_w, thumb_h);
-			emit m_tileset_window->add(id);
-
-			delete[] thumb;
-			delete thumb_image;
-		}
-
-		delete top;
-		delete side;
-		delete sidetop;
-		delete sidebot;
-
-
-		*/
-		// ----------------
-
 		{
 			Tilemap* tilemap = m_level->getTilemap();
 
@@ -2022,20 +1913,16 @@ bool MainWindow::readBinaryProjectFile(QString& filename)
 				{
 					for (int x = 0; x < Tilemap::BUCKET_WIDTH; x++)
 					{
-						unsigned int data = input.read_dword();
+						unsigned int data = (unsigned char)input.read_byte();
 
 						int tile = data & Tilemap::TILE_MASK;
-						int z = (data & Tilemap::Z_MASK) >> Tilemap::Z_SHIFT;
 
 						tilemap->edit(bucket_x + x, bucket_y + y, tile);
-						tilemap->editZ(bucket_x + x, bucket_y + y, z);
 					}
 				}
 			}
 		}
 
-
-		// ------------------------
 	}
 	catch (ios_base::failure&)
 	{
@@ -2145,92 +2032,7 @@ bool MainWindow::writeBinaryProjectFile(QString& filename)
 				output.write_dword(param.i);
 			}
 		}
-		
-
-		// TODOTODOTODO
-
-		// tiles
-		/*
-		int num_tiles = m_level->getTileset()->getNumTiles();
-		output.write_dword(num_tiles);
-
-		for (int i=0; i < num_tiles; i++)
-		{
-			Tileset::Tile* tile  = tileset->getTile(i);
-
-			// tile name
-			std::string name = tile->name;
-			for (int j=0; j < name.length(); j++)
-			{
-				output.write_byte(name.at(j));
-			}
-			output.write_byte(0);	// null terminator
-
-			// tile type
-			output.write_dword(tile->type);
-
-			int num_top_points = tile->numTopPoints();
-
-			for (int j = 0; j < num_top_points; j++)
-			{
-				output.write_float(tile->top_points[j].x);
-				output.write_float(tile->top_points[j].y);
-			}
-
-			// side UVs
-			for (int j = 0; j < 4; j++)
-			{
-				output.write_float(tile->side_points[j].x);
-				output.write_float(tile->side_points[j].y);
-			}
-
-			// side top UVs
-			for (int j = 0; j < 4; j++)
-			{
-				output.write_float(tile->sidetop_points[j].x);
-				output.write_float(tile->sidetop_points[j].y);
-			}
-
-			// side bottom UVs
-			for (int j = 0; j < 4; j++)
-			{
-				output.write_float(tile->sidebot_points[j].x);
-				output.write_float(tile->sidebot_points[j].y);
-			}
-
-			// tile color
-			output.write_dword(tile->color);
-
-			output.write_dword(tile->top_type);
-
-			output.write_float(tile->top_height);
-
-			output.write_dword(tile->shading_type);
-
-			QImage* thumb_image = new QImage(tile->thumb_width, tile->thumb_height, QImage::Format_ARGB32);
-			for (int j = 0; j < tile->thumb_height; j++)
-			{
-				QRgb* line = (QRgb*)thumb_image->scanLine(j);
-				for (int i = 0; i < tile->thumb_width; i++)
-				{
-					line[i] = tile->thumbnail[(j * tile->thumb_width) + i];
-				}
-			}
-
-			QByteArray ba;
-			QBuffer buffer(&ba);
-			buffer.open(QIODevice::WriteOnly);
-			thumb_image->save(&buffer, "PNG");
-
-			output.write_dword(ba.size());
-			for (int i = 0; i < ba.size(); i++)
-			{
-				output.write_byte(ba.at(i));
-			}
-
-			delete thumb_image;
-		}
-		*/
+	
 
 		// buckets
 		std::vector<Tilemap::Bucket*> buckets;
@@ -2260,7 +2062,7 @@ bool MainWindow::writeBinaryProjectFile(QString& filename)
 				for (int t = 0; t < (Tilemap::BUCKET_WIDTH * Tilemap::BUCKET_HEIGHT); t++)
 				{
 					unsigned int tiledata = b->map[t];
-					output.write_dword(tiledata);
+					output.write_byte((unsigned char)tiledata);
 				}
 			}
 		}
@@ -2312,7 +2114,7 @@ void MainWindow::writeLevelFile(QString& filename)
 	BinaryFile output;
 
 	const char hslx_id[4] = { 0x48, 0x53, 0x4c, 0x58 };
-	const unsigned int level_version = 0x10005;
+	const unsigned int level_version = 0x10006;
 
 	int num_objects = m_level->numObjects();
 	int num_tiles = m_level->getTileset()->getNumTiles();
@@ -2401,41 +2203,6 @@ void MainWindow::writeLevelFile(QString& filename)
 			}
 		}
 
-		// TODOTODOTODO
-
-		// Number of tiles
-		/*
-		output.write_dword(num_tiles);
-
-		for (int i=0; i < num_tiles; i++)
-		{
-			Tileset::Tile* tile = tileset->getTile(i);	
-
-			// tile color
-			output.write_dword(tile->color);
-
-			// tile type
-			output.write_dword(tile->type);
-
-			int num_top_points = tile->numTopPoints();
-
-			for (int j = 0; j < num_top_points; j++)
-			{
-				output.write_float(tile->top_points[j].x);
-				output.write_float(tile->top_points[j].y);
-			}
-
-			for (int j = 0; j < 4; j++)
-			{
-				output.write_float(tile->side_points[j].x);
-				output.write_float(tile->side_points[j].y);
-			}
-
-			output.write_dword(tile->top_type);
-			output.write_float(tile->top_height);
-		}
-		*/
-
 		// Tilemap
 
 		// buckets
@@ -2465,43 +2232,10 @@ void MainWindow::writeLevelFile(QString& filename)
 				for (int t = 0; t < (Tilemap::BUCKET_WIDTH * Tilemap::BUCKET_HEIGHT); t++)
 				{
 					int tile = b->map[t] & Tilemap::TILE_MASK;
-					int z = (b->map[t] & Tilemap::Z_MASK) >> Tilemap::Z_SHIFT;
-					output.write_word(tile);
-					output.write_byte(z);
+					output.write_byte(tile);
 				}
 			}
 		}
-
-		/*
-		int tm_width = m_level->getTilemapWidth();
-		int tm_height = m_level->getTilemapHeight();
-
-		// Tilemap data
-		for (int j=0; j < tm_height; j++)
-		{
-			for (int i=0; i < tm_width; i++)
-			{
-				int data = m_level->readTilemapRaw(i, j) + 1;
-
-				assert(data >= 0 && data < 32768);
-
-				// encode to var num
-				if (data < 128)
-				{
-					// single byte, bit 0x80 is zero
-					output.write_byte(data);
-				}
-				else
-				{
-					// first byte has bit 0x80 set, and the low 7 bits of word
-					output.write_byte((data & 0x7f) | 0x80);
-
-					// second byte has bits 8-14
-					output.write_byte((data >> 7) & 0xff);
-				}
-			}
-		}
-		*/
 
 		// Edges
 		std::vector<std::vector<int>> ptlist;
@@ -2541,334 +2275,3 @@ void MainWindow::writeLevelFile(QString& filename)
 		return;
 	}
 }
-
-/*
-bool MainWindow::readTilesetFile(QString& filename)
-{
-	BinaryFile input;
-
-	const unsigned int hsts_id = 0x48535453;
-	const unsigned int hsts_version = 0x10000;
-
-	QString texture_name = "";
-	QString tile_name = "";
-
-	Tileset* tileset = m_level->getTileset();
-	tileset->removeTiles();
-	m_tileset_window->reset();
-
-	try
-	{
-		int inb, inp;
-		char buf[200];
-		input.open(filename.toStdString(), BinaryFile::MODE_READONLY);
-
-		// ID
-		unsigned int id = input.read_dword();
-		if (id != hsts_id)
-			throw "HSTS ID not found";
-
-		// version
-		unsigned int version = input.read_dword();
-		if (version != hsts_version)
-			throw "Wrong HSTS version";
-
-		// texture name
-		inb = 0;
-		inp = 0;
-		do
-		{
-			inb = input.read_byte();
-			buf[inp++] = inb;
-		} while (inb != 0);
-
-		texture_name = QString(buf);
-
-		// load texture if needed
-		if (!texture_name.isEmpty())
-		{
-			if (texture_name != m_texture_file)
-			{
-				QMessageBox box;
-				box.setText("Different texture.");
-				box.setInformativeText("The tileset uses a different texture. Want to load this texture?");
-				box.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-				box.setDefaultButton(QMessageBox::Yes);
-				int ret = box.exec();
-
-				if (ret == QMessageBox::Yes)
-				{
-					changeTexture(texture_name);
-				}
-			}
-		}
-
-
-		// num of tiles
-		int num_tiles = input.read_dword();
-
-		PolygonDef* top = new PolygonDef(6);
-		PolygonDef* side = new PolygonDef(4);
-		PolygonDef* sidetop = new PolygonDef(4);
-		PolygonDef* sidebot = new PolygonDef(4);
-
-		// tiles
-		for (int i = 0; i < num_tiles; i++)
-		{
-			// tile name
-			inb = 0;
-			inp = 0;
-			do
-			{
-				inb = input.read_byte();
-				buf[inp++] = inb;
-			} while (inb != 0);
-
-			tile_name = QString(buf);
-
-			//  tile type
-			unsigned int type = input.read_dword();
-
-			int num_top_points = 0;
-			glm::vec2 top_pps[6];
-			glm::vec2 side_pps[4];
-
-			top->reset();
-			side->reset();
-
-			// top UVs
-			switch (type)
-			{
-			case Tileset::TILE_FULL:		num_top_points = 6; break;
-			case Tileset::TILE_LEFT:		num_top_points = 4; break;
-			case Tileset::TILE_RIGHT:		num_top_points = 4; break;
-			case Tileset::TILE_TOP:			num_top_points = 3; break;
-			case Tileset::TILE_BOTTOM:		num_top_points = 3; break;
-			case Tileset::TILE_MID:			num_top_points = 4; break;
-			case Tileset::TILE_CORNER_TL:	num_top_points = 3; break;
-			case Tileset::TILE_CORNER_TR:	num_top_points = 3; break;
-			case Tileset::TILE_CORNER_BL:	num_top_points = 3; break;
-			case Tileset::TILE_CORNER_BR:	num_top_points = 3; break;
-			}
-
-			for (int j = 0; j < num_top_points; j++)
-			{
-				float x = input.read_float();
-				float y = input.read_float();
-
-				top->insertPoint(glm::vec2(x, y));
-			}
-
-			// side UVs
-			for (int j = 0; j < 4; j++)
-			{
-				float x = input.read_float();
-				float y = input.read_float();
-
-				side->insertPoint(glm::vec2(x, y));
-			}
-
-			// side top UVs
-			for (int j = 0; j < 4; j++)
-			{
-				float x = input.read_float();
-				float y = input.read_float();
-
-				sidetop->insertPoint(glm::vec2(x, y));
-			}
-
-			// side bottom UVs
-			for (int j = 0; j < 4; j++)
-			{
-				float x = input.read_float();
-				float y = input.read_float();
-
-				sidebot->insertPoint(glm::vec2(x, y));
-			}
-
-			unsigned int tile_color = input.read_dword();
-
-			unsigned int top_type = input.read_dword();
-
-			float top_height = input.read_float();
-			unsigned int shading_type = input.read_dword();
-
-			QByteArray ba;
-			int thumb_datasize = input.read_dword();
-			for (int i = 0; i < thumb_datasize; i++)
-			{
-				ba.push_back(input.read_byte());
-			}
-
-			QBuffer buffer(&ba);
-			buffer.open(QIODevice::ReadOnly);
-
-			QImage* thumb_image = new QImage();
-			thumb_image->load(&buffer, "PNG");
-
-			int thumb_w = thumb_image->width();
-			int thumb_h = thumb_image->height();
-			unsigned int* thumb = new unsigned int[thumb_w * thumb_h];
-
-			for (int j = 0; j < thumb_h; j++)
-			{
-				QRgb* line = (QRgb*)thumb_image->scanLine(j);
-				for (int i = 0; i < thumb_w; i++)
-				{
-					thumb[(j * thumb_w) + i] = line[i];
-				}
-			}
-
-			int id = tileset->insertTile(tile_name.toStdString(), top, side, sidetop, sidebot, tile_color,
-				(Tileset::TileType)type,
-				(Tileset::TopType)top_type,
-				(Tileset::ShadingType)shading_type,
-				top_height, thumb, thumb_w, thumb_h);
-			emit m_tileset_window->add(id);
-
-			delete[] thumb;
-			delete thumb_image;
-		}
-
-		delete top;
-		delete side;
-		delete sidetop;
-		delete sidebot;
-	}
-	catch (ios_base::failure&)
-	{
-		input.close();
-		return false;
-	}
-	catch (int e)
-	{
-		input.close();
-		return false;
-	}
-
-	return true;
-}
-*/
-/*
-bool MainWindow::writeTilesetFile(QString& filename)
-{
-	BinaryFile output;
-
-	const char hsts_id[4] = { 0x48, 0x53, 0x54, 0x53 };
-	const unsigned int hsts_version = 0x10000;
-
-	Tileset* tileset = m_level->getTileset();
-
-	try
-	{
-		output.open(filename.toStdString(), BinaryFile::MODE_WRITEONLY);
-
-		// ID
-		output.write((char*)hsts_id, 4);
-
-		// version
-		output.write_dword(hsts_version);
-
-		// texture name
-		QByteArray texname = m_texture_file.toLocal8Bit();
-		for (int i = 0; i < texname.length(); i++)
-		{
-			output.write_byte(texname.at(i));
-		}
-		output.write_byte(0);		// null terminator
-
-		// tiles
-		int num_tiles = m_level->getTileset()->getNumTiles();
-		output.write_dword(num_tiles);
-
-		for (int i = 0; i < num_tiles; i++)
-		{
-			Tileset::Tile* tile = tileset->getTile(i);
-
-			// tile name
-			std::string name = tile->name;
-			for (int j = 0; j < name.length(); j++)
-			{
-				output.write_byte(name.at(j));
-			}
-			output.write_byte(0);	// null terminator
-
-			// tile type
-			output.write_dword(tile->type);
-
-			int num_top_points = tile->numTopPoints();
-
-			for (int j = 0; j < num_top_points; j++)
-			{
-				output.write_float(tile->top_points[j].x);
-				output.write_float(tile->top_points[j].y);
-			}
-
-			// side UVs
-			for (int j = 0; j < 4; j++)
-			{
-				output.write_float(tile->side_points[j].x);
-				output.write_float(tile->side_points[j].y);
-			}
-
-			// side top UVs
-			for (int j = 0; j < 4; j++)
-			{
-				output.write_float(tile->sidetop_points[j].x);
-				output.write_float(tile->sidetop_points[j].y);
-			}
-
-			// side bottom UVs
-			for (int j = 0; j < 4; j++)
-			{
-				output.write_float(tile->sidebot_points[j].x);
-				output.write_float(tile->sidebot_points[j].y);
-			}
-
-			// tile color
-			output.write_dword(tile->color);
-
-			output.write_dword(tile->top_type);
-
-			output.write_float(tile->top_height);
-
-			output.write_dword(tile->shading_type);
-
-			QImage* thumb_image = new QImage(tile->thumb_width, tile->thumb_height, QImage::Format_ARGB32);
-			for (int j = 0; j < tile->thumb_height; j++)
-			{
-				QRgb* line = (QRgb*)thumb_image->scanLine(j);
-				for (int i = 0; i < tile->thumb_width; i++)
-				{
-					line[i] = tile->thumbnail[(j * tile->thumb_width) + i];
-				}
-			}
-
-			QByteArray ba;
-			QBuffer buffer(&ba);
-			buffer.open(QIODevice::WriteOnly);
-			thumb_image->save(&buffer, "PNG");
-
-			output.write_dword(ba.size());
-			for (int i = 0; i < ba.size(); i++)
-			{
-				output.write_byte(ba.at(i));
-			}
-
-			delete thumb_image;
-		}
-	}
-	catch (ios_base::failure&)
-	{
-		output.close();
-		return false;
-	}
-	catch (int e)
-	{
-		output.close();
-		return false;
-	}
-
-	return true;
-}
-*/

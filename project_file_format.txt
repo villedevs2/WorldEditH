@@ -13,9 +13,6 @@ n bytes		| Texture atlas name (null-terminated)
 4 bytes		| Num of objects
 n bytes		| Object structures
 
-4 bytes		| Num of tiles
-n bytes		| Tile structures
-
 4 bytes		| Num of buckets
 n bytes		| Buckets
 
@@ -31,33 +28,10 @@ n bytes		| Object name (null-terminated)
 n bytes		| Points [4 floats: X, Y, U, V]
 8 dwords	| Params
 
-Tile structure
---------------
-
-n bytes		| Tile name (null-terminated)
-4 bytes		| Tile type
-		|    0 = Full      (6 top UVs)
-		     1 = Left      (4 top UVs)
-                     2 = Right     (4 top UVs)
-		     3 = Top       (3 top UVs)
-		     4 = Bottom    (3 top UVs)
-		     5 = Middle    (4 top UVs)
-n bytes		| Top UVs 4-6x [2 floats: U, V]
-n bytes		| Side UVs 4x [2 floats: U, V]
-n bytes		| Side Top UVs 4x [2 floats: U, V]
-n bytes		| Side Bottom UVs 4x [2x floats: U, V]
-4 bytes		| Tile color
-4 bytes		| Tile top type
-		     0 = Flat
-		     1 = Pointy
-4 bytes		| Top height [float]
-4 bytes		| Shading type
-4 bytes		| Thumbnail size in bytes
-n bytes		| Thumbnail as PNG
 
 Bucket structure
 ----------------
 
 4 bytes		| Bucket X-coordinate
 4 bytes		| Bucket Y-coordinate
-64x 4 bytes	| Tile data [8x8] (16 bits: tile, 8 bits: Z)
+64 bytes	| Tile data [8x8] (8 bits: tile)

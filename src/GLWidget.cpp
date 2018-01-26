@@ -2590,12 +2590,10 @@ void GLWidget::paintGL()
 						program->setAttributeArray(shader->position, (GLfloat*)geo, 3, vbsize);
 						program->enableAttributeArray(shader->tex_coord);
 						program->setAttributeArray(shader->tex_coord, (GLfloat*)geo + 3, 2, vbsize);
-						program->enableAttributeArray(shader->amb_coord);
-						program->setAttributeArray(shader->amb_coord, (GLfloat*)geo + 5, 2, vbsize);
 						program->enableAttributeArray(shader->normal);
-						program->setAttributeArray(shader->normal, (GLfloat*)geo + 7, 3, vbsize);
+						program->setAttributeArray(shader->normal, (GLfloat*)geo + 5, 3, vbsize);
 						program->enableAttributeArray(shader->color);
-						program->setAttributeArray(shader->color, GL_UNSIGNED_BYTE, (GLbyte*)geo + 40, 4, vbsize);
+						program->setAttributeArray(shader->color, GL_UNSIGNED_BYTE, (GLbyte*)geo + 32, 4, vbsize);
 
 						glDrawArrays(GL_TRIANGLES, 0, Tilemap::BUCKET_WIDTH*Tilemap::BUCKET_HEIGHT * Tilemap::MAX_VERTS * 3);
 
