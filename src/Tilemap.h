@@ -45,8 +45,8 @@ public:
 		float tile_height;
 	};
 
-	static const unsigned int TILE_MASK = 0xffff;
-	static const unsigned int TILE_EMPTY = 0xffff;
+	static const unsigned int TILE_MASK = 0xff;
+	static const unsigned int TILE_EMPTY = 0xff;
 	static const unsigned int Z_MASK = 0xff0000;
 	static const unsigned int Z_SHIFT = 16;
 

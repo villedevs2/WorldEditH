@@ -1521,7 +1521,7 @@ void MainWindow::reset()
 
 	emit m_glwidget->reset();
 
-	emit m_tileset_window->reset();
+	//emit m_tileset_window->reset();
 }
 
 void MainWindow::newDocument()

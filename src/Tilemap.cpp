@@ -701,8 +701,10 @@ int Tilemap::get(int x, int y)
 
 int Tilemap::getZ(int x, int y)
 {
-	assert(x >= 0 && x < AREA_WIDTH);
-	assert(y >= 0 && y < AREA_HEIGHT);
+	if (x < 0 || x >= AREA_WIDTH)
+		return 0;
+	if (y < 0 || y >= AREA_HEIGHT)
+		return 0;
 
 	int bin = (y / BUCKET_HEIGHT) * (AREA_WIDTH / BUCKET_WIDTH) + (x / BUCKET_WIDTH);
 	if (m_buckets[bin] != nullptr)

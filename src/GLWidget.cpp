@@ -92,7 +92,7 @@ QSize GLWidget::sizeHint() const
 
 void GLWidget::reset()
 {
-	m_scroll = glm::vec2(0.0f, 0.0f);
+	m_scroll = glm::vec2(-4096.0f, 0.0f);
 	m_panning = false;
 
 	m_saved_object->reset();
@@ -2556,10 +2556,12 @@ void GLWidget::paintGL()
 			glm::vec2 tilemap_tl = toLevelCoords(glm::vec2(0, 0));
 			glm::vec2 tilemap_br = toLevelCoords(glm::vec2(width(), height()));
 
+			/*
 			tilemap_tl.x *= tilemap->getTileWidth();
 			tilemap_tl.y *= tilemap->getTileHeight();
 			tilemap_br.x *= tilemap->getTileWidth();
 			tilemap_br.y *= tilemap->getTileHeight();
+			*/
 
 			int xs = (int)(floor(tilemap_tl.x / Tilemap::BUCKET_WIDTH));
 			int ys = (int)(floor(tilemap_tl.y / Tilemap::BUCKET_HEIGHT));
