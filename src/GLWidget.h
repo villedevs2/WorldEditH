@@ -67,6 +67,7 @@ public:
 	QSize sizeHint() const;
 	glm::vec2 toScreenCoords(glm::vec2 point);
 	glm::vec2 toLevelCoords(glm::vec2 point);
+	glm::vec2 levelCoordsToTileCoords(const glm::vec2& level_coords);
 	void loadTexture(QImage* texture);
 	void loadEnvTexture(QImage** textures);
 	void loadAmbientMap(QImage* texture);

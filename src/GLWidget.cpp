@@ -92,7 +92,7 @@ QSize GLWidget::sizeHint() const
 
 void GLWidget::reset()
 {
-	m_scroll = glm::vec2(-4096.0f, 0.0f);
+	m_scroll = glm::vec2(-4096.0f, -2925+57.0f);
 	m_panning = false;
 
 	m_saved_object->reset();
@@ -525,6 +525,124 @@ void GLWidget::multitileZRand(int size, bool inc)
 			}
 		}
 	}
+}
+
+glm::vec2 GLWidget::levelCoordsToTileCoords(const glm::vec2& level_coords)
+{
+	Tilemap* tilemap = m_level->getTilemap();
+
+	float tile_width = tilemap->getTileWidth();
+	float tile_height = tilemap->getTileHeight();
+
+	float tx1 = (float)(0) * tile_width;
+	float ty1 = (float)(0) * (tile_height / 2);
+	float tx2 = (float)(Tilemap::AREA_WIDTH) * tile_width;
+	float ty2 = (float)(Tilemap::AREA_HEIGHT) * (tile_height / 2);
+
+	//int prev_x = m_tile_selx;
+	//int prev_y = m_tile_sely;
+
+	int tile_selx = 0;
+	int tile_sely = 0;
+
+	if (level_coords.x >= tx1 && level_coords.x < tx2 &&
+		level_coords.y >= ty1 && level_coords.y < ty2)
+	{
+
+		int block_x = (int)(level_coords.x / tile_width);
+		int block_y = (int)(level_coords.y / (tile_height / 2));
+
+		float selx = (block_x * tile_width);
+		float sely = (block_y * (tile_height / 2));
+
+		float lx = selx;
+		float mx = selx + (tile_width / 2);
+		float rx = selx + tile_width;
+		float vy1 = sely;
+		float vy2 = sely + (tile_height * (15.0 / 70.0));
+		float vy3 = sely + (tile_height * (50.0 / 70.0));
+
+		tile_sely = block_y;
+		if (tile_sely & 1)
+		{
+			/*
+			e1\-   -/e2
+			+\   /+
+			\ /
+			|
+			+|-
+			e3
+			*/
+
+			glm::vec2 e1 = glm::vec2(mx, vy2) - glm::vec2(lx, vy1);
+			glm::vec2 e2 = glm::vec2(rx, vy1) - glm::vec2(mx, vy2);
+			glm::vec2 e3 = glm::vec2(mx, vy3) - glm::vec2(mx, vy2);
+
+			glm::vec2 n1 = glm::vec2(-e1.y, e1.x);
+			glm::vec2 n2 = glm::vec2(-e2.y, e2.x);
+			glm::vec2 n3 = glm::vec2(-e3.y, e3.x);
+
+			glm::vec2 b = level_coords - glm::vec2(mx, vy2);
+
+			float dot1 = glm::dot(n1, b);
+			float dot2 = glm::dot(n2, b);
+			float dot3 = glm::dot(n3, b);
+
+			if (dot1 < 0 && dot2 < 0)
+			{
+				// up
+				tile_selx = block_x;
+				tile_sely = block_y - 1;
+			}
+			else if (dot1 >= 0 && dot3 >= 0)
+			{
+				// left
+				tile_selx = block_x - 1;
+			}
+			///else if (dot2 >= 0 && dot3 < 0)
+			else
+			{
+				// right
+				tile_selx = block_x;
+			}
+		}
+		else
+		{
+			glm::vec2 e1 = glm::vec2(mx, vy1) - glm::vec2(lx, vy2);
+			glm::vec2 e2 = glm::vec2(rx, vy2) - glm::vec2(mx, vy1);
+
+			glm::vec2 n1 = glm::vec2(-e1.y, e1.x);
+			glm::vec2 n2 = glm::vec2(-e2.y, e2.x);
+
+			glm::vec2 b1 = level_coords - glm::vec2(lx, vy2);
+			glm::vec2 b2 = level_coords - glm::vec2(rx, vy2);
+
+			float dot1 = glm::dot(n1, b1);
+			float dot2 = glm::dot(n2, b2);
+
+			if (dot1 < 0)
+			{
+				tile_selx = block_x - 1;
+				tile_sely--;
+			}
+			else if (dot2 < 0)
+			{
+				tile_selx = block_x;
+				tile_sely--;
+			}
+			else
+			{
+				tile_selx = block_x;
+			}
+		}
+	}
+	else
+	{
+		tile_selx = -1;
+		tile_sely = -1;
+	}
+
+	return glm::vec2(tile_selx, tile_sely);
 }
 
 void GLWidget::updateTileDrawLocation(const glm::vec2& mouse_lp)
@@ -2555,6 +2673,22 @@ void GLWidget::paintGL()
 
 			glm::vec2 tilemap_tl = toLevelCoords(glm::vec2(0, 0));
 			glm::vec2 tilemap_br = toLevelCoords(glm::vec2(width(), height()));
+
+			/*
+			float mult = 1.0f / ((float)(width()) / (float)(LEVEL_VIS_WIDTH / ZOOM_LEVELS[m_zoom_level]));
+			tltl = glm::vec2(0, 0);
+			//tltl = (tltl * mult) - (m_scroll / glm::vec2(1.0f, 1.4f));
+			tltl.x = (tltl.x * mult) - (m_scroll.x * 1.0f);
+			tltl.y = (tltl.y * mult) - (m_scroll.y * 1.4f);
+			tltl2 = tilemap_tl * glm::vec2(tilemap->getTileWidth(), tilemap->getTileHeight());
+			tlbr = glm::vec2(width(), height());
+			//tlbr = (tlbr * mult) - (m_scroll / glm::vec2(1.0f, 1.4f));
+			tlbr.x = (tlbr.x * mult) - (m_scroll.x * 1.0f);
+			tlbr.y = (tlbr.y * mult) - (m_scroll.y * 1.4f);
+			*/
+
+			tilemap_tl = levelCoordsToTileCoords(tilemap_tl);
+			tilemap_br = levelCoordsToTileCoords(tilemap_br);
 
 			/*
 			tilemap_tl.x *= tilemap->getTileWidth();
