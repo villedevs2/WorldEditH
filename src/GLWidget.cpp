@@ -2605,6 +2605,9 @@ void GLWidget::paintGL()
 		}
 	}
 
+	glm::vec2 tltl;
+	glm::vec2 brbr;
+
 	// 3d tilemap
 	{
 		QGLShaderProgram* program = m_3d_program;
@@ -2621,7 +2624,7 @@ void GLWidget::paintGL()
 
 		const double fov = 60.0;
 		const double near_plane = 0.01;
-		const double far_plane = 100.0;
+		const double far_plane = 1000.0;
 
 		float size = near_plane * (float)tan((fov * M_PI / 180.0) / 2);
 
@@ -2689,6 +2692,9 @@ void GLWidget::paintGL()
 
 			tilemap_tl = levelCoordsToTileCoords(tilemap_tl);
 			tilemap_br = levelCoordsToTileCoords(tilemap_br);
+
+			tltl = tilemap_tl;
+			brbr = tilemap_br;
 
 			/*
 			tilemap_tl.x *= tilemap->getTileWidth();
@@ -2890,7 +2896,7 @@ void GLWidget::paintGL()
 			}
 			*/
 
-			modetext = tr("Tilemap: X: %1, Y: %2").arg(m_tile_selx).arg(m_tile_sely);
+			modetext = tr("Tilemap: X: %1, Y: %2   TL: %3, %4   BR: %5, %6").arg(m_tile_selx).arg(m_tile_sely).arg(tltl.x).arg(tltl.y).arg(brbr.x).arg(brbr.y);
 			break;
 		}
 		case MODE_TILE_ZEDIT:
