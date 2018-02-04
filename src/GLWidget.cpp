@@ -93,6 +93,7 @@ QSize GLWidget::sizeHint() const
 void GLWidget::reset()
 {
 	m_scroll = glm::vec2(-4096.0f, -2925+57.0f);
+	//m_scroll = glm::vec2(0, 0);
 	m_panning = false;
 
 	m_saved_object->reset();
@@ -2407,7 +2408,7 @@ void GLWidget::renderEdgeData(QPainter& painter)
 {
 	Tilemap* tilemap = m_level->getTilemap();
 
-	int tm_width = Tilemap::AREA_WIDTH;
+	int tm_width = Tilemap::AREA_WIDTH * 2;
 	int tm_height = Tilemap::AREA_HEIGHT;
 
 	float tile_width = tilemap->getTileWidth();

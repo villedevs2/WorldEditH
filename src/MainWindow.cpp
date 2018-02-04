@@ -745,10 +745,10 @@ bool MainWindow::edgify(std::vector<std::vector<int>>& ptlist, int wall_threshol
 
 	FILE *fout = fopen("edgifylog.txt", "wt");
 
-	int tm_width = Tilemap::AREA_WIDTH;
+	int tm_width = Tilemap::AREA_WIDTH * 2;
 	int tm_height = Tilemap::AREA_HEIGHT;
 
-	int xpoints = (tm_width * 2) + 2;
+	int xpoints = tm_width + 2;
 	int ypoints = tm_height + 2;
 
 	coord_point* points = new coord_point[xpoints * ypoints];
@@ -857,7 +857,7 @@ bool MainWindow::edgify(std::vector<std::vector<int>>& ptlist, int wall_threshol
 								}
 							}
 
-							fprintf(fout, "Tile %d, %d: L %d, TL %d, TR %d, R: %d, BR: %d, BL: %d\n", x, y, tilecon[0], tilecon[1], tilecon[2], tilecon[3], tilecon[4], tilecon[5]);
+							fprintf(fout, "Tile (B: %d, %d, %d), %d, %d: L %d, TL %d, TR %d, R: %d, BR: %d, BL: %d\n", b, b % (Tilemap::AREA_WIDTH/Tilemap::BUCKET_WIDTH), b / (Tilemap::AREA_WIDTH/Tilemap::BUCKET_WIDTH), x, y, tilecon[0], tilecon[1], tilecon[2], tilecon[3], tilecon[4], tilecon[5]);
 
 							/*		p1
 								p0		p2
