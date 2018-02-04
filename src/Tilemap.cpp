@@ -154,7 +154,7 @@ void Tilemap::tesselateTile(Bucket* bucket, int bx, int by)
 		tiledef.uvcen = glm::mix(tiledata->points[0] + ((tiledata->points[4] - tiledata->points[0]) * 0.5f), tiledata->points[1] + ((tiledata->points[3] - tiledata->points[1]) * 0.5f), 0.5f);
 
 		tiledef.tiletype = tiledata->type;
-		tiledef.color = tiledata->color;
+		tiledef.color = 0xff000000 | ((tiledata->color >> 16) & 0xff) | ((tiledata->color << 16) & 0xff0000) | (tiledata->color & 0xff00);
 		tiledef.tile_width = m_tile_width;
 		tiledef.tile_height = m_tile_height;
 
