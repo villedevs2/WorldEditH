@@ -2417,14 +2417,14 @@ void GLWidget::renderEdgeData(QPainter& painter)
 	painter.setPen(QColor(255, 0, 0));
 	painter.setBrush(QBrush(QColor(0, 0, 0, 0)));
 
-	QPoint pp[1024];
+	QPoint pp[4096];
 
 	for (int loop = 0; loop < m_edgedata.size(); loop++)
 	{
 		std::vector<int> points = m_edgedata.at(loop);
 		int num_points = points.size();
-		if (num_points > 1023)
-			num_points = 1023;
+		if (num_points > 4095)
+			num_points = 4095;
 
 		for (int p = 0; p < num_points; p++)
 		{
